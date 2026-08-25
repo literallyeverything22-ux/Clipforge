@@ -1,6 +1,6 @@
-# ClipForge User Guide 🎬
+# ClipForge Studio User Guide 🎬
 
-Welcome to **ClipForge** — an automated local AI video clipper that transforms long-form videos (podcasts, speeches, interviews, streams) into viral vertical clips (9:16) for TikTok, YouTube Shorts, Instagram Reels, and Twitter.
+Welcome to **ClipForge Studio** — an automated local AI video clipper and creative production suite that transforms long-form videos (podcasts, speeches, interviews, streams) into viral vertical clips (9:16) for TikTok, YouTube Shorts, Instagram Reels, and Twitter.
 
 ---
 
@@ -8,7 +8,7 @@ Welcome to **ClipForge** — an automated local AI video clipper that transforms
 
 1. **Prerequisites**:
    - Ensure **[FFmpeg](https://www.gyan.dev/ffmpeg/builds/)** is installed and accessible from your terminal (`ffmpeg -version`).
-   - If using local LLM highlight selection, ensure **[Ollama](https://ollama.com/)** is running (`ollama serve`).
+   - If using local AI highlight selection, ensure **[Ollama](https://ollama.com/)** is running (`ollama serve`).
 
 2. **Launch ClipForge**:
    - Double-click **`run.bat`** (or `start_clipforge.bat`) in this folder.
@@ -19,58 +19,74 @@ Welcome to **ClipForge** — an automated local AI video clipper that transforms
 
 ---
 
+## ⚡ UI/UX Pro Max Studio Highlights
+
+- **Dark Studio Aesthetics**: OLED-grade contrast with glowing status badges, sleek glassmorphism, and responsive layout.
+- **Top Studio Breadcrumbs & Search**: Quickly search and filter campaign bays in real time with live campaign analytics counters.
+- **Visual Funnel Progress Strip**: 6-stage interactive status tracker (`Sources` → `Transcribed` → `Analysed` → `Candidates` → `Approved` → `Exported`).
+- **Review Speedrun Shortcuts**:
+  - `A`: Toggle Approve candidate clip
+  - `R`: Toggle Reject candidate clip
+  - `Space`: Toggle instant clip video preview
+  - `S` or `Ctrl + S`: Save review decisions
+- **AI Visual Style Explorer**: Test multiple color, font, and layout combinations with automated AI scoring.
+- **Floating Telemetry Runbar**: Live real-time task status dock with progress bar and collapsible developer terminal logs.
+
+---
+
 ## 📋 Step-by-Step Workflow
 
 ```mermaid
 graph LR
-    A[1. Upload / Select Video] --> B[2. Transcribe & Analyze]
+    A[1. Campaign & Video Bay] --> B[2. AI Transcription & Cleanup]
     B --> C[3. Highlight Selection]
-    C --> D[4. Review & Edit Clips]
-    D --> E[5. Choose Template & Export]
+    C --> D[4. Review & Keyboard Speedrun]
+    D --> E[5. Style Lab & 9:16 Render]
 ```
 
-### 1. Create a Campaign & Select Video
+### 1. Create a Campaign Bay & Upload Video
 - Open the Web UI at `http://localhost:8600`.
-- Create a new campaign or choose an existing campaign.
-- Upload your MP4/MOV video file or place it inside your campaign's `input/` folder.
+- Create a new campaign bay or select an existing one.
+- Drag & drop your MP4/MOV video file directly into the upload dropzone.
+- *(Optional)* Attach a creator brief (PDF, DOCX, TXT, MD) to steer AI topic selection and brand safety rules.
 
-### 2. Transcribe & Clean Transcript
-- Click **Analyze**.
+### 2. Transcribe & Clean Audio
+- Click **Find Highlights** on any uploaded video card.
 - ClipForge uses GPU-accelerated **Faster-Whisper** to transcribe the video with accurate word-level timestamps.
 - An intelligent LLM cleanup layer automatically fixes phonetic mishearings and punctuation based on Whisper's confidence scores.
 
-### 3. Generate or Upload Highlights
+### 3. Generate or Ingest Highlights
 You have three flexible ways to get highlight clips:
 - **Local AI (Ollama)**: Automatically analyzes the transcript and scores candidate clips based on virality, engagement, and hooks.
-- **Email Pipeline**: Sends the transcript to an email agent and ingests the highlight response.
-- **Manual Upload**: Upload a JSON highlights file directly. ClipForge ingests 100% of candidate clips with custom timestamps and hook titles.
+- **Email Dispatch Pipeline**: Dispatches the transcript to an email agent and automatically ingests highlight picks upon reply.
+- **Direct JSON Ingestion**: Click *Upload JSON* to attach an externally generated highlights file.
 
-### 4. Review & Customize Clips
-- Head to the **Review** tab to see all proposed clips.
-- Edit clip start/end timestamps and custom hook headlines.
-- Approve the clips you want to export or reject unwanted ones.
-- Preview raw cuts before full rendering.
+### 4. Review & Speedrun Candidate Clips
+- Go to the **Review** tab to see all proposed clips sorted by AI virality score.
+- Fine-tune start/end timestamps and edit custom hook headlines.
+- Use keyboard shortcuts (`A` to approve, `R` to reject, `Space` to preview).
+- Click **Save Decisions** to persist your curated selections.
 
 ### 5. Choose Style Template & Export
-- Select your target visual template:
-  - **Full Screen (9:16)**: Video covers the full vertical frame (with speaker face-tracking), top hook title, and bottom subtitles with clean high-contrast styling.
-  - **Square Captioned**: Square video centered with top hook and bottom captions.
-  - **Custom / Style Lab**: Design your own layout and typography templates.
-- Click **Export** to generate finished MP4 clips complete with burned-in subtitles, optional background music, and b-roll.
+- In the **Exports** or **Settings** tab, choose your target template:
+  - **Full Screen (9:16)**: Video fills the vertical canvas with intelligent speaker face-tracking and high-contrast captions.
+  - **Square Captioned**: Centered square video with custom colored header and caption bands.
+  - **Abu Lahya / Custom**: Distinctive creator branding layout.
+- Click **Render Approved** to generate finished MP4 vertical clips with burned-in animated subtitles and optional background music.
 
 ---
 
-## 🎨 Templates & Customization
+## 🎨 Built-in Style Templates
 
 Templates are stored as simple JSON files in the `templates/` folder:
 
 | Template | Aspect Ratio | Description |
 |---|---|---|
-| `full_screen.json` | 9:16 | Full frame 1080x1920 with speaker tracking, black text with white outline, top hook title, and bottom captions. |
+| `full_screen.json` | 9:16 | Full frame 1080x1920 with speaker tracking, high-contrast captions, top hook title, and clean subtitle animations. |
 | `square_captioned.json` | 9:16 | Letterbox/square video format with custom colored header and caption bands. |
 | `abu_lahya.json` | 9:16 | Distinctive branding layout with speaker tracking and bottom caption styling. |
 
-To edit fonts, font sizes, colors, or positioning, edit the JSON file in `templates/` or use the **Style Lab** tab in the web UI.
+To edit fonts, font sizes, colors, or positioning, edit the JSON file in `templates/` or use the **Settings / Style Lab** in the web UI.
 
 ---
 
@@ -94,4 +110,5 @@ To edit fonts, font sizes, colors, or positioning, edit the JSON file in `templa
 - **CUDA / GPU not used**:
   - Ensure you have the latest NVIDIA drivers installed. ClipForge includes pre-configured CUDA runtime DLLs for RTX 30/40/50-series GPUs.
 - **Port 8600 busy**:
-  - `run.bat` will automatically detect and clean up any stale ClipForge background process on port 8600.
+  - `run.bat` automatically detects and frees any stale background process on port 8600.
+

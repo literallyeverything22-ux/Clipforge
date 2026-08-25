@@ -3,351 +3,671 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ClipForge</title>
+  <title>ClipForge — AI Video Repurposing Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/style.css?v=19">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="/static/style.css?v=25">
 </head>
 <body>
+  <!-- SVG Icon Sprite -->
+  <svg style="display: none;" aria-hidden="true">
+    <symbol id="icon-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 3v18"/><path d="M3 7.5h4"/><path d="M3 12h18"/><path d="M3 16.5h4"/><path d="M17 3v18"/><path d="M17 7.5h4"/><path d="M17 16.5h4"/>
+    </symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"/><path d="M12 5v14"/>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </symbol>
+    <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+    </symbol>
+    <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </symbol>
+    <symbol id="icon-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/>
+    </symbol>
+    <symbol id="icon-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+    </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
+    </symbol>
+    <symbol id="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+    </symbol>
+    <symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+    </symbol>
+    <symbol id="icon-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>
+    </symbol>
+    <symbol id="icon-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+    </symbol>
+    <symbol id="icon-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 12.5-8.58 3.9a2 2 0 0 1-1.66 0L2 12.5"/><path d="m22 17.5-8.58 3.9a2 2 0 0 1-1.66 0L2 17.5"/>
+    </symbol>
+    <symbol id="icon-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/>
+    </symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
+    </symbol>
+  </svg>
+
   <div class="app">
+    <!-- Studio Header Bar -->
     <header class="topbar">
-      <a class="brand" href="#/dashboard">
-        <div class="logo" aria-hidden="true"></div>
-        <div class="brand-text">
-          <h1>ClipForge</h1>
-          <p class="tagline">Long-form in, 9:16 out</p>
-        </div>
-      </a>
+      <div class="topbar-brand-wrap">
+        <a class="brand" href="#/dashboard" title="ClipForge Studio">
+          <div class="brand-logo-gem">
+            <svg class="icon" aria-hidden="true"><use href="#icon-film"/></svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title-row">
+              <h1>ClipForge</h1>
+              <span class="badge-studio">STUDIO</span>
+            </div>
+            <p class="tagline">AI Auto-Clipper · 9:16 Viral Cuts</p>
+          </div>
+        </a>
+
+        <!-- Breadcrumb Navigation -->
+        <nav class="breadcrumb-nav" id="breadcrumbNav" aria-label="Breadcrumb">
+          <a href="#/dashboard" class="bc-item">Dashboard</a>
+          <span class="bc-sep" id="bcSep1" hidden>/</span>
+          <a href="#/campaign" class="bc-item bc-campaign" id="bcCampaign" hidden>Campaign</a>
+          <span class="bc-sep" id="bcSep2" hidden>/</span>
+          <span class="bc-item bc-current" id="bcCurrent" hidden>Overview</span>
+        </nav>
+      </div>
+
+      <!-- Main Navigation for Small Screens -->
       <nav class="nav" id="nav">
         <a href="#/dashboard" data-page="dashboard">Campaigns</a>
         <a href="#/campaign" data-page="overview" id="navCampaign" hidden></a>
       </nav>
+
+      <!-- Right Header Meta & Telemetry -->
       <div class="topbar-meta">
         <div class="bell-wrap">
-          <button class="bell" id="bellBtn" title="Notifications" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.1-1.6-5.6-4.5-6.3V4c0-.8-.7-1.5-1.5-1.5S10.5 3.2 10.5 4v.7C7.6 5.4 6 7.9 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <button class="bell" id="bellBtn" title="Notifications" aria-label="Notifications" aria-expanded="false">
+            <svg class="icon" aria-hidden="true"><use href="#icon-bell"/></svg>
             <span class="bell-badge" id="bellBadge" hidden>0</span>
           </button>
           <div class="bell-dropdown" id="bellDropdown" hidden>
-            <div class="bell-head"><span>Notifications</span><button class="link" id="bellClear">Clear</button></div>
-            <div class="bell-list" id="bellList"><p class="empty">No notifications yet.</p></div>
+            <div class="bell-head">
+              <span>Activity & Alerts</span>
+              <button class="link link-subtle" id="bellClear">Clear all</button>
+            </div>
+            <div class="bell-list" id="bellList">
+              <div class="empty-notif">
+                <svg class="empty-icon" aria-hidden="true"><use href="#icon-bell"/></svg>
+                <p>No notifications yet</p>
+              </div>
+            </div>
           </div>
         </div>
-        <span class="chip" id="modelChip">…</span>
-        <span class="status" id="serverStatus"><i></i><span id="serverStatusText">connecting</span></span>
+
+        <div class="engine-chip" id="modelChip" title="Active AI Models">
+          <span class="engine-indicator"></span>
+          <span class="engine-text">Loading…</span>
+        </div>
+
+        <div class="status" id="serverStatus" title="Server Connection Status">
+          <i class="status-dot"></i>
+          <span id="serverStatusText">connecting</span>
+        </div>
       </div>
     </header>
 
+    <!-- App Main Workspace -->
     <div class="workspace" id="workspace">
-      <nav class="sidenav" id="sideNav" hidden>
-        <a href="#/campaign" data-page="overview">Overview</a>
-        <a href="#/campaign/review" data-page="review">Review</a>
-        <a href="#/campaign/settings" data-page="settings">Settings</a>
-        <a href="#/campaign/exports" data-page="exports">Exports</a>
-      </nav>
+      <!-- Modern Sidebar Navigation -->
+      <aside class="sidenav" id="sideNav" hidden aria-label="Campaign Navigation">
+        <div class="sidenav-header">
+          <span class="sidenav-eyebrow">Campaign Bay</span>
+        </div>
+        <a href="#/campaign" data-page="overview" class="nav-tab">
+          <svg class="tab-icon" aria-hidden="true"><use href="#icon-layers"/></svg>
+          <span>Overview</span>
+        </a>
+        <a href="#/campaign/review" data-page="review" class="nav-tab">
+          <svg class="tab-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+          <span>Review</span>
+          <span class="tab-badge" id="tabReviewBadge" hidden>0</span>
+        </a>
+        <a href="#/campaign/exports" data-page="exports" class="nav-tab">
+          <svg class="tab-icon" aria-hidden="true"><use href="#icon-download"/></svg>
+          <span>Exports</span>
+          <span class="tab-badge" id="tabExportBadge" hidden>0</span>
+        </a>
+        <a href="#/campaign/settings" data-page="settings" class="nav-tab">
+          <svg class="tab-icon" aria-hidden="true"><use href="#icon-settings"/></svg>
+          <span>Settings</span>
+        </a>
+      </aside>
 
+      <!-- Main Content Container -->
       <main class="main">
+        <!-- 1. DASHBOARD PAGE -->
         <section class="page" id="page-dashboard">
-          <div class="page-head">
-            <div>
-              <h2>Campaigns</h2>
-              <p class="page-sub">A bay for each show you cut.</p>
+          <!-- Hero Banner & Stats Bar -->
+          <div class="dashboard-hero">
+            <div class="dashboard-hero-content">
+              <h2>Campaign Dashboard</h2>
+              <p class="page-sub">Central command for all your shows, podcasts, and long-form video bays.</p>
             </div>
+            <div class="hero-stats-strip" id="dashboardHeroStats">
+              <div class="stat-pill">
+                <span class="stat-num" id="statTotalCampaigns">0</span>
+                <span class="stat-label">Campaigns</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num" id="statTotalVideos">0</span>
+                <span class="stat-label">Source Videos</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num stat-amber" id="statTotalCandidates">0</span>
+                <span class="stat-label">Candidates</span>
+              </div>
+              <div class="stat-pill">
+                <span class="stat-num stat-teal" id="statTotalExports">0</span>
+                <span class="stat-label">Rendered Clips</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campaign Creator Card & Filter Bar -->
+          <div class="dashboard-toolbar">
+            <div class="search-box-wrap">
+              <svg class="search-icon" aria-hidden="true"><use href="#icon-search"/></svg>
+              <input type="text" id="campSearchInput" class="search-box" placeholder="Filter campaigns by name…" autocomplete="off">
+            </div>
+
             <form id="newCampaignForm" class="new-campaign-form">
-              <input type="text" id="campName" required placeholder="Campaign name" autocomplete="off">
-              <label class="brief-attach" id="briefAttach" for="campBriefInput"
-                     title="Attach the creator brief (pdf · docx · txt · md)">
+              <input type="text" id="campName" required placeholder="New campaign name…" autocomplete="off">
+              <label class="brief-attach" id="briefAttach" for="campBriefInput" title="Attach creator brief (pdf, docx, txt, md)">
                 <input type="file" id="campBriefInput" accept=".pdf,.docx,.txt,.md" hidden>
-                <span class="brief-attach-label" id="briefAttachLabel">＋ Brief</span>
+                <svg class="icon-inline" aria-hidden="true"><use href="#icon-file-text"/></svg>
+                <span class="brief-attach-label" id="briefAttachLabel">Attach Brief</span>
               </label>
-              <button class="btn btn-primary" type="submit" id="btnCreateCampaign">New campaign</button>
+              <button class="btn btn-primary btn-glow" type="submit" id="btnCreateCampaign">
+                <svg class="btn-icon" aria-hidden="true"><use href="#icon-plus"/></svg>
+                <span>Create Bay</span>
+              </button>
             </form>
           </div>
+
+          <!-- Campaigns Grid -->
           <div class="campaign-grid" id="campaignGrid"></div>
         </section>
 
+        <!-- 2. CAMPAIGN OVERVIEW PAGE -->
         <section class="page" id="page-overview" hidden>
-          <div class="page-head">
-            <div>
+          <div class="campaign-hero-card">
+            <div class="campaign-hero-title">
+              <div class="title-badge-row">
+                <span class="status-tag">ACTIVE BAY</span>
+                <span class="time-meta" id="campDetailMeta">Updated recently</span>
+              </div>
               <h2 id="campDetailName">Campaign</h2>
-              <p class="page-sub" id="campDetailMeta"></p>
             </div>
           </div>
 
+          <!-- Interactive 6-Stage Pipeline Funnel -->
+          <div class="funnel-container">
+            <div class="section-header-compact">
+              <span class="eyebrow-accent">
+                <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-layers"/></svg>
+                Production Pipeline
+              </span>
+              <span class="funnel-hint">Click any stage to jump into action</span>
+            </div>
+            <div class="funnel-strip" id="funnelStrip"></div>
+          </div>
+
+          <!-- Highlight Engine Mode Switcher -->
           <div class="panel highlight-toggle-panel">
-            <span class="field-label">Highlight selection</span>
-            <div class="seg-toggle" id="highlightToggle" role="radiogroup" aria-label="Highlight selection">
-              <button type="button" class="seg opt" data-mode="email">Email highlights</button>
-              <button type="button" class="seg opt" data-mode="local">Local (Gemma)</button>
+            <div class="highlight-toggle-head">
+              <div>
+                <span class="field-label-prominent">Highlight Discovery Mode</span>
+                <p class="hint-inline">Select how AI extracts high-potential viral moments from your transcripts.</p>
+              </div>
+              <div class="seg-toggle" id="highlightToggle" role="radiogroup" aria-label="Highlight discovery mode">
+                <button type="button" class="seg opt" data-mode="local">
+                  <svg class="seg-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+                  <span>Local AI (Ollama/Gemma)</span>
+                </button>
+                <button type="button" class="seg opt" data-mode="email">
+                  <svg class="seg-icon" aria-hidden="true"><use href="#icon-file-text"/></svg>
+                  <span>Email AI Dispatch</span>
+                </button>
+              </div>
             </div>
             <p class="hint" id="highlightToggleHint"></p>
           </div>
 
+          <!-- Campaign Brief & Rules Panel -->
           <div class="panel overview-rules-panel">
             <div class="section-head">
-              <h3 class="eyebrow">Campaign brief & rules</h3>
+              <div class="section-title-wrap">
+                <h3 class="eyebrow">
+                  <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-file-text"/></svg>
+                  Campaign Brief & Rule Directives
+                </h3>
+                <span class="badge-subtle">Steers AI Scoring</span>
+              </div>
               <div class="overview-rules-actions">
-                <a class="link" id="ovRulesViewFull" href="#" target="_blank" rel="noopener" hidden>Full doc</a>
-                <label class="link reupload-link" for="ovRulesInput" id="ovRulesUploadLbl" hidden>Upload brief</label>
+                <a class="btn btn-small btn-ghost" id="ovRulesViewFull" href="#" target="_blank" rel="noopener" hidden>
+                  <svg class="btn-icon" aria-hidden="true"><use href="#icon-file-text"/></svg>
+                  <span>Full Doc</span>
+                </a>
+                <label class="btn btn-small btn-ghost reupload-link" for="ovRulesInput" id="ovRulesUploadLbl" hidden>
+                  <svg class="btn-icon" aria-hidden="true"><use href="#icon-upload"/></svg>
+                  <span>Replace Brief</span>
+                </label>
               </div>
             </div>
-            <div id="ovRulesEmpty">
-              <p class="hint">No brief yet — the rules doc steers what Gemma picks: content criteria, brand safety, editing style, submission requirements.</p>
-              <label class="dropzone dropzone-small" id="ovRulesDropzone" for="ovRulesInput">
-                <span class="drop-icon">＋</span>
-                <span class="drop-title">Attach the brief</span>
-                <span class="drop-sub">pdf · docx · txt · md</span>
+            <div id="ovRulesEmpty" class="rules-empty-card">
+              <p class="hint">No brief attached yet. Uploading a brief guides AI on content criteria, brand safety filters, editing style, and submission requirements.</p>
+              <label class="dropzone dropzone-compact" id="ovRulesDropzone" for="ovRulesInput">
+                <svg class="drop-icon-svg" aria-hidden="true"><use href="#icon-upload"/></svg>
+                <span class="drop-title">Attach Creator Brief Document</span>
+                <span class="drop-sub">Accepts PDF · DOCX · TXT · Markdown</span>
               </label>
               <input type="file" id="ovRulesInput" accept=".pdf,.docx,.txt,.md" hidden>
             </div>
-            <div id="ovRulesBody" hidden></div>
+            <div id="ovRulesBody" class="rules-body-grid" hidden></div>
           </div>
 
+          <!-- Analysis Filter Knobs -->
           <div class="panel overview-knobs-panel">
-            <h3 class="eyebrow">Analyze</h3>
+            <h3 class="eyebrow">Highlight Filtering Parameters</h3>
             <div class="analyze-fields">
-              <label class="field"><span>Min score</span>
-                <input type="number" id="minScore" step="0.05" min="0" max="1"></label>
-              <label class="field"><span>Max clips</span>
-                <input type="number" id="maxClips" step="1" min="1" max="30"></label>
+              <label class="field-knob">
+                <span class="knob-label">Minimum Viral Score</span>
+                <input type="number" id="minScore" step="0.05" min="0" max="1" placeholder="0.60">
+              </label>
+              <label class="field-knob">
+                <span class="knob-label">Maximum Clips Cap</span>
+                <input type="number" id="maxClips" step="1" min="1" max="30" placeholder="10">
+              </label>
             </div>
           </div>
 
-          <div class="funnel-strip" id="funnelStrip"></div>
-
+          <!-- Video Sources Board -->
           <div class="panel source-board-panel">
             <div class="section-head">
-              <h3 class="eyebrow">Sources</h3>
-              <label class="btn btn-small btn-ghost" for="fileInput">＋ Add source</label>
+              <div class="section-title-wrap">
+                <h3 class="eyebrow">
+                  <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-film"/></svg>
+                  Source Media Bay
+                </h3>
+                <span class="badge-counter" id="sourcesCounter">0 Videos</span>
+              </div>
+              <label class="btn btn-small btn-primary" for="fileInput">
+                <svg class="btn-icon" aria-hidden="true"><use href="#icon-plus"/></svg>
+                <span>Add Source Video</span>
+              </label>
             </div>
-            <div class="source-board" id="sourceBoard"></div>
+
+            <!-- Drag & Drop Video Upload Zone -->
             <label class="dropzone source-dropzone" id="uploadBtn" for="fileInput">
-              <span class="drop-icon">＋</span>
-              <span class="drop-title" id="uploadDropTitle">Drop a video to start this campaign</span>
-              <span class="drop-sub">mp4 · mov · mkv · webm</span>
+              <div class="drop-icon-circle">
+                <svg class="drop-icon-svg" aria-hidden="true"><use href="#icon-upload"/></svg>
+              </div>
+              <span class="drop-title" id="uploadDropTitle">Drop raw video here to begin</span>
+              <span class="drop-sub">Supported formats: MP4, MOV, MKV, WebM, AVI</span>
             </label>
             <input type="file" id="fileInput" accept="video/*" hidden>
+
             <div class="upload-progress" id="uploadProgress" hidden>
               <div class="upload-track"><div class="upload-fill" id="uploadFill"></div></div>
               <span class="upload-pct" id="uploadPct">0%</span>
             </div>
+
+            <div class="source-board" id="sourceBoard"></div>
           </div>
 
-          <p class="empty" id="overviewEmpty" hidden>Drop a video to start this campaign.</p>
+          <p class="empty-state-guide" id="overviewEmpty" hidden>
+            Upload a video above to kick off transcription and AI clipping.
+          </p>
         </section>
 
+        <!-- 3. REVIEW PAGE (High-Velocity Clip Approval UX) -->
         <section class="page" id="page-review" hidden>
-          <div class="page-head">
-            <div>
-              <h2>Review <span class="count" id="reviewCount"></span></h2>
-              <p class="page-sub">Approve the cuts worth posting.</p>
+          <!-- Sticky Review Header & Batch Controls -->
+          <div class="review-toolbar">
+            <div class="review-toolbar-title">
+              <h2>Candidate Review <span class="count-tag" id="reviewCount"></span></h2>
+              <p class="page-sub">Validate viral hooks, refine timecodes, and approve winning 9:16 cuts.</p>
             </div>
-            <div class="page-actions">
-              <button class="btn btn-small btn-ghost" id="btnApproveAll">Approve all</button>
-              <button class="btn btn-small btn-primary" id="btnSaveReview">Save decisions</button>
+
+            <div class="review-actions-group">
+              <div class="keyboard-hints" title="Keyboard Shortcuts Active">
+                <span class="kbd-badge"><kbd>A</kbd> Approve</span>
+                <span class="kbd-badge"><kbd>R</kbd> Reject</span>
+                <span class="kbd-badge"><kbd>Space</kbd> Preview</span>
+                <span class="kbd-badge"><kbd>S</kbd> Save</span>
+              </div>
+              <button class="btn btn-small btn-ghost" id="btnApproveAll">Approve All</button>
+              <button class="btn btn-small btn-primary btn-glow" id="btnSaveReview">
+                <svg class="btn-icon" aria-hidden="true"><use href="#icon-check"/></svg>
+                <span>Save Decisions</span>
+              </button>
             </div>
           </div>
-          <p class="hint" id="reviewHint">Decisions stay unsaved until you press Save decisions.</p>
+
+          <!-- Unsaved Changes Alert Bar -->
+          <div class="review-status-bar" id="reviewHint">Decisions stay unsaved until you press Save decisions.</div>
+
           <div id="reviewList" class="source-groups"></div>
-          <div class="empty" id="reviewEmpty" hidden>Analyze a source to get candidates.</div>
+          <div class="empty-card" id="reviewEmpty" hidden>
+            <svg class="empty-icon-large" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+            <h3>No Candidates to Review</h3>
+            <p>Analyze a source video in the Overview tab to generate candidate clips.</p>
+          </div>
         </section>
 
+        <!-- 4. EXPORTS & STYLE EXPLORER PAGE -->
         <section class="page" id="page-exports" hidden>
           <div class="page-head">
             <div>
-              <h2>Exports <span class="count" id="outputCount"></span></h2>
-              <p class="page-sub">Rendered 9:16 clips.</p>
+              <h2>Exports & Gallery <span class="count-tag" id="outputCount"></span></h2>
+              <p class="page-sub">Explore generative style variants and preview final 9:16 rendered cuts.</p>
             </div>
-            <button class="link" id="btnOpenFolder">Open folder</button>
+            <button class="btn btn-ghost btn-small" id="btnOpenFolder">
+              <svg class="btn-icon" aria-hidden="true"><use href="#icon-folder"/></svg>
+              <span>Open Output Folder</span>
+            </button>
           </div>
-          <div class="panel" id="styleExplorerCard">
-            <div class="section-head outputs-head">
-              <h3 class="eyebrow">Style Explorer</h3>
+
+          <!-- AI Vision Style Explorer Card -->
+          <div class="panel style-explorer-card" id="styleExplorerCard">
+            <div class="section-head">
+              <div class="section-title-wrap">
+                <h3 class="eyebrow">
+                  <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+                  AI Vision Style Explorer
+                </h3>
+                <span class="badge-ai">Qwen-VL Vision Judge</span>
+              </div>
             </div>
-            <p class="hint">Renders low-res variants of the best clip and lets a local vision model pick the winning style; the winner rolls out to all approved clips on Export.</p>
+            <p class="hint">Generates low-res multi-style probe cuts and uses local vision AI to score captions, typography, contrast, and layout aesthetics.</p>
+
             <div class="explore-controls">
-              <label class="field"><span>Video</span>
+              <label class="field-knob">
+                <span class="knob-label">Source Video</span>
                 <div class="select-wrap"><select id="exploreVideoSelect"></select></div>
               </label>
-              <label class="field"><span>Variants</span>
+              <label class="field-knob">
+                <span class="knob-label">Variants Count</span>
                 <input type="number" id="exploreVariants" value="10" min="2" max="20" step="1">
               </label>
-              <button class="btn btn-primary" id="btnExploreStyles" disabled>Explore styles</button>
+              <button class="btn btn-primary" id="btnExploreStyles" disabled>
+                <svg class="btn-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+                <span>Run Style Explorer</span>
+              </button>
             </div>
             <div id="exploreResults" class="explore-results"></div>
           </div>
+
+          <!-- Rendered Clips Grid -->
           <div id="outputList"></div>
         </section>
 
+        <!-- 5. SETTINGS PAGE -->
         <section class="page" id="page-settings" hidden>
           <div class="page-head">
             <div>
-              <h2>Settings</h2>
-              <p class="page-sub">Style, music, and edit knobs for this campaign.</p>
+              <h2>Campaign Settings</h2>
+              <p class="page-sub">Customize golden visual presets, background audio mixing, and AI edit prompts.</p>
             </div>
           </div>
 
+          <!-- Quick Export Launcher Panel -->
           <div class="panel" id="settingsExportPanel">
             <div class="section-head">
-              <h3 class="eyebrow">Export</h3>
+              <h3 class="eyebrow">
+                <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-download"/></svg>
+                Batch Export Queue
+              </h3>
             </div>
-            <p class="hint">Approved clips from the Review page, rendered with the golden look selected below. Pick a source and start the export.</p>
+            <p class="hint">Render all approved clips from the Review queue with your selected Golden Look.</p>
             <div class="explore-controls">
-              <label class="field"><span>Video</span>
+              <label class="field-knob">
+                <span class="knob-label">Select Source Video</span>
                 <div class="select-wrap"><select id="settingsExportSelect"></select></div>
               </label>
-              <button class="btn btn-primary" id="btnSettingsExport" disabled>Export approved</button>
+              <button class="btn btn-primary btn-glow" id="btnSettingsExport" disabled>
+                <svg class="btn-icon" aria-hidden="true"><use href="#icon-download"/></svg>
+                <span>Render Approved Clips</span>
+              </button>
             </div>
             <p class="hint" id="settingsExportHint">Nothing approved yet — approve clips on the Review page first.</p>
           </div>
 
+          <!-- Visual Template Selector -->
           <div class="panel">
-            <h3 class="eyebrow">Style</h3>
-            <p class="field-label">Golden look</p>
+            <div class="section-head">
+              <h3 class="eyebrow">
+                <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-layers"/></svg>
+                Golden Visual Look
+              </h3>
+            </div>
+            <p class="field-label-prominent">Choose Rendering Preset</p>
             <div class="golden-styles" id="goldenStyles"></div>
             <select id="templateSelect" hidden></select>
             <p class="template-desc" id="templateDesc"></p>
           </div>
 
+          <!-- Sound & Background Music Studio -->
           <div class="panel">
-            <h3 class="eyebrow">Sound</h3>
+            <div class="section-head">
+              <h3 class="eyebrow">
+                <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-music"/></svg>
+                Audio & Music Studio
+              </h3>
+            </div>
             <label class="toggle-row">
               <input type="checkbox" id="musicEnabled">
-              <span>Mix background music under the voice</span>
+              <span>Mix background music track under dialog</span>
             </label>
-            <label class="field"><span>Volume</span>
-              <input type="range" id="musicVolume" min="0" max="1" step="0.02"></label>
-            <label class="field-label">Track</label>
-            <div class="select-wrap music-track-wrap"><select id="musicTrack"></select></div>
-            <label class="upload upload-small" for="musicInput">
-              <span class="upload-icon">＋</span><span>Add a track</span>
+            <div class="audio-controls-grid">
+              <label class="field-knob">
+                <span class="knob-label">Ducking Volume</span>
+                <input type="range" id="musicVolume" min="0" max="1" step="0.02">
+              </label>
+              <label class="field-knob">
+                <span class="knob-label">Track Selection</span>
+                <div class="select-wrap music-track-wrap"><select id="musicTrack"></select></div>
+              </label>
+            </div>
+            <label class="upload upload-compact" for="musicInput">
+              <svg class="btn-icon" aria-hidden="true"><use href="#icon-plus"/></svg>
+              <span>Upload Custom Audio Track</span>
             </label>
             <input type="file" id="musicInput" accept="audio/*" hidden>
           </div>
 
+          <!-- Style Explorer Directives & Prompts -->
+          <div class="panel" id="styleExplorerPanel">
+            <h3 class="eyebrow">
+              <svg class="eyebrow-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+              AI Style Directives & Instructions
+            </h3>
+            <p class="hint">Custom style guidance (e.g. "high energy, warm cinematic, large bold captions with yellow highlights"). Passed directly to the variant generator.</p>
+            <textarea id="styleBrief" class="field-textarea" rows="3" placeholder="e.g. warm cinematic contrast, bold uppercase captions, clean bottom padding…"></textarea>
+            <p class="hint-small">Requires Ollama vision model: <code>ollama pull qwen2.5vl:7b</code>.</p>
+            <p class="hint-small" id="telegramStatus"></p>
+
+            <div class="settings-divider"></div>
+
+            <h3 class="eyebrow">Per-Clip Edit Instructions</h3>
+            <p class="hint">Custom trimming & caption rules confirmed before every rendering run.</p>
+            <textarea id="editInstructions" class="field-textarea" rows="3" placeholder="e.g. keep captions centered, hard cuts on emphatic words…"></textarea>
+          </div>
+
+          <!-- Style Lab (Collapsible Advance Tools) -->
           <details class="style-lab" id="styleLab">
-            <summary>Style Lab <span class="opt-badge">optional</span></summary>
+            <summary>
+              <div class="summary-content">
+                <span class="summary-title">Advanced Style Lab</span>
+                <span class="opt-badge">Reference Matching</span>
+              </div>
+            </summary>
             <div class="style-lab-grid">
-              <div class="panel">
-                <h3 class="eyebrow">Reference edit</h3>
-                <label class="field"><span>Reference video</span>
-                  <div class="select-wrap"><select id="styleVideoSelect"></select></div>
-                </label>
-                <p class="hint">A short edited clip whose look you want to copy. Upload it as a source, then pick it here.</p>
+              <div class="panel-nested">
+                <h4 class="eyebrow-nested">Reference Video</h4>
+                <div class="select-wrap"><select id="styleVideoSelect"></select></div>
+                <p class="hint">Upload a short viral edit to analyze its pixel layout and color scheme.</p>
               </div>
-              <div class="panel">
-                <h3 class="eyebrow">Extract frames</h3>
-                <label class="field"><span>Sampling</span>
-                  <div class="select-wrap"><select id="framesMode">
-                    <option value="uniform">Uniform (evenly spaced)</option>
-                    <option value="scene">Scene changes (cuts)</option>
-                  </select></div>
+              <div class="panel-nested">
+                <h4 class="eyebrow-nested">Frame Extraction</h4>
+                <div class="select-wrap"><select id="framesMode">
+                  <option value="uniform">Uniform (evenly spaced)</option>
+                  <option value="scene">Scene changes (cuts)</option>
+                </select></div>
+                <label class="field-compact"><span>Count</span>
+                  <input type="number" id="framesNum" value="12" min="4" max="60" step="1">
                 </label>
-                <label class="field"><span>Frames</span>
-                  <input type="number" id="framesNum" value="12" min="4" max="60" step="1"></label>
-                <label class="field"><span>Contact sheet</span>
-                  <div class="select-wrap"><select id="framesGrid">
-                    <option value="3x4">3 × 4</option>
-                    <option value="">None</option>
-                    <option value="4x4">4 × 4</option>
-                    <option value="3x3">3 × 3</option>
-                  </select></div>
-                </label>
-                <div class="btn-row">
-                  <button class="btn btn-primary" id="btnExtractFrames">Extract frames</button>
-                </div>
-                <p class="style-state" id="styleState">No frames yet.</p>
+                <div class="select-wrap"><select id="framesGrid">
+                  <option value="3x4">3 × 4 Grid</option>
+                  <option value="">No Sheet</option>
+                  <option value="4x4">4 × 4 Grid</option>
+                  <option value="3x3">3 × 3 Grid</option>
+                </select></div>
+                <button class="btn btn-small btn-primary" id="btnExtractFrames">Extract Frames</button>
+                <p class="style-state" id="styleState">No frames extracted yet.</p>
               </div>
-              <div class="panel">
-                <h3 class="eyebrow">Analyze style</h3>
-                <div class="btn-row">
-                  <button class="btn btn-primary" id="btnAnalyzeStyle" disabled>Analyze → draft template</button>
+              <div class="panel-nested">
+                <h4 class="eyebrow-nested">Pixel Style Analyzer</h4>
+                <button class="btn btn-small btn-primary" id="btnAnalyzeStyle" disabled>Analyze → Draft Template</button>
+                <div id="styleReport" class="style-report">
+                  <p class="hint">Extract frames first to generate a style profile.</p>
                 </div>
-                <div id="styleReport" class="style-report"><p class="hint">Runs pixel analysis over the frames and drafts a template for this campaign.</p></div>
               </div>
             </div>
             <div class="section-head outputs-head">
-              <h3 class="eyebrow">Contact sheets</h3>
+              <h3 class="eyebrow">Extracted Contact Sheets</h3>
             </div>
             <div id="styleSheets" class="cards"></div>
           </details>
 
-          <div class="panel" id="styleExplorerPanel">
-            <h3 class="eyebrow">Style Explorer — style brief</h3>
-            <p class="hint">Optional free-text style direction (e.g. “no red, warm cinematic look, big bold captions”). It steers the variant generator and is passed to the vision-judge rubric for every preview.</p>
-            <textarea id="styleBrief" class="field" rows="3" placeholder="e.g. no red, warm cinematic look…"></textarea>
-            <p class="hint">Requires the vision model: <code>ollama pull qwen2.5vl:7b</code>. Exploring runs on the Exports page.</p>
-            <p class="hint" id="telegramStatus"></p>
-            <div class="settings-divider"></div>
-            <h3 class="eyebrow">Edit instructions</h3>
-            <p class="hint">Per-clip edit direction shown and confirmed before every generation run. Logged at export time and used as the style-explorer brief when no brief is set.</p>
-            <textarea id="editInstructions" class="field" rows="3" placeholder="e.g. keep captions small, hard cuts on emphasis words…"></textarea>
-          </div>
-
+          <!-- Danger Zone -->
           <div class="panel danger-zone">
-            <h3 class="eyebrow danger">Danger zone</h3>
-            <p class="hint">Permanently delete this campaign and all its files. This cannot be undone.</p>
-            <button class="btn btn-small btn-ghost btn-danger" id="btnDeleteCampaign">Delete campaign</button>
+            <div class="danger-header">
+              <svg class="danger-icon" aria-hidden="true"><use href="#icon-trash"/></svg>
+              <div>
+                <h3 class="eyebrow danger">Danger Zone</h3>
+                <p class="hint">Permanently delete this campaign bay and all its associated transcripts, cuts, and exports.</p>
+              </div>
+            </div>
+            <button class="btn btn-small btn-danger" id="btnDeleteCampaign">Delete Campaign</button>
           </div>
         </section>
       </main>
     </div>
 
+    <!-- Floating Pipeline Telemetry Dock -->
     <footer class="runbar" id="runbar" hidden>
+      <div class="runbar-pulse-ring"></div>
       <div class="runbar-left">
-        <span class="stage-name" id="stageName">Idle</span>
-        <span class="runbar-msg" id="runMsg"></span>
+        <span class="stage-name" id="stageName">Processing</span>
+        <span class="runbar-msg" id="runMsg">Running pipeline tasks…</span>
       </div>
-      <div class="rail"><div class="rail-fill" id="railFill"></div></div>
+      <div class="rail" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div class="rail-fill" id="railFill"></div>
+      </div>
       <span class="percent" id="percent">0%</span>
-      <button class="link cancel-run" id="btnCancel">Cancel</button>
-      <button class="link" id="logToggle">Log</button>
+      <button class="btn-cancel-run" id="btnCancel" title="Cancel Active Job">Cancel</button>
+      <button class="btn-log-toggle" id="logToggle">
+        <svg class="btn-icon" aria-hidden="true"><use href="#icon-terminal"/></svg>
+        <span>Logs</span>
+      </button>
     </footer>
+
+    <!-- Slide-up Developer Log Terminal -->
     <pre class="log-console" id="logConsole" hidden></pre>
   </div>
 
+  <!-- Transcript Modal -->
   <div class="modal-backdrop" id="transcriptModal" hidden>
-    <div class="modal">
+    <div class="modal modal-lg">
       <div class="modal-head">
-        <h3>Transcript — <span id="transcriptVideoName"></span></h3>
-        <button class="link modal-close" id="transcriptClose">✕ Close</button>
+        <div class="modal-title-wrap">
+          <svg class="modal-icon" aria-hidden="true"><use href="#icon-file-text"/></svg>
+          <h3>Transcript — <span id="transcriptVideoName"></span></h3>
+        </div>
+        <button class="btn-icon-close" id="transcriptClose" aria-label="Close modal">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
+        </button>
       </div>
-      <pre class="transcript-body" id="transcriptBody">Loading…</pre>
+      <pre class="transcript-body" id="transcriptBody">Loading transcript…</pre>
       <div class="modal-actions">
-        <button class="btn btn-small btn-ghost" id="transcriptCopy"
-                title="Copy the full transcript to your clipboard">Copy</button>
+        <button class="btn btn-small btn-ghost" id="transcriptCopy">
+          <svg class="btn-icon" aria-hidden="true"><use href="#icon-copy"/></svg>
+          <span>Copy Full Text</span>
+        </button>
         <span class="modal-spacer"></span>
-        <button class="btn btn-small btn-primary" id="transcriptFind"
-                title="Run highlight selection on this transcript — no re-transcription">Find highlights</button>
+        <button class="btn btn-small btn-primary" id="transcriptFind">
+          <svg class="btn-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+          <span>Find Highlights on Transcript</span>
+        </button>
       </div>
     </div>
   </div>
 
+  <!-- Pre-Export Configuration Modal -->
   <div class="modal-backdrop" id="exportConfigModal" hidden>
     <div class="modal">
       <div class="modal-head">
-        <h3>Before generating — <span id="exportConfigVideo"></span></h3>
-        <button class="link modal-close" id="exportConfigClose">✕ Close</button>
+        <div class="modal-title-wrap">
+          <svg class="modal-icon" aria-hidden="true"><use href="#icon-download"/></svg>
+          <h3>Configure Export — <span id="exportConfigVideo"></span></h3>
+        </div>
+        <button class="btn-icon-close" id="exportConfigClose" aria-label="Close modal">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
+        </button>
       </div>
       <div class="modal-body">
-        <label class="field"><span>Template (style for every approved clip)</span>
+        <label class="field-block">
+          <span class="field-label">Rendering Template Preset</span>
           <div class="select-wrap"><select id="exportConfigTemplate"></select></div>
         </label>
-        <label class="field"><span>Edit instructions (optional)</span>
-          <textarea id="exportConfigInstructions" class="field" rows="4" placeholder="e.g. keep captions small, hard cuts on emphasis words…"></textarea>
+        <label class="field-block">
+          <span class="field-label">Custom Edit Instructions (Optional)</span>
+          <textarea id="exportConfigInstructions" class="field-textarea" rows="3" placeholder="e.g. keep captions small, hard cuts on emphasis words…"></textarea>
         </label>
         <p class="hint" id="exportConfigHint"></p>
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" id="exportConfigCancel">Cancel</button>
-        <button class="btn btn-primary" id="exportConfigStart">Start export</button>
+        <button class="btn btn-primary btn-glow" id="exportConfigStart">
+          <svg class="btn-icon" aria-hidden="true"><use href="#icon-play"/></svg>
+          <span>Start Rendering</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast" hidden></div>
+  <!-- Toast Alerts -->
+  <div class="toast" id="toast" hidden role="alert" aria-live="polite"></div>
 
-  <script src="/static/app.js?v=24"></script>
+  <script src="/static/app.js?v=25"></script>
 </body>
 </html>

@@ -1,8 +1,13 @@
-/* ClipForge web UI — campaign workspace */
+/* ClipForge Web UI — AI Video Repurposing Studio */
 (function () {
   "use strict";
 
   const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+  function svgIcon(name, cls) {
+    return `<svg class="icon${cls ? " " + cls : ""}" aria-hidden="true"><use href="#icon-${name}"/></svg>`;
+  }
 
   const els = {
     nav: $("#nav"),
@@ -12,6 +17,18 @@
     modelChip: $("#modelChip"),
     serverStatus: $("#serverStatus"),
     serverStatusText: $("#serverStatusText"),
+    breadcrumbNav: $("#breadcrumbNav"),
+    bcSep1: $("#bcSep1"),
+    bcCampaign: $("#bcCampaign"),
+    bcSep2: $("#bcSep2"),
+    bcCurrent: $("#bcCurrent"),
+    tabReviewBadge: $("#tabReviewBadge"),
+    tabExportBadge: $("#tabExportBadge"),
+    statTotalCampaigns: $("#statTotalCampaigns"),
+    statTotalVideos: $("#statTotalVideos"),
+    statTotalCandidates: $("#statTotalCandidates"),
+    statTotalExports: $("#statTotalExports"),
+    campSearchInput: $("#campSearchInput"),
     campaignGrid: $("#campaignGrid"),
     newCampaignForm: $("#newCampaignForm"),
     campName: $("#campName"),
@@ -27,6 +44,7 @@
     campDetailMeta: $("#campDetailMeta"),
     funnelStrip: $("#funnelStrip"),
     overviewEmpty: $("#overviewEmpty"),
+    sourcesCounter: $("#sourcesCounter"),
     sourceBoard: $("#sourceBoard"),
     uploadBtn: $("#uploadBtn"),
     uploadDropTitle: $("#uploadDropTitle"),
@@ -110,33 +128,35 @@
   };
 
   const LABELS = {
-    transcribe: "Transcribing audio",
-    vad: "Tightening silence",
+    transcribe: "Transcribing audio (Whisper)",
+    vad: "Tightening silence & pauses",
     clean: "Fixing transcript typos",
-    context: "Building context",
-    select: "Finding highlights",
-    awaiting: "Waiting for the email reply",
-    cut: "Cutting clips",
-    render: "Rendering clips",
-    frames: "Extracting frames",
+    context: "Building context vectors",
+    select: "Finding viral moments (AI)",
+    awaiting: "Waiting for highlight picks",
+    cut: "Cutting lossless segments",
+    render: "Rendering 9:16 vertical video",
+    frames: "Extracting reference frames",
     "explore-cut": "Cutting probe variants",
     "explore-variants": "Generating style variants",
     "explore-render": "Rendering style previews",
-    "explore-judge": "Vision judge scoring",
-    start: "Starting…",
-    done: "Finished",
+    "explore-judge": "AI Vision Judge scoring",
+    start: "Initializing…",
+    done: "Processing complete",
   };
 
   const WORKSPACE_PAGES = ["overview", "review", "exports", "settings"];
   const ALL_PAGES = ["dashboard"].concat(WORKSPACE_PAGES);
+
   const FUNNEL_STEPS = [
-    { key: "sources", label: "Sources", page: "overview" },
-    { key: "transcribed", label: "Transcribed", page: "overview" },
-    { key: "analysed", label: "Analysed", page: "overview" },
-    { key: "candidates", label: "Candidates", page: "review" },
-    { key: "approved", label: "Approved", page: "review" },
-    { key: "exported", label: "Exported", page: "exports" },
+    { key: "sources", label: "1. Sources", page: "overview" },
+    { key: "transcribed", label: "2. Transcribed", page: "overview" },
+    { key: "analysed", label: "3. Analysed", page: "overview" },
+    { key: "candidates", label: "4. Candidates", page: "review" },
+    { key: "approved", label: "5. Approved", page: "review" },
+    { key: "exported", label: "6. Exported", page: "exports" },
   ];
+
   const STAGE_LABELS = {
     none: "Empty",
     uploaded: "Uploaded",
@@ -163,12 +183,12 @@
   let shownLogs = 0;
   const openPreviews = new Map();
   let settingsTimer = null;
+  let hoveredClip = null;
 
-  // --- notifications / events ------------------------------------------- //
+  // --- Notifications & Activity Bus --------------------------------------- //
   let notifications = [];
   let lastEventSeq = 0;
   let eventPolling = false;
-  const NOTIF_ICON = "✉";
 
   function ensureNotifyPermission() {
     if (!("Notification" in window)) return;
@@ -190,7 +210,7 @@
     notifications.unshift({
       kind, title: title, body: body || "",
       campaignId: campaignId || null,
-      icon: icon || NOTIF_ICON,
+      icon: icon || "bell",
       ts: Date.now(),
     });
     if (notifications.length > 60) notifications.length = 60;
@@ -198,12 +218,17 @@
   }
 
   function renderNotifications() {
+    if (!els.bellBadge || !els.bellList) return;
     const unread = notifications.filter((n) => !n.read).length;
     els.bellBadge.textContent = unread;
     els.bellBadge.hidden = unread === 0;
     els.bellList.innerHTML = "";
     if (!notifications.length) {
-      els.bellList.innerHTML = `<p class="empty">No notifications yet.</p>`;
+      els.bellList.innerHTML = `
+        <div class="empty-notif">
+          ${svgIcon("bell", "empty-icon")}
+          <p>No notifications yet</p>
+        </div>`;
       return;
     }
     for (const n of notifications) {
@@ -211,7 +236,7 @@
       item.type = "button";
       item.className = "bell-item" + (n.read ? "" : " unread");
       item.innerHTML =
-        `<span class="bell-icon">${escapeHtml(n.icon || NOTIF_ICON)}</span>` +
+        `<span class="bell-icon">${svgIcon(n.icon || "bell")}</span>` +
         `<span class="bell-body">` +
         `<span class="bell-title">${escapeHtml(n.title)}</span>` +
         `<span class="bell-text">${escapeHtml(n.body || "")}</span>` +
@@ -228,22 +253,21 @@
   }
 
   function notifyTranscriptSent(videoId, recipients, ok) {
-    const title = ok ? "Transcript emailed" : "Transcript email failed";
+    const title = ok ? "Transcript Emailed" : "Transcript Email Failed";
     const list = (recipients || []).join(", ");
-    const body = ok ? `Sent to ${list}. Waiting for the highlight reply for “${videoId}”.`
-                    : `Could not email the transcript for “${videoId}”. Check email settings.`;
+    const body = ok ? `Sent to ${list}. Waiting for highlight picks for “${videoId}”.`
+                    : `Could not email transcript for “${videoId}”. Check email configuration.`;
     toast(title, ok ? "ok" : "error");
-    addNotification(ok ? "sent" : "error", title, body, currentCampaignId);
+    addNotification(ok ? "sent" : "error", title, body, currentCampaignId, "file-text");
     desktopNotify("ClipForge — " + title, body);
   }
 
   function notifyHighlightsReceived(videoId, count) {
-    const title = "Highlights received";
-    const body = `${count} highlight${count === 1 ? "" : "s"} arrived for “${videoId}”. Review and start clipping.`;
+    const title = "Highlights Arrived";
+    const body = `${count} highlight moment${count === 1 ? "" : "s"} generated for “${videoId}”. Ready for review!`;
     toast(title + " — " + videoId, "ok");
-    addNotification("received", title, body, currentCampaignId);
+    addNotification("received", title, body, currentCampaignId, "sparkles");
     desktopNotify("ClipForge — " + title, body);
-    // Live-refresh the campaign so the approval page populates without a reload.
     refreshCampaignData().catch(() => {});
   }
 
@@ -261,28 +285,27 @@
       }
     } catch (e) { /* backend offline; retry on next tick */ }
     eventPolling = false;
-    // keep long-polling continuously
     setTimeout(pollEvents, 400);
   }
 
   const EVENT_UI = {
-    run_started:      { icon: "⏳", label: (d) => `${d.mode || "run"} started`,
-                        body: (d) => `“${d.video || d.video_id || "?"}” is being processed.` },
-    run_ok:           { icon: "✅", label: (d) => `${d.mode || "run"} finished`,
-                        body: (d) => `“${d.video_id || "?"}” completed.` },
-    run_error:        { icon: "❌", label: (d) => `${d.mode || "run"} failed`,
-                        body: (d) => d.error ? String(d.error).slice(-160) : "Check the run log." },
-    run_cancelled:    { icon: "⏹", label: (d) => `${d.mode || "run"} cancelled`,
-                        body: (d) => `“${d.video_id || "?"}” was cancelled.` },
-    export_done:      { icon: "🎬", label: () => "Export finished",
-                        body: (d) => `${d.clip_count || 0} clip(s) for “${d.video_id || "?"}”.` },
-    explore_done:     { icon: "🎨", label: () => "Style exploration finished",
+    run_started:      { icon: "film", label: (d) => `${d.mode || "Task"} Started`,
+                        body: (d) => `“${d.video || d.video_id || "?"}” is processing.` },
+    run_ok:           { icon: "check", label: (d) => `${d.mode || "Task"} Completed`,
+                        body: (d) => `“${d.video_id || "?"}” finished successfully.` },
+    run_error:        { icon: "trash", label: (d) => `${d.mode || "Task"} Failed`,
+                        body: (d) => d.error ? String(d.error).slice(-160) : "Check the run console log." },
+    run_cancelled:    { icon: "close", label: (d) => `${d.mode || "Task"} Cancelled`,
+                        body: (d) => `“${d.video_id || "?"}” was stopped.` },
+    export_done:      { icon: "download", label: () => "Export Finished",
+                        body: (d) => `${d.clip_count || 0} clip(s) rendered for “${d.video_id || "?"}”.` },
+    explore_done:     { icon: "sparkles", label: () => "Style Exploration Complete",
                         body: (d) => d.winner
-                          ? `Winner: ${d.winner}${d.total != null ? ` (${Number(d.total).toFixed(1)})` : ""}`
-                          : "Done." },
-    upload_done:      { icon: "⬆", label: () => "Video uploaded",
+                          ? `Winning look: ${d.winner}${d.total != null ? ` (Score ${Number(d.total).toFixed(1)})` : ""}`
+                          : "Exploration completed." },
+    upload_done:      { icon: "upload", label: () => "Source Video Added",
                         body: (d) => d.name || "" },
-    campaign_created: { icon: "📁", label: () => "Campaign created",
+    campaign_created: { icon: "folder", label: () => "Campaign Bay Created",
                         body: (d) => d.name || d.id || "" },
   };
 
@@ -311,13 +334,13 @@
     }
   }
 
-  // --- transcript modal -------------------------------------------------- //
+  // --- Transcript Modal --------------------------------------------------- //
   let transcriptModalVideoId = null;
 
   function openTranscriptModal(videoId) {
     transcriptModalVideoId = videoId;
     els.transcriptVideoName.textContent = videoId;
-    els.transcriptBody.textContent = "Loading…";
+    els.transcriptBody.textContent = "Loading transcript…";
     els.transcriptModal.hidden = false;
     if (els.transcriptFind) els.transcriptFind.disabled = !!currentRun;
     fetch("/api/transcript/" + encodeURIComponent(videoId) + campQ())
@@ -372,6 +395,11 @@
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return m + ":" + String(s).padStart(2, "0");
+  }
+
+  function durationFmt(start, end) {
+    const d = Math.max(0, Math.round((end || 0) - (start || 0)));
+    return `${fmt(start)} – ${fmt(end)} (${d}s)`;
   }
 
   function escapeHtml(s) {
@@ -436,6 +464,36 @@
     else renderPage();
   }
 
+  function updateBreadcrumbs() {
+    const parsed = parseHash();
+    const isDash = parsed.page === "dashboard";
+    if (els.bcSep1) els.bcSep1.hidden = isDash;
+    if (els.bcCampaign) {
+      els.bcCampaign.hidden = isDash || !currentCampaignId;
+      els.bcCampaign.textContent = campaignName();
+      els.bcCampaign.href = hrefFor("overview");
+    }
+    if (els.bcSep2) els.bcSep2.hidden = isDash || parsed.page === "overview";
+    if (els.bcCurrent) {
+      els.bcCurrent.hidden = isDash || parsed.page === "overview";
+      els.bcCurrent.textContent = parsed.page;
+    }
+  }
+
+  function updateBadges() {
+    const clips = allClips();
+    const candCount = clips.length;
+    if (els.tabReviewBadge) {
+      els.tabReviewBadge.textContent = candCount;
+      els.tabReviewBadge.hidden = candCount === 0;
+    }
+    const expCount = (exportGroups || []).reduce((a, g) => a + ((g.outputs && g.outputs.length) || 0), 0);
+    if (els.tabExportBadge) {
+      els.tabExportBadge.textContent = expCount;
+      els.tabExportBadge.hidden = expCount === 0;
+    }
+  }
+
   function updateNav() {
     const page = currentPage();
     const open = !!currentCampaignId && page !== "dashboard";
@@ -458,6 +516,8 @@
       a.classList.toggle("active", p === page);
       a.href = hrefFor(p);
     });
+    updateBreadcrumbs();
+    updateBadges();
   }
 
   function renderPage() {
@@ -498,6 +558,25 @@
   async function loadCampaigns() {
     const r = await apiGet("/api/campaigns");
     campaigns = r.campaigns || [];
+    updateHeroStats();
+  }
+
+  function updateHeroStats() {
+    if (!els.statTotalCampaigns) return;
+    const totalCamps = campaigns.length;
+    let totalVids = 0;
+    let totalCands = 0;
+    let totalExps = 0;
+    for (const c of campaigns) {
+      const f = c.funnel || {};
+      totalVids += f.sources || 0;
+      totalCands += f.candidates || 0;
+      totalExps += f.exported || 0;
+    }
+    els.statTotalCampaigns.textContent = totalCamps;
+    els.statTotalVideos.textContent = totalVids;
+    els.statTotalCandidates.textContent = totalCands;
+    els.statTotalExports.textContent = totalExps;
   }
 
   async function openCampaign(id, opts) {
@@ -524,6 +603,9 @@
     if (!currentCampaignId) { sources = []; return; }
     const r = await apiGet("/api/campaigns/" + encodeURIComponent(currentCampaignId) + "/sources");
     sources = r.sources || [];
+    if (els.sourcesCounter) {
+      els.sourcesCounter.textContent = `${sources.length} Video${sources.length === 1 ? "" : "s"}`;
+    }
   }
 
   async function loadCandidates() {
@@ -532,22 +614,47 @@
     candidateGroups = r.groups || [];
     dirty = false;
     openPreviews.clear();
+    updateBadges();
   }
 
   async function loadExports() {
     if (!currentCampaignId) { exportGroups = []; return; }
     const r = await apiGet("/api/campaigns/" + encodeURIComponent(currentCampaignId) + "/exports");
     exportGroups = r.groups || [];
+    updateBadges();
   }
 
+  // --- 1. Dashboard Render ------------------------------------------------ //
   function renderDashboard() {
     if (!els.campaignGrid) return;
     els.campaignGrid.innerHTML = "";
-    if (!campaigns.length) {
-      els.campaignGrid.innerHTML = `<div class="empty" style="grid-column:1/-1">No campaigns yet — create one above.</div>`;
+    updateHeroStats();
+
+    const query = (els.campSearchInput ? els.campSearchInput.value : "").trim().toLowerCase();
+    const filtered = query
+      ? campaigns.filter((c) => (c.name || "").toLowerCase().includes(query))
+      : campaigns;
+
+    if (!filtered.length) {
+      if (campaigns.length > 0 && query) {
+        els.campaignGrid.innerHTML = `
+          <div class="empty-card" style="grid-column: 1 / -1;">
+            ${svgIcon("search", "empty-icon-large")}
+            <h3>No matching campaigns</h3>
+            <p>No campaign matches “${escapeHtml(query)}”. Try a different search term.</p>
+          </div>`;
+      } else {
+        els.campaignGrid.innerHTML = `
+          <div class="empty-card" style="grid-column: 1 / -1;">
+            ${svgIcon("film", "empty-icon-large")}
+            <h3>Welcome to ClipForge Studio</h3>
+            <p>Create your first campaign bay above to start transforming long-form videos into high-impact 9:16 viral clips.</p>
+          </div>`;
+      }
       return;
     }
-    for (const c of campaigns) {
+
+    for (const c of filtered) {
       const card = document.createElement("button");
       card.type = "button";
       card.className = "card campaign-card";
@@ -557,19 +664,24 @@
         `<span class="film-frame" aria-hidden="true"><span class="film-bar" style="height:${fill}%"></span></span>` +
         `<span class="campaign-card-body">` +
         `<span class="campaign-card-name">${escapeHtml(c.name)}</span>` +
-        `<span class="campaign-card-meta">${escapeHtml(relTime(c.updated_at))}</span>` +
-        `<span class="campaign-card-clips">${f.sources || 0} videos · ${f.candidates || 0} candidates · ${f.approved || 0} approved · ${f.exported || 0} exported</span>` +
+        `<span class="campaign-card-meta">Updated ${escapeHtml(relTime(c.updated_at))}</span>` +
+        `<span class="campaign-card-clips">${f.sources || 0} sources · ${f.candidates || 0} candidates · ${f.approved || 0} approved · ${f.exported || 0} exported</span>` +
         `</span>`;
       card.addEventListener("click", () => go("overview", c.id));
       els.campaignGrid.appendChild(card);
     }
   }
 
+  if (els.campSearchInput) {
+    els.campSearchInput.addEventListener("input", renderDashboard);
+  }
+
+  // --- 2. Overview & Pipeline Funnel Render -------------------------------- //
   function renderOverview() {
     if (!currentCampaign) return;
     const f = currentCampaign.funnel || {};
     els.campDetailName.textContent = currentCampaign.name;
-    els.campDetailMeta.textContent = relTime(currentCampaign.updated_at);
+    els.campDetailMeta.textContent = "Updated " + relTime(currentCampaign.updated_at);
     renderHighlightToggle();
     renderOverviewRules();
     renderFunnelStrip(f);
@@ -621,19 +733,17 @@
         (btn.dataset.mode === "local") === local);
     });
     els.highlightToggleHint.textContent = local
-      ? "Highlights picked locally by Ollama (" + (state ? state.config.llm_model : "Gemma") + ")."
-      : "Transcript is emailed out; the AI replies with highlight picks you approve on the Review page.";
+      ? "Highlights selected locally using Ollama vision/language models (" + (state ? state.config.llm_model : "Gemma") + ")."
+      : "Transcript is securely dispatched via email; AI replies with curated highlights that populate the Review queue.";
   }
 
   async function deleteCampaign() {
     if (!currentCampaign || !currentCampaignId) return;
     const name = currentCampaign.name;
-    const msg = `Delete campaign "${name}"?\n\n` +
-      "This removes EVERYTHING in it: source videos, transcripts, " +
-      "candidates, approved clips, style template and all exported clips. " +
-      "This cannot be undone.";
+    const msg = `Delete campaign bay "${name}"?\n\n` +
+      "This removes ALL source videos, transcripts, candidates, approved cuts, and exported clips. This action cannot be undone.";
     if (!confirm(msg)) return;
-    if (!confirm(`Final confirmation — permanently delete "${name}" and all its files?`)) return;
+    if (!confirm(`Final Confirmation — Permanently delete "${name}"?`)) return;
     try {
       const r = await fetch("/api/campaigns/" + encodeURIComponent(currentCampaignId),
                             { method: "DELETE" });
@@ -674,7 +784,7 @@
         fd.append("video_id", videoId);
         if (currentCampaignId) fd.append("campaign_id", currentCampaignId);
         try {
-          toast("Uploading highlights…");
+          toast("Uploading highlights JSON…");
           const r = await fetch("/api/highlights/upload", { method: "POST", body: fd });
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || r.status);
@@ -707,11 +817,11 @@
     els.sourceBoard.innerHTML = "";
     if (!sources.length) {
       els.sourceBoard.hidden = true;
-      if (els.uploadDropTitle) els.uploadDropTitle.textContent = "Drop a video to start this campaign";
+      if (els.uploadDropTitle) els.uploadDropTitle.textContent = "Drop raw video here to begin";
       return;
     }
     els.sourceBoard.hidden = false;
-    if (els.uploadDropTitle) els.uploadDropTitle.textContent = "Add another source";
+    if (els.uploadDropTitle) els.uploadDropTitle.textContent = "Add another source video";
     for (const v of sources) {
       els.sourceBoard.appendChild(sourceCardEl(v));
     }
@@ -734,7 +844,7 @@
       `<span class="v-name">${escapeHtml(v.name)}</span>` +
       `<span class="v-size">${mb} MB</span>` +
       `<span class="stage-chip stage-${escapeHtml(stage)}${busy ? " busy" : ""}">${escapeHtml(STAGE_LABELS[stage] || stage)}</span>` +
-      `<span class="v-counts">${v.candidates || 0} cand · ${v.approved || 0} appr</span>` +
+      `<span class="v-counts">${v.candidates || 0} candidates · ${v.approved || 0} approved</span>` +
       `</div>` +
       `<div class="source-stage-rail">${rail}</div>` +
       `<div class="source-card-actions"></div>`;
@@ -744,28 +854,28 @@
     switch (stage) {
       case "uploaded":
       case "transcribed":
-        primaryLabel = "Find highlights";
+        primaryLabel = "Find Highlights";
         primaryAction = () => startRun("analyze", v.id, false);
         break;
       case "analysed":
-        primaryLabel = `Review ${v.candidates || 0} candidates`;
+        primaryLabel = `Review ${v.candidates || 0} Candidates`;
         primaryAction = () => go("review");
         break;
       case "has_approved":
-        primaryLabel = `Export ${v.approved || 0} approved`;
+        primaryLabel = `Export ${v.approved || 0} Approved`;
         primaryAction = () => openExportConfig("export", v.id, false);
         break;
       case "exported":
-        primaryLabel = `View ${v.exported || 0} clips`;
+        primaryLabel = `View ${v.exported || 0} Rendered`;
         primaryAction = () => go("exports");
         break;
       case "awaiting":
-        primaryLabel = "Waiting for highlights";
+        primaryLabel = "Awaiting Highlights…";
         primaryAction = null;
         primaryClass = "btn-ghost";
         break;
       default:
-        primaryLabel = "Find highlights";
+        primaryLabel = "Find Highlights";
         primaryAction = () => startRun("analyze", v.id, false);
         break;
     }
@@ -775,29 +885,28 @@
     primary.disabled = busy || !primaryAction;
     if (primaryAction) primary.addEventListener("click", primaryAction);
     actions.appendChild(primary);
+
     if (stage === "uploaded" && !busy) {
-      // transcript-only path: skip highlight finding entirely; upload JSON later
       const trOnly = document.createElement("button");
       trOnly.className = "btn btn-small btn-ghost";
-      trOnly.textContent = "Transcript only";
-      trOnly.title = "Stop after transcription — no highlight selection, no email. Attach a highlights JSON afterwards.";
+      trOnly.textContent = "Transcript Only";
+      trOnly.title = "Stop after transcription — skip highlight finding.";
       trOnly.addEventListener("click", () => startRun("transcribe", v.id, false, { skip_email: true }));
       actions.appendChild(trOnly);
     }
     if (hasTranscriptStage(stage) && !busy) {
-      // upload path: attach a highlights JSON picked by an external AI
       const upBtn = document.createElement("button");
       upBtn.className = "btn btn-small btn-ghost";
-      upBtn.textContent = "Upload highlights";
-      upBtn.title = "Attach a highlights JSON file (video_id + clips with segment ids)";
+      upBtn.textContent = "Upload JSON";
+      upBtn.title = "Attach an externally generated highlights JSON";
       upBtn.addEventListener("click", () => uploadHighlightsJson(v.id));
       actions.appendChild(upBtn);
     }
     if (canReselect) {
       const reselectBtn = document.createElement("button");
       reselectBtn.className = "btn btn-small btn-ghost";
-      reselectBtn.textContent = "Re-select";
-      reselectBtn.title = "Re-run highlight selection with the current rules doc (keeps the transcript)";
+      reselectBtn.textContent = "Re-analyze";
+      reselectBtn.title = "Re-run highlight selection with current brief rules";
       reselectBtn.addEventListener("click", () => startRun("select", v.id, false, { local: true }));
       actions.appendChild(reselectBtn);
     }
@@ -805,7 +914,7 @@
       const trBtn = document.createElement("button");
       trBtn.className = "btn btn-small btn-ghost";
       trBtn.textContent = "Transcript";
-      trBtn.title = "View and copy the full transcript";
+      trBtn.title = "View and copy transcript text";
       trBtn.addEventListener("click", () => openTranscriptModal(v.id));
       actions.appendChild(trBtn);
     }
@@ -813,16 +922,15 @@
     del.className = "source-del";
     del.title = "Delete source video";
     del.setAttribute("aria-label", "Delete " + v.name);
-    del.textContent = "✕";
+    del.innerHTML = svgIcon("trash");
     del.addEventListener("click", () => deleteVideo(v));
     actions.appendChild(del);
     return card;
   }
 
   async function deleteVideo(v) {
-    if (!confirm(`Delete source video "${v.name}" from this campaign?\n\n` +
-                 `Only the source file is removed — transcripts, candidates ` +
-                 `and already-exported clips are kept.`)) return;
+    if (!confirm(`Delete source video "${v.name}" from this campaign bay?\n\n` +
+                 `Source file will be removed while transcripts and rendered clips remain.`)) return;
     try {
       const r = await fetch("/api/video/" + encodeURIComponent(v.id) + campQ(), { method: "POST" });
       const data = await r.json().catch(() => ({}));
@@ -845,11 +953,12 @@
   function updateReviewHint() {
     if (!els.reviewHint) return;
     els.reviewHint.textContent = dirty
-      ? "Unsaved changes — press Save decisions to keep them."
-      : "Decisions stay unsaved until you press Save decisions.";
+      ? "⚠ Unsaved changes — press Save Decisions to preserve your review edits."
+      : "Decisions stay unsaved until you press Save Decisions.";
     els.reviewHint.classList.toggle("dirty", dirty);
   }
 
+  // --- 3. Review Page Render ---------------------------------------------- //
   function renderReview() {
     els.reviewList.innerHTML = "";
     const clipGroups = candidateGroups.filter((g) => g.clips && g.clips.length);
@@ -888,14 +997,14 @@
     card.className = "card approval-waiting";
     card.innerHTML =
       `<div class="approval-status">` +
-      `<span class="pill pill-await">Awaiting highlights</span>` +
+      `<span class="badge score">Awaiting Highlights</span>` +
       `<span class="approval-meta">Transcript emailed${recipients ? " to " + escapeHtml(recipients) : ""}` +
       `${sentAt ? " · " + escapeHtml(sentAt) : ""}</span>` +
       `</div>` +
-      `<p class="hint">The transcript has been sent. When the AI replies with highlight picks, they'll appear here for approval.</p>` +
+      `<p class="hint">The transcript has been sent to AI. Highlight picks will automatically stream here upon reply.</p>` +
       `<div class="card-actions">` +
-      `<button class="btn btn-small btn-ghost btn-view-transcript">View transcript</button>` +
-      `<button class="btn btn-small btn-ghost btn-check-now">Check inbox now</button>` +
+      `<button class="btn btn-small btn-ghost btn-view-transcript">View Transcript</button>` +
+      `<button class="btn btn-small btn-ghost btn-check-now">Check Inbox Now</button>` +
       `</div>`;
     card.querySelector(".btn-view-transcript").addEventListener("click",
       () => openTranscriptModal(group.source_id));
@@ -906,37 +1015,17 @@
 
   async function checkInboxNow() {
     try {
-      toast("Checking inbox…");
+      toast("Checking highlight inbox…");
       const r = await apiPost("/api/email/check", {});
       if (r.ingested > 0) {
         toast(`Ingested ${r.ingested} highlight repl${r.ingested === 1 ? "y" : "ies"}.`, "ok");
       } else {
-        toast("No new highlight replies yet.");
+        toast("No new highlight replies found.");
       }
       await refreshCampaignData();
     } catch (e) {
       toast("Inbox check failed: " + e.message, "error");
     }
-  }
-
-  async function startClipping(group) {
-    const approved = (group.clips || []).filter((c) => c.status === "approved");
-    if (!approved.length) {
-      toast("Approve at least one highlight first.", "error");
-      return;
-    }
-    try {
-      await apiPost("/api/candidates", {
-        video_id: group.video_id || group.source_id,
-        clips: group.clips,
-        campaign_id: currentCampaignId,
-      });
-      dirty = false;
-    } catch (e) {
-      toast("Could not save approvals: " + e.message, "error");
-      return;
-    }
-    openExportConfig("export", group.source_id, false);
   }
 
   function sourceGroupEl(group, clips, opts) {
@@ -946,13 +1035,13 @@
     head.className = "source-group-head";
     const title = document.createElement("h3");
     title.className = "eyebrow";
-    title.textContent = group.source_name || group.source_id;
+    title.innerHTML = `${svgIcon("film", "eyebrow-icon")} ${escapeHtml(group.source_name || group.source_id)}`;
     head.appendChild(title);
     if (opts && opts.exportBtn) {
       const busy = sourceBusy(group.source_id);
       const btn = document.createElement("button");
       btn.className = "btn btn-small btn-primary";
-      btn.textContent = "Export approved";
+      btn.textContent = "Export Approved";
       btn.disabled = busy;
       btn.addEventListener("click", () => openExportConfig("export", group.source_id, false));
       head.appendChild(btn);
@@ -967,7 +1056,7 @@
 
   function snippetFor(clip) {
     if (clip.snippet) return clip.snippet;
-    return "No transcript available.";
+    return "No transcript segment text available.";
   }
 
   function clipKey(clip) {
@@ -977,26 +1066,33 @@
   function clipCard(clip, i, group, opts) {
     const card = document.createElement("div");
     card.className = "card " + (clip.status || "pending");
+    card.tabIndex = 0;
+
+    const scoreNum = Number(clip.score || 0);
+    const scoreRating = scoreNum >= 0.85 ? "🔥 High Viral Score" : (scoreNum >= 0.70 ? "✨ Good Potential" : "Score");
 
     const head = document.createElement("div");
     head.className = "card-head";
     head.innerHTML =
       `<span class="badge">#${i + 1}</span>` +
-      `<span class="badge score">${Number(clip.score || 0).toFixed(2)}</span>` +
+      `<span class="badge score" title="${scoreRating}">${scoreNum.toFixed(2)} · ${scoreRating}</span>` +
       `<span class="card-reason">${escapeHtml(clip.reason || "")}</span>`;
     card.appendChild(head);
 
     const times = document.createElement("div");
     times.className = "card-times";
-    const rangeLabel = document.createTextNode(`→ ${fmt(clip.start)} – ${fmt(clip.end)}`);
+    const rangeBadge = document.createElement("span");
+    rangeBadge.className = "badge";
+    rangeBadge.textContent = durationFmt(clip.start, clip.end);
+
     const mk = (label, key) => {
       const lab = document.createElement("label");
-      lab.textContent = label + " ";
+      lab.textContent = label + ": ";
       const inp = document.createElement("input");
       inp.type = "number"; inp.step = "0.5"; inp.min = "0"; inp.value = clip[key];
       inp.addEventListener("change", () => {
         clip[key] = parseFloat(inp.value) || 0;
-        rangeLabel.textContent = `→ ${fmt(clip.start)} – ${fmt(clip.end)}`;
+        rangeBadge.textContent = durationFmt(clip.start, clip.end);
         dirty = true; updateReviewHint();
       });
       lab.appendChild(inp);
@@ -1004,7 +1100,7 @@
     };
     times.appendChild(mk("Start (s)", "start"));
     times.appendChild(mk("End (s)", "end"));
-    times.appendChild(rangeLabel);
+    times.appendChild(rangeBadge);
     card.appendChild(times);
 
     const snip = document.createElement("pre");
@@ -1015,14 +1111,31 @@
     const hookRow = document.createElement("div");
     hookRow.className = "hook-row";
     const hookLab = document.createElement("label");
-    hookLab.textContent = "Hook title (burned on top of the clip)";
+    hookLab.textContent = "Hook Caption (Overlaid on Top of 9:16 Cut)";
+    const hookWrap = document.createElement("div");
+    hookWrap.style.display = "flex";
+    hookWrap.style.gap = "8px";
     const hookInp = document.createElement("input");
     hookInp.type = "text";
     hookInp.value = clip.hook || "";
-    hookInp.placeholder = "Leave empty for no hook line";
+    hookInp.placeholder = "Enter engaging hook title…";
     hookInp.addEventListener("change", () => { clip.hook = hookInp.value; dirty = true; updateReviewHint(); });
+
+    const hookCopy = document.createElement("button");
+    hookCopy.type = "button";
+    hookCopy.className = "btn btn-small btn-ghost";
+    hookCopy.innerHTML = `${svgIcon("copy")} Copy`;
+    hookCopy.title = "Copy Hook Title to Clipboard";
+    hookCopy.addEventListener("click", () => {
+      if (hookInp.value) {
+        navigator.clipboard.writeText(hookInp.value).then(() => toast("Hook copied.", "ok"));
+      }
+    });
+
+    hookWrap.appendChild(hookInp);
+    hookWrap.appendChild(hookCopy);
     hookRow.appendChild(hookLab);
-    hookRow.appendChild(hookInp);
+    hookRow.appendChild(hookWrap);
     card.appendChild(hookRow);
 
     if (opts && (opts.actions || opts.preview)) {
@@ -1031,7 +1144,7 @@
       if (opts.actions) {
         const bApprove = document.createElement("button");
         bApprove.className = "btn-approve" + (clip.status === "approved" ? " on" : "");
-        bApprove.textContent = clip.status === "approved" ? "✓ Approved" : "Approve";
+        bApprove.innerHTML = `${svgIcon("check")} ${clip.status === "approved" ? "Approved" : "Approve"}`;
         bApprove.addEventListener("click", () => {
           clip.status = clip.status === "approved" ? "pending" : "approved";
           dirty = true;
@@ -1039,7 +1152,7 @@
         });
         const bReject = document.createElement("button");
         bReject.className = "btn-reject" + (clip.status === "rejected" ? " on" : "");
-        bReject.textContent = clip.status === "rejected" ? "✕ Rejected" : "Reject";
+        bReject.innerHTML = `${svgIcon("close")} ${clip.status === "rejected" ? "Rejected" : "Reject"}`;
         bReject.addEventListener("click", () => {
           clip.status = clip.status === "rejected" ? "pending" : "rejected";
           dirty = true;
@@ -1050,7 +1163,7 @@
       }
       const bPreview = document.createElement("button");
       bPreview.className = "btn-preview";
-      bPreview.textContent = "▶ Preview";
+      bPreview.innerHTML = `${svgIcon("play")} Preview`;
       bPreview.addEventListener("click", () => previewClip(clip, card, bPreview, group.source_id));
       actions.appendChild(bPreview);
       card.appendChild(actions);
@@ -1061,8 +1174,51 @@
       card.appendChild(slot);
       restorePreview(clip, card, bPreview);
     }
+
+    card.addEventListener("mouseenter", () => { hoveredClip = { clip, card, group }; });
+    card.addEventListener("mouseleave", () => { if (hoveredClip && hoveredClip.clip === clip) hoveredClip = null; });
+
     return card;
   }
+
+  // --- Keyboard Navigation in Review -------------------------------------- //
+  document.addEventListener("keydown", (e) => {
+    if (currentPage() !== "review") return;
+    const tag = (document.activeElement && document.activeElement.tagName) || "";
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+    if (e.key === "s" || e.key === "S") {
+      if (e.ctrlKey || e.metaKey || true) {
+        e.preventDefault();
+        if (els.btnSaveReview) els.btnSaveReview.click();
+      }
+    } else if (e.key === "a" || e.key === "A") {
+      e.preventDefault();
+      if (hoveredClip) {
+        hoveredClip.clip.status = hoveredClip.clip.status === "approved" ? "pending" : "approved";
+        dirty = true;
+        renderReview();
+      } else {
+        const first = allClips().find((c) => c.status !== "approved");
+        if (first) {
+          first.status = "approved";
+          dirty = true;
+          renderReview();
+        }
+      }
+    } else if (e.key === "r" || e.key === "R") {
+      e.preventDefault();
+      if (hoveredClip) {
+        hoveredClip.clip.status = hoveredClip.clip.status === "rejected" ? "pending" : "rejected";
+        dirty = true;
+        renderReview();
+      }
+    } else if (e.key === " " && hoveredClip) {
+      e.preventDefault();
+      const prevBtn = hoveredClip.card.querySelector(".btn-preview");
+      if (prevBtn) prevBtn.click();
+    }
+  });
 
   function restorePreview(clip, card, button) {
     const slot = card.querySelector(".preview-slot");
@@ -1072,7 +1228,7 @@
     vid.controls = true; vid.preload = "metadata"; vid.src = url;
     slot.appendChild(vid);
     slot.hidden = false;
-    button.textContent = "■ Hide preview";
+    button.innerHTML = `${svgIcon("close")} Hide Preview`;
   }
 
   async function previewClip(clip, card, button, videoId) {
@@ -1083,12 +1239,12 @@
       openPreviews.delete(clipKey(clip));
       const vid = slot.querySelector("video");
       if (vid) vid.pause();
-      button.textContent = "▶ Preview";
+      button.innerHTML = `${svgIcon("play")} Preview`;
       slot.innerHTML = "";
       return;
     }
     button.disabled = true;
-    button.textContent = "Cutting preview…";
+    button.innerHTML = `${svgIcon("film")} Generating Preview…`;
     try {
       const res = await apiPost("/api/preview", {
         video: videoId, start: clip.start, end: clip.end,
@@ -1101,20 +1257,18 @@
       slot.appendChild(vid);
       slot.hidden = false;
       vid.play().catch(() => {});
-      button.textContent = "■ Hide preview";
+      button.innerHTML = `${svgIcon("close")} Hide Preview`;
     } catch (e) {
       toast("Preview failed: " + e.message, "error");
-      button.textContent = "▶ Preview";
+      button.innerHTML = `${svgIcon("play")} Preview`;
     } finally {
       button.disabled = false;
     }
   }
 
+  // --- 4. Exports & Style Explorer Render --------------------------------- //
   function renderExports() {
     els.outputList.innerHTML = "";
-    // Sources with approved clips but no exports yet — show an actionable
-    // "Export approved" row at the top so the Exports page is where you go
-    // to render, not just a gallery of finished clips.
     const exportedIds = new Set(exportGroups.filter((g) => g.outputs && g.outputs.length)
       .map((g) => g.source_id));
     const ready = candidateGroups.filter((g) => {
@@ -1126,7 +1280,7 @@
       readyWrap.className = "source-group export-ready-group";
       const head = document.createElement("div");
       head.className = "source-group-head";
-      head.innerHTML = `<h3 class="eyebrow">Ready to export</h3>`;
+      head.innerHTML = `<h3 class="eyebrow">${svgIcon("sparkles", "eyebrow-icon")} Approved Cuts Ready for Rendering</h3>`;
       readyWrap.appendChild(head);
       const grid = document.createElement("div");
       grid.className = "cards export-ready-cards";
@@ -1138,11 +1292,11 @@
         card.innerHTML =
           `<div class="export-ready-meta">` +
           `<span class="output-name" title="${escapeHtml(g.source_name || g.source_id)}">${escapeHtml(g.source_name || g.source_id)}</span>` +
-          `<span class="explore-score">${approved} approved</span>` +
+          `<span class="explore-score">${approved} Approved Cut${approved === 1 ? "" : "s"}</span>` +
           `</div>`;
         const btn = document.createElement("button");
         btn.className = "btn btn-small btn-primary";
-        btn.textContent = hasOut ? "Re-export approved" : "Export approved";
+        btn.innerHTML = `${svgIcon("download")} ${hasOut ? "Re-Render Approved" : "Render Approved"}`;
         btn.disabled = !!currentRun || sourceBusy(g.source_id);
         btn.addEventListener("click", () => openExportConfig("export", g.source_id, false));
         card.appendChild(btn);
@@ -1154,17 +1308,22 @@
 
     const groups = (exportGroups || []).filter((g) => g.outputs && g.outputs.length);
     const n = groups.reduce((a, g) => a + g.outputs.length, 0);
-    els.outputCount.textContent = n ? `(${n})` : "";
+    els.outputCount.textContent = n ? `(${n} rendered)` : "";
     if (!groups.length) {
       if (!ready.length) {
-        els.outputList.innerHTML += `<div class="empty">Nothing exported yet. Approve clips on the Review page, then export here.</div>`;
+        els.outputList.innerHTML += `
+          <div class="empty-card">
+            ${svgIcon("download", "empty-icon-large")}
+            <h3>No Rendered Clips Yet</h3>
+            <p>Approve candidate clips in the Review queue, then click Render Approved to generate vertical 9:16 clips.</p>
+          </div>`;
       }
       return;
     }
     for (const g of groups) {
       const wrap = document.createElement("div");
       wrap.className = "source-group";
-      wrap.innerHTML = `<div class="source-group-head"><h3 class="eyebrow">${escapeHtml(g.source_name || g.source_id)}</h3></div>`;
+      wrap.innerHTML = `<div class="source-group-head"><h3 class="eyebrow">${svgIcon("film", "eyebrow-icon")} ${escapeHtml(g.source_name || g.source_id)}</h3></div>`;
       const grid = document.createElement("div");
       grid.className = "cards output-cards";
       for (const o of g.outputs) {
@@ -1174,7 +1333,7 @@
           `<video controls preload="none" src="${o.url}"></video>` +
           `<div class="output-meta">` +
           `<span class="output-name" title="${escapeHtml(o.name)}">${escapeHtml(o.name)}</span>` +
-          `<a href="${o.url}" download>Download</a>` +
+          `<a class="btn btn-small btn-ghost" href="${o.url}" download>${svgIcon("download")} Download</a>` +
           `</div>`;
         grid.appendChild(card);
       }
@@ -1208,7 +1367,7 @@
     } catch (e) { /* no exploration yet */ }
     if (!report || !(report.variants || []).length) {
       els.exploreResults.innerHTML =
-        `<p class="hint">No exploration yet for this video.</p>`;
+        `<p class="hint">No style exploration generated yet for this video.</p>`;
       return;
     }
     const winner = report.winner;
@@ -1220,17 +1379,17 @@
         `<div class="card explore-card${isWin ? " explore-winner" : ""}">` +
         (v.preview_url
           ? `<video controls preload="none" muted src="${v.preview_url}"></video>`
-          : `<div class="empty">no preview</div>`) +
+          : `<div class="empty">No Preview Available</div>`) +
         `<div class="explore-meta">` +
         `<span class="explore-name" title="${escapeHtml(v.summary)}">${escapeHtml(v.name)}</span>` +
-        `<span class="explore-score">score ${total}</span>` +
+        `<span class="explore-score">AI Score: ${total}</span>` +
         `<p class="explore-verdict">${escapeHtml(v.verdict || "")}</p>` +
         `</div></div>`;
     }
     html += `</div>`;
     html += `<div class="explore-foot">` +
-      `<p class="hint">Winner: <b>${escapeHtml(winner || "none")}</b> — re-export to apply it to all approved clips.</p>` +
-      `<button class="btn btn-primary btn-save-style" ${winner && report.winner_template ? "" : "disabled"}>Save as campaign style</button>` +
+      `<p class="hint">Winning Style: <b>${escapeHtml(winner || "None")}</b> — Applying it will use this aesthetic across all exported clips.</p>` +
+      `<button class="btn btn-primary btn-save-style" ${winner && report.winner_template ? "" : "disabled"}>${svgIcon("check")} Save as Campaign Style</button>` +
       `</div>`;
     els.exploreResults.innerHTML = html;
     const saveBtn = els.exploreResults.querySelector(".btn-save-style");
@@ -1239,7 +1398,7 @@
         try {
           await apiPost("/api/exploration/" + encodeURIComponent(videoId) +
                         "/save-to-campaign" + campQ(), {});
-          toast("Winner saved as campaign style. Next export uses it.", "ok");
+          toast("Winner saved as default campaign look.", "ok");
           await refreshCampaignData();
         } catch (e) {
           toast("Save failed: " + e.message, "error");
@@ -1248,12 +1407,12 @@
     }
   }
 
-  // --- Pre-generation config: template + edit instructions (every export) - //
+  // --- Export Config Modal ------------------------------------------------ //
   let exportConfig = null;
 
   function openExportConfig(mode, videoId, auto) {
-    if (!videoId) { toast("Pick a source first.", "error"); return; }
-    if (currentRun) { toast("A run is already in progress.", "error"); return; }
+    if (!videoId) { toast("Select a source video first.", "error"); return; }
+    if (currentRun) { toast("A task is already running in background.", "error"); return; }
     exportConfig = { mode, videoId, auto: !!auto };
     const tpls = (state && state.templates) || [];
     const settings = campaignSettings();
@@ -1271,9 +1430,9 @@
     els.exportConfigVideo.textContent = videoId;
     els.exportConfigInstructions.value = settings.edit_instructions || "";
     els.exportConfigHint.textContent =
-      "Instructions are saved to the campaign and logged at export time." +
+      "Directives are saved to the campaign and logged during export." +
       (winnerHint && mode !== "explore-style"
-        ? " A Style Explorer winner exists for this video — leaving the template on its default will re-export with it."
+        ? " A Style Explorer winning look exists for this video."
         : "");
     els.exportConfigModal.hidden = false;
   }
@@ -1291,17 +1450,17 @@
     if (instructions !== (campaignSettings().edit_instructions || "")) {
       try {
         await saveCampaignSettings({ edit_instructions: instructions });
-      } catch (e) { /* settings save is best-effort; the run still starts */ }
+      } catch (e) { /* best-effort */ }
     }
     closeExportConfig();
     startRun(cfg.mode, cfg.videoId, cfg.auto, { template });
   }
 
   async function startRun(mode, videoId, auto, extra) {
-    if (!currentCampaignId) { toast("Open a campaign first.", "error"); go("dashboard"); return; }
-    if (!videoId) { toast("Pick a source first.", "error"); go("overview"); return; }
-    if (currentRun) { toast("A run is already in progress.", "error"); return; }
-    if (dirty && !confirm("You have unsaved review decisions. A new run may overwrite them. Continue?")) return;
+    if (!currentCampaignId) { toast("Open a campaign bay first.", "error"); go("dashboard"); return; }
+    if (!videoId) { toast("Select a source video first.", "error"); go("overview"); return; }
+    if (currentRun) { toast("A pipeline task is already active.", "error"); return; }
+    if (dirty && !confirm("You have unsaved review decisions. Starting a new run may overwrite them. Continue?")) return;
 
     const settings = campaignSettings();
     if (mode === "export" || mode === "pipeline") {
@@ -1311,7 +1470,7 @@
           volume: settings.music_volume,
           track: settings.music_track || "",
         });
-      } catch (e) { /* template music is best-effort */ }
+      } catch (e) { /* best effort */ }
     }
     const body = Object.assign({
       mode, video: videoId,
@@ -1345,10 +1504,8 @@
             }
           }
           else if (mode === "transcribe") {
-            // transcript-only run: stay on overview, card now offers
-            // "Find highlights" + "Upload highlights" (external JSON)
             go("overview");
-            toast("Transcript ready — find highlights or upload a highlights JSON.", "ok");
+            toast("Transcript ready — find highlights or attach JSON.", "ok");
           }
           else if (mode === "export" || mode === "pipeline") go("exports");
           else if (mode === "explore-style") {
@@ -1359,7 +1516,7 @@
         }
       });
     } catch (e) {
-      toast("Failed to start: " + e.message, "error");
+      toast("Failed to start task: " + e.message, "error");
     }
   }
 
@@ -1381,7 +1538,7 @@
       if (r.status === 404) {
         currentRun = null; runningVideoId = null; pollTimer = null; pollFailures = 0;
         setRunbar(false);
-        toast("Run lost - the backend restarted. Start the run again.", "error");
+        toast("Run session ended.", "error");
         return;
       }
       if (!r.ok) throw new Error((await r.text()) || r.status);
@@ -1398,8 +1555,8 @@
         runningVideoId = null;
         pollTimer = null;
         setRunbar(false);
-        if (run.status === "ok") toast("Done.", "ok");
-        else if (run.status === "error") toast("Run failed: " + (run.error || "see log"), "error");
+        if (run.status === "ok") toast("Completed successfully.", "ok");
+        else if (run.status === "error") toast("Run error: " + (run.error || "see logs"), "error");
         if (onDone) await onDone(run.status);
         return;
       }
@@ -1410,7 +1567,7 @@
         currentRun = null;
         runningVideoId = null;
         setRunbar(false);
-        toast("Lost connection to the run.", "error");
+        toast("Connection to task lost.", "error");
         return;
       }
       pollTimer = setTimeout(poll, 2000, onDone);
@@ -1481,7 +1638,10 @@
 
   async function loadState() {
     state = await apiGet("/api/state" + campQ());
-    els.modelChip.textContent = state.config.llm_model + " · " + state.config.whisper_model;
+    if (els.modelChip) {
+      const textEl = els.modelChip.querySelector(".engine-text") || els.modelChip;
+      textEl.textContent = state.config.llm_model + " · " + state.config.whisper_model;
+    }
     renderStyleVideoSelect();
     renderTemplates();
     renderTelegramStatus();
@@ -1493,9 +1653,9 @@
     if (!tg || !tg.enabled) {
       els.telegramStatus.textContent = "Telegram: disabled (telegram.enabled=false in config.json).";
     } else if (tg.configured) {
-      els.telegramStatus.textContent = "Telegram: configured — pipeline events notify your chat.";
+      els.telegramStatus.textContent = "Telegram: configured — pipeline alerts notify your chat.";
     } else {
-      els.telegramStatus.textContent = "Telegram: not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env (python main.py telegram-setup).";
+      els.telegramStatus.textContent = "Telegram: not configured — set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env.";
     }
   }
 
@@ -1504,7 +1664,7 @@
     const vids = (state && state.videos) || [];
     els.styleVideoSelect.innerHTML = vids.length
       ? vids.map((v) => `<option value="${escapeHtml(v.id)}">${escapeHtml(v.name)}</option>`).join("")
-      : `<option value="">No videos yet</option>`;
+      : `<option value="">No videos available</option>`;
   }
 
   function applyCampaignSettings() {
@@ -1547,7 +1707,7 @@
           volume: settings.music_volume,
           track: settings.music_track,
         });
-      } catch (e) { /* template music is best-effort */ }
+      } catch (e) { /* best effort */ }
     } catch (e) {
       toast("Could not save settings: " + e.message, "error");
     }
@@ -1567,7 +1727,7 @@
       els.btnAnalyzeStyle.disabled = !hasFrames;
       els.styleState.textContent = hasFrames
         ? `${set.frames} frame(s) extracted (${set.mode || "uniform"} mode).`
-        : "No frames yet — extract them first.";
+        : "No frames extracted yet.";
       renderStyleSheets(set);
       if (set && set.has_report) {
         await loadStyleReport(id);
@@ -1578,7 +1738,7 @@
   function renderStyleSheets(set) {
     els.styleSheets.innerHTML = "";
     if (!set || !set.sheets || !set.sheets.length) {
-      els.styleSheets.innerHTML = `<div class="empty" style="grid-column:1/-1">Extract frames with a contact sheet to preview them here.</div>`;
+      els.styleSheets.innerHTML = `<div class="empty" style="grid-column:1/-1">Extract frames with a contact sheet to view layout breakdown.</div>`;
       return;
     }
     for (const sheet of set.sheets) {
@@ -1587,7 +1747,7 @@
       const q = campQ();
       const join = q ? "&" : "?";
       card.innerHTML =
-        `<img src="/api/frames/${encodeURIComponent(set.stem)}/media${q}${join}file=${encodeURIComponent(sheet)}" alt="contact sheet">`;
+        `<img src="/api/frames/${encodeURIComponent(set.stem)}/media${q}${join}file=${encodeURIComponent(sheet)}" alt="Contact sheet preview">`;
       els.styleSheets.appendChild(card);
     }
   }
@@ -1598,19 +1758,19 @@
       const rep = r.report || {};
       const row = (label, val) => `<div class="style-row"><span>${label}</span><b>${val || "—"}</b></div>`;
       const saved = r.template
-        ? `<p class="hint ok-note">✓ Draft template saved to this campaign.</p>`
+        ? `<p class="hint ok-note">✓ Draft template saved to campaign.</p>`
         : "";
       els.styleReport.innerHTML =
         `<p class="hint">Analyzed ${rep.frames_analyzed || 0} frames of <b>${escapeHtml(rep.stem || stem)}</b>.</p>` +
         row("Layout", rep.layout) +
-        row("Band fill", rep.band_fill_median ? Math.round(rep.band_fill_median * 100) + "%" : null) +
-        row("Hook color", (rep.hook || {}).median_hex) +
-        row("Caption color", (rep.captions || {}).median_hex) +
-        row("Keyword color", (rep.captions || {}).keyword_hex) +
-        row("CTA color", (rep.cta || {}).median_hex) +
+        row("Band Fill", rep.band_fill_median ? Math.round(rep.band_fill_median * 100) + "%" : null) +
+        row("Hook Color", (rep.hook || {}).median_hex) +
+        row("Caption Color", (rep.captions || {}).median_hex) +
+        row("Keyword Color", (rep.captions || {}).keyword_hex) +
+        row("CTA Color", (rep.cta || {}).median_hex) +
         saved;
     } catch (e) {
-      els.styleReport.innerHTML = `<p class="hint">No analysis yet.</p>`;
+      els.styleReport.innerHTML = `<p class="hint">No analysis generated yet.</p>`;
     }
   }
 
@@ -1639,12 +1799,11 @@
   function goldenTemplates() {
     const tpls = (state && state.templates) || [];
     const gold = tpls.filter((t) => t.golden);
-    return gold.length ? gold : tpls.slice(0, 2);
+    return gold.length ? gold : tpls.slice(0, 4);
   }
 
   function renderSettingsExport() {
     if (!els.settingsExportSelect) return;
-    // sources with approved clips, ready to export
     const ready = candidateGroups.filter((g) =>
       (g.clips || []).some((c) => c.status === "approved"));
     const prev = els.settingsExportSelect.value;
@@ -1662,7 +1821,7 @@
     els.btnSettingsExport.disabled = !canExport;
     els.settingsExportHint.textContent = !ready.length
       ? "Nothing approved yet — approve clips on the Review page first."
-      : `Ready to render ${ready.length} source${ready.length === 1 ? "" : "s"} with approved clips.`;
+      : `Ready to render ${ready.length} source video${ready.length === 1 ? "" : "s"} with approved clips.`;
   }
 
   function renderTemplates() {
@@ -1686,7 +1845,7 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "golden-style" + (t.name === els.templateSelect.value ? " on" : "");
-        btn.textContent = t.label || t.name;
+        btn.innerHTML = `${svgIcon("layers")} <span>${escapeHtml(t.label || t.name)}</span>`;
         btn.addEventListener("click", () => {
           els.templateSelect.value = t.name;
           if (els.goldenStyles) {
@@ -1710,10 +1869,10 @@
   }
 
   const RULE_SECTIONS = [
-    { key: "content_criteria", label: "Content criteria", kind: "list", cls: "" },
-    { key: "brand_safety", label: "Brand safety", kind: "list", cls: "rules-sec-safety" },
-    { key: "editing_style", label: "Editing style", kind: "list", cls: "" },
-    { key: "submission_requirements", label: "Submission requirements", kind: "text", cls: "rules-sec-submit" },
+    { key: "content_criteria", label: "Content Criteria", kind: "list", cls: "" },
+    { key: "brand_safety", label: "Brand Safety", kind: "list", cls: "rules-sec-safety" },
+    { key: "editing_style", label: "Editing Style", kind: "list", cls: "" },
+    { key: "submission_requirements", label: "Submission Requirements", kind: "text", cls: "rules-sec-submit" },
   ];
 
   function emptyRules() {
@@ -1831,11 +1990,11 @@
         const text = (rules.submission_requirements || "").trim();
         const p = document.createElement("p");
         p.className = "rules-submit-text";
-        p.textContent = text || "No submission obligations found in the brief.";
+        p.textContent = text || "No submission obligations specified.";
         view.appendChild(p);
         const toggle = document.createElement("label");
         toggle.className = "toggle-row";
-        toggle.innerHTML = `<input type="checkbox"${rules.submission_done ? " checked" : ""}><span>Marked submitted</span>`;
+        toggle.innerHTML = `<input type="checkbox"${rules.submission_done ? " checked" : ""}><span>Marked Submitted</span>`;
         toggle.querySelector("input").addEventListener("change", async (ev) => {
           try {
             const r = await apiPatch(
@@ -1891,38 +2050,46 @@
     return wrap;
   }
 
-  els.styleVideoSelect.addEventListener("change", refreshStyleState);
-  els.btnExtractFrames.addEventListener("click", () => {
-    const id = styleVideoId();
-    if (!id) { toast("Pick a reference video first.", "error"); return; }
-    startStyleRun("frames", id);
-  });
-  els.btnAnalyzeStyle.addEventListener("click", () => {
-    const id = styleVideoId();
-    if (!id) { toast("Pick a reference video first.", "error"); return; }
-    startStyleRun("style", id);
-  });
+  // --- Event Bindings ----------------------------------------------------- //
+  if (els.styleVideoSelect) els.styleVideoSelect.addEventListener("change", refreshStyleState);
+  if (els.btnExtractFrames) {
+    els.btnExtractFrames.addEventListener("click", () => {
+      const id = styleVideoId();
+      if (!id) { toast("Select a reference video first.", "error"); return; }
+      startStyleRun("frames", id);
+    });
+  }
+  if (els.btnAnalyzeStyle) {
+    els.btnAnalyzeStyle.addEventListener("click", () => {
+      const id = styleVideoId();
+      if (!id) { toast("Select a reference video first.", "error"); return; }
+      startStyleRun("style", id);
+    });
+  }
 
-  els.templateSelect.addEventListener("change", () => {
-    updateTemplateDesc();
-    saveCampaignSettings();
-  });
+  if (els.templateSelect) {
+    els.templateSelect.addEventListener("change", () => {
+      updateTemplateDesc();
+      saveCampaignSettings();
+    });
+  }
 
   if (els.highlightToggle) {
     els.highlightToggle.querySelectorAll(".seg").forEach((btn) => {
       btn.addEventListener("click", async () => {
         const isLocal = btn.dataset.mode === "local";
-        if (els.localHighlights) els.localHighlights.checked = isLocal;
         await saveCampaignSettings({ local_highlights: isLocal });
         renderHighlightToggle();
       });
     });
   }
+
   if (els.btnDeleteCampaign) {
     els.btnDeleteCampaign.addEventListener("click", deleteCampaign);
   }
-  els.minScore.addEventListener("change", scheduleSettingsSave);
-  els.maxClips.addEventListener("change", scheduleSettingsSave);
+
+  if (els.minScore) els.minScore.addEventListener("change", scheduleSettingsSave);
+  if (els.maxClips) els.maxClips.addEventListener("change", scheduleSettingsSave);
   if (els.styleBrief) {
     els.styleBrief.addEventListener("change", scheduleSettingsSave);
     els.styleBrief.addEventListener("blur", scheduleSettingsSave);
@@ -1962,115 +2129,130 @@
     els.editInstructions.addEventListener("blur", scheduleSettingsSave);
   }
 
-  els.btnCancel.addEventListener("click", async () => {
-    if (!currentRun) return;
-    try {
-      await fetch("/api/run/" + currentRun + "/cancel", { method: "POST" });
-      toast("Cancelling…");
-    } catch (e) {
-      toast("Couldn't reach the backend to cancel.", "error");
-    }
-  });
-
-  els.logToggle.addEventListener("click", () => {
-    els.logConsole.hidden = !els.logConsole.hidden;
-    els.logToggle.textContent = els.logConsole.hidden ? "Log" : "Hide log";
-  });
-
-  els.btnApproveAll.addEventListener("click", () => {
-    for (const c of allClips()) c.status = "approved";
-    dirty = true;
-    renderReview();
-  });
-
-  els.btnSaveReview.addEventListener("click", async () => {
-    const groups = candidateGroups.filter((g) => g.clips && g.clips.length);
-    if (!groups.length) return;
-    try {
-      for (const g of groups) {
-        await apiPost("/api/candidates", {
-          video_id: g.video_id || g.source_id,
-          clips: g.clips,
-          campaign_id: currentCampaignId,
-        });
+  if (els.btnCancel) {
+    els.btnCancel.addEventListener("click", async () => {
+      if (!currentRun) return;
+      try {
+        await fetch("/api/run/" + currentRun + "/cancel", { method: "POST" });
+        toast("Cancelling task…");
+      } catch (e) {
+        toast("Couldn't reach backend to cancel.", "error");
       }
-      dirty = false;
-      updateReviewHint();
-      toast("Decisions saved.", "ok");
-      await refreshCampaignData();
-      // Seamless flow: review -> settings (pick style) -> export
-      go("settings");
-    } catch (e) {
-      toast("Save failed: " + e.message, "error");
-    }
-  });
-
-  for (const el of [els.musicEnabled, els.musicVolume, els.musicTrack]) {
-    el.addEventListener("change", () => saveCampaignSettings());
+    });
   }
 
-  els.musicInput.addEventListener("change", async () => {
-    const file = els.musicInput.files[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("file", file);
-    try {
-      const r = await fetch("/api/music/upload", { method: "POST", body: fd });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.error || r.status);
-      toast("Added " + data.name + ".", "ok");
-      await loadMusic();
-    } catch (e) {
-      toast("Upload failed: " + e.message, "error");
-    } finally {
-      els.musicInput.value = "";
-    }
-  });
+  if (els.logToggle) {
+    els.logToggle.addEventListener("click", () => {
+      els.logConsole.hidden = !els.logConsole.hidden;
+      els.logToggle.innerHTML = `${svgIcon("terminal")} <span>${els.logConsole.hidden ? "Logs" : "Hide Logs"}</span>`;
+    });
+  }
 
-  els.btnOpenFolder.addEventListener("click", async () => {
-    const dir = state ? state.config.output_dir : "";
-    try {
-      await fetch("/api/open-folder" + campQ() + (campQ() ? "&" : "?") + "dir=output", { method: "POST" });
-    } catch (e) {
-      toast("Output folder: " + dir);
-      if (navigator.clipboard) navigator.clipboard.writeText(dir).catch(() => {});
-    }
-  });
+  if (els.btnApproveAll) {
+    els.btnApproveAll.addEventListener("click", () => {
+      for (const c of allClips()) c.status = "approved";
+      dirty = true;
+      renderReview();
+    });
+  }
 
-  els.fileInput.addEventListener("change", async () => {
-    const file = els.fileInput.files[0];
-    if (!file) return;
-    els.uploadProgress.hidden = false;
-    els.uploadFill.style.width = "0%";
-    els.uploadPct.textContent = "0%";
-    try {
-      const res = await uploadFile(file);
-      els.uploadFill.style.width = "100%";
-      els.uploadPct.textContent = "100%";
-      await loadState();
-      await refreshCampaignData();
-      toast("Added " + res.name + ".", "ok");
-    } catch (e) {
-      toast("Upload failed: " + e.message, "error");
-    } finally {
-      els.fileInput.value = "";
-      setTimeout(() => { els.uploadProgress.hidden = true; }, 1200);
-    }
-  });
+  if (els.btnSaveReview) {
+    els.btnSaveReview.addEventListener("click", async () => {
+      const groups = candidateGroups.filter((g) => g.clips && g.clips.length);
+      if (!groups.length) return;
+      try {
+        for (const g of groups) {
+          await apiPost("/api/candidates", {
+            video_id: g.video_id || g.source_id,
+            clips: g.clips,
+            campaign_id: currentCampaignId,
+          });
+        }
+        dirty = false;
+        updateReviewHint();
+        toast("Review decisions saved.", "ok");
+        await refreshCampaignData();
+        go("settings");
+      } catch (e) {
+        toast("Save failed: " + e.message, "error");
+      }
+    });
+  }
 
-  els.campBriefInput.addEventListener("change", () => {
-    const file = els.campBriefInput.files[0];
-    els.briefAttach.classList.toggle("has", !!file);
-    els.briefAttachLabel.textContent = file ? file.name : "＋ Brief";
-    els.briefAttach.title = file
-      ? file.name + " — attached to the new campaign"
-      : "Attach the creator brief (pdf · docx · txt · md)";
-  });
+  if (els.musicEnabled) els.musicEnabled.addEventListener("change", () => saveCampaignSettings());
+  if (els.musicVolume) els.musicVolume.addEventListener("change", () => saveCampaignSettings());
+  if (els.musicTrack) els.musicTrack.addEventListener("change", () => saveCampaignSettings());
+
+  if (els.musicInput) {
+    els.musicInput.addEventListener("change", async () => {
+      const file = els.musicInput.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append("file", file);
+      try {
+        const r = await fetch("/api/music/upload", { method: "POST", body: fd });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || r.status);
+        toast("Added track " + data.name + ".", "ok");
+        await loadMusic();
+      } catch (e) {
+        toast("Upload failed: " + e.message, "error");
+      } finally {
+        els.musicInput.value = "";
+      }
+    });
+  }
+
+  if (els.btnOpenFolder) {
+    els.btnOpenFolder.addEventListener("click", async () => {
+      const dir = state ? state.config.output_dir : "";
+      try {
+        await fetch("/api/open-folder" + campQ() + (campQ() ? "&" : "?") + "dir=output", { method: "POST" });
+      } catch (e) {
+        toast("Output folder: " + dir);
+        if (navigator.clipboard) navigator.clipboard.writeText(dir).catch(() => {});
+      }
+    });
+  }
+
+  if (els.fileInput) {
+    els.fileInput.addEventListener("change", async () => {
+      const file = els.fileInput.files[0];
+      if (!file) return;
+      els.uploadProgress.hidden = false;
+      els.uploadFill.style.width = "0%";
+      els.uploadPct.textContent = "0%";
+      try {
+        const res = await uploadFile(file);
+        els.uploadFill.style.width = "100%";
+        els.uploadPct.textContent = "100%";
+        await loadState();
+        await refreshCampaignData();
+        toast("Uploaded " + res.name + ".", "ok");
+      } catch (e) {
+        toast("Upload failed: " + e.message, "error");
+      } finally {
+        els.fileInput.value = "";
+        setTimeout(() => { els.uploadProgress.hidden = true; }, 1200);
+      }
+    });
+  }
+
+  if (els.campBriefInput) {
+    els.campBriefInput.addEventListener("change", () => {
+      const file = els.campBriefInput.files[0];
+      els.briefAttach.classList.toggle("has", !!file);
+      els.briefAttachLabel.textContent = file ? file.name : "Attach Brief";
+      els.briefAttach.title = file
+        ? file.name + " — Attached to new campaign"
+        : "Attach creator brief (pdf, docx, txt, md)";
+    });
+  }
 
   async function uploadBriefFile(campaignId, file) {
     const fd = new FormData();
     fd.append("file", file);
-    toast("Condensing brief…");
+    toast("Parsing and condensing brief…");
     const r = await fetch("/api/campaigns/" + encodeURIComponent(campaignId) + "/rules", {
       method: "POST", body: fd,
     });
@@ -2079,44 +2261,50 @@
     return data;
   }
 
-  els.newCampaignForm.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    const name = els.campName.value.trim();
-    if (!name) return;
-    const briefFile = els.campBriefInput.files[0];
-    try {
-      const camp = await apiPost("/api/campaigns", { name });
-      if (briefFile) {
-        try {
-          await uploadBriefFile(camp.id, briefFile);
-        } catch (e) {
-          toast("Brief could not be attached: " + e.message, "error");
+  if (els.newCampaignForm) {
+    els.newCampaignForm.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const name = els.campName.value.trim();
+      if (!name) return;
+      const briefFile = els.campBriefInput.files[0];
+      try {
+        const camp = await apiPost("/api/campaigns", { name });
+        if (briefFile) {
+          try {
+            await uploadBriefFile(camp.id, briefFile);
+          } catch (e) {
+            toast("Brief attachment error: " + e.message, "error");
+          }
         }
+        els.newCampaignForm.reset();
+        els.briefAttach.classList.remove("has");
+        els.briefAttachLabel.textContent = "Attach Brief";
+        await loadCampaigns();
+        toast("Campaign bay created.", "ok");
+        go("overview", camp.id);
+      } catch (e) {
+        toast("Could not create campaign: " + e.message, "error");
       }
-      els.newCampaignForm.reset();
-      els.briefAttach.classList.remove("has");
-      els.briefAttachLabel.textContent = "＋ Brief";
-      await loadCampaigns();
-      toast("Campaign created.", "ok");
-      go("overview", camp.id);
-    } catch (e) {
-      toast("Could not create campaign: " + e.message, "error");
-    }
-  });
+    });
+  }
 
-  els.bellBtn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    els.bellDropdown.hidden = !els.bellDropdown.hidden;
-  });
+  if (els.bellBtn) {
+    els.bellBtn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      els.bellDropdown.hidden = !els.bellDropdown.hidden;
+    });
+  }
   document.addEventListener("click", (ev) => {
-    if (!els.bellDropdown.hidden && !els.bellDropdown.contains(ev.target)) {
+    if (els.bellDropdown && !els.bellDropdown.hidden && !els.bellDropdown.contains(ev.target)) {
       els.bellDropdown.hidden = true;
     }
   });
-  els.bellClear.addEventListener("click", () => {
-    notifications = [];
-    renderNotifications();
-  });
+  if (els.bellClear) {
+    els.bellClear.addEventListener("click", () => {
+      notifications = [];
+      renderNotifications();
+    });
+  }
   if (els.transcriptFind) {
     els.transcriptFind.addEventListener("click", () => {
       if (!transcriptModalVideoId) return;
@@ -2128,13 +2316,13 @@
   if (els.transcriptCopy) {
     els.transcriptCopy.addEventListener("click", async () => {
       const body = els.transcriptBody.textContent || "";
-      if (!body || body === "Loading…" || body === "No transcript available.") {
+      if (!body || body === "Loading transcript…" || body === "No transcript available.") {
         toast("Nothing to copy yet.", "error");
         return;
       }
       try {
         await navigator.clipboard.writeText(body);
-        toast("Transcript copied.", "ok");
+        toast("Transcript text copied.", "ok");
       } catch (e) {
         const ta = document.createElement("textarea");
         ta.value = body;
@@ -2146,33 +2334,33 @@
       }
     });
   }
-  els.transcriptClose.addEventListener("click", closeTranscriptModal);
-  els.transcriptModal.addEventListener("click", (ev) => {
-    if (ev.target === els.transcriptModal) closeTranscriptModal();
-  });
+  if (els.transcriptClose) els.transcriptClose.addEventListener("click", closeTranscriptModal);
+  if (els.transcriptModal) {
+    els.transcriptModal.addEventListener("click", (ev) => {
+      if (ev.target === els.transcriptModal) closeTranscriptModal();
+    });
+  }
   document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape" && !els.transcriptModal.hidden) closeTranscriptModal();
+    if (ev.key === "Escape" && els.transcriptModal && !els.transcriptModal.hidden) closeTranscriptModal();
+    if (ev.key === "Escape" && els.exportConfigModal && !els.exportConfigModal.hidden) closeExportConfig();
   });
 
   if (els.rulesInput) {
-  els.rulesInput.addEventListener("change", async () => {
-    const file = els.rulesInput.files[0];
-    if (!file || !currentCampaignId) return;
-    try {
-      const data = await uploadBriefFile(currentCampaignId, file);
-      currentCampaign = await apiGet("/api/campaigns/" + encodeURIComponent(currentCampaignId));
-      renderRules();
-      if (data.warning) {
-        toast(data.warning, "error");
-      } else {
-        toast("Brief condensed.", "ok");
+    els.rulesInput.addEventListener("change", async () => {
+      const file = els.rulesInput.files[0];
+      if (!file || !currentCampaignId) return;
+      try {
+        const data = await uploadBriefFile(currentCampaignId, file);
+        currentCampaign = await apiGet("/api/campaigns/" + encodeURIComponent(currentCampaignId));
+        renderRules();
+        if (data.warning) toast(data.warning, "error");
+        else toast("Brief updated.", "ok");
+      } catch (e) {
+        toast("Rules upload failed: " + e.message, "error");
+      } finally {
+        els.rulesInput.value = "";
       }
-    } catch (e) {
-      toast("Rules upload failed: " + e.message, "error");
-    } finally {
-      els.rulesInput.value = "";
-    }
-  });
+    });
   }
 
   if (els.ovRulesInput) {
@@ -2183,11 +2371,8 @@
         const data = await uploadBriefFile(currentCampaignId, file);
         currentCampaign = await apiGet("/api/campaigns/" + encodeURIComponent(currentCampaignId));
         renderOverviewRules();
-        if (data.warning) {
-          toast(data.warning, "error");
-        } else {
-          toast("Brief condensed.", "ok");
-        }
+        if (data.warning) toast(data.warning, "error");
+        else toast("Brief updated.", "ok");
       } catch (e) {
         toast("Brief upload failed: " + e.message, "error");
       } finally {
@@ -2200,33 +2385,42 @@
     try {
       const m = await apiGet("/api/music");
       const s = campaignSettings();
-      els.musicEnabled.checked = s.music_enabled != null ? !!s.music_enabled : !!m.enabled;
-      els.musicVolume.value = s.music_volume != null ? s.music_volume : m.volume;
-      els.musicTrack.innerHTML =
-        `<option value="">Auto (rotate per clip)</option>` +
-        m.tracks.map((t) =>
-          `<option value="${escapeHtml(t)}" title="${escapeHtml(t)}">${escapeHtml(t)}</option>`
-        ).join("");
-      els.musicTrack.value = s.music_track || m.track || "";
+      if (els.musicEnabled) els.musicEnabled.checked = s.music_enabled != null ? !!s.music_enabled : !!m.enabled;
+      if (els.musicVolume) els.musicVolume.value = s.music_volume != null ? s.music_volume : m.volume;
+      if (els.musicTrack) {
+        els.musicTrack.innerHTML =
+          `<option value="">Auto (Rotate Track per Clip)</option>` +
+          m.tracks.map((t) =>
+            `<option value="${escapeHtml(t)}" title="${escapeHtml(t)}">${escapeHtml(t)}</option>`
+          ).join("");
+        els.musicTrack.value = s.music_track || m.track || "";
+      }
     } catch (e) { /* optional */ }
   }
 
   async function boot() {
     try {
       await loadCampaigns();
-      els.serverStatus.classList.add("online");
-      els.serverStatusText.textContent = "ready";
+      if (els.serverStatus) {
+        els.serverStatus.classList.add("online");
+        els.serverStatusText.textContent = "Online";
+      }
       const parsed = parseHash();
       if (parsed.campaignId) {
         await openCampaign(parsed.campaignId, { silent: true });
       } else {
-        els.modelChip.textContent = "ClipForge";
+        if (els.modelChip) {
+          const textEl = els.modelChip.querySelector(".engine-text") || els.modelChip;
+          textEl.textContent = "ClipForge Studio";
+        }
       }
       await loadMusic();
     } catch (e) {
-      els.serverStatus.classList.add("error");
-      els.serverStatusText.textContent = "server offline";
-      toast("Can't reach the backend. Is the server running?", "error");
+      if (els.serverStatus) {
+        els.serverStatus.classList.add("error");
+        els.serverStatusText.textContent = "Offline";
+      }
+      toast("Backend server offline. Run server.py to start.", "error");
     }
     renderPage();
     ensureNotifyPermission();
@@ -2236,3 +2430,4 @@
 
   boot();
 })();
+
