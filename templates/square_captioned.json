@@ -1,0 +1,63 @@
+{
+  "name": "square_captioned",
+  "golden": true,
+  "label": "Square band",
+  "description": "9:16 with a square video band on black that follows the speaker. Hook in the top bar, gradient captions above the all-platform safe zone.",
+  "output": {
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920"
+  },
+  "crop": {
+    "mode": "square_band",
+    "background": "#000000",
+    "follow_speaker": true
+  },
+  "effects": {
+    "grade": "none",
+    "vignette": 0.0
+  },
+  "hook": {
+    "enabled": true,
+    "font": "Bebas Neue",
+    "size": 96,
+    "color": "#F1EFD5",
+    "position": "top"
+  },
+  "captions": {
+    "enabled": true,
+    "font": "Poppins-Bold",
+    "size": 80,
+    "color": "#F7E94A",
+    "outline_color": "#000000",
+    "outline_width": 5,
+    "position": "bottom_center",
+    "max_words": 4,
+    "gradient": {
+      "enabled": true,
+      "top": "#FFF35C",
+      "bottom": "#FF9A3D"
+    },
+    "highlight_keyword": {
+      "enabled": false
+    }
+  },
+  "music": {
+    "enabled": true,
+    "track": "",
+    "volume": 0.12
+  },
+  "broll": {
+    "enabled": false,
+    "mode": "cutaway",
+    "pip_scale": 0.6
+  },
+  "intro": {
+    "enabled": false
+  },
+  "outro": {
+    "enabled": false
+  },
+  "watermark": {
+    "enabled": false
+  }
+}

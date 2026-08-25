@@ -1,0 +1,43 @@
+# Environment & Virtual Environments
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# User Media & Generated Data
+input/
+output/
+music/
+data/
+
+# Temporary / Scratch scripts & files
+scripts/temp/
+temp/
+tmp/
+*.tmp
+*.log
+
+# Style Explorer dynamic per-video winners
+templates/*_winner.json
+
+# Internal / Private planning & agent state
+private/
+.kilo/
+
+# OS Specific Junk
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/

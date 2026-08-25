@@ -1,0 +1,1462 @@
+"""ClipForge web server (Starlette + uvicorn).
+
+Serves the static frontend (web/) and a small REST API that runs the pipeline as
+a subprocess and exposes live logs + progress. Run with: python server.py
+"""
+import asyncio
+import json
+import os
+import subprocess
+import sys
+import threading
+import time
+import uuid
+from pathlib import Path
+
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import FileResponse, JSONResponse
+from starlette.routing import Mount, Route
+from starlette.staticfiles import StaticFiles
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
+
+for _stream in ("stdout", "stderr"):
+    _s = getattr(sys, _stream, None)
+    if _s is not None and hasattr(_s, "reconfigure"):
+        try:
+            _s.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:  # noqa: BLE001
+            pass
+
+from src.config import config  # noqa: E402
+from src import campaigns as camp_mod  # noqa: E402
+from src import email_highlights  # noqa: E402
+from src import notify as notify_mod  # noqa: E402
+
+WEB_DIR = ROOT / "web"
+VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v"}
+MAX_LOGS = 4000
+
+RUNS = {}          # run_id -> dict(status, logs, percent, stage, message, command, exit_code)
+RUNS_LOCK = threading.Lock()
+
+# --------------------------------------------------------------------------- #
+# event bus — feeds /api/events (notifications) and the UI notification centre
+# --------------------------------------------------------------------------- #
+EVENTS_LOCK = threading.Lock()
+EVENTS = []           # list of {seq, ts, kind, data}; bounded ring
+EVENT_COUNTER = 0
+EVENT_WAITERS = []    # list of threading.Event
+
+
+def publish_event(kind, data=None):
+    """Append an event to the bounded ring and wake /api/events listeners."""
+    global EVENT_COUNTER
+    with EVENTS_LOCK:
+        EVENT_COUNTER += 1
+        EVENTS.append({
+            "seq": EVENT_COUNTER,
+            "ts": time.time(),
+            "kind": str(kind),
+            "data": data or {},
+        })
+        if len(EVENTS) > 500:
+            del EVENTS[:len(EVENTS) - 500]
+        for waiter in EVENT_WAITERS:
+            waiter.set()
+
+
+# Telegram sink: every bus event is also dispatched to the configured chat
+# (non-blocking queue; a no-op when TELEGRAM_* secrets are missing).
+notify_mod.hook_publish_event(sys.modules[__name__])
+
+
+def _mode_from_argv(argv):
+    """Pipeline mode from a start_run argv: [--campaign, id,] mode, …"""
+    a = list(argv)
+    if a and a[0] == "--campaign":
+        a = a[2:]
+    return a[0] if a else "pipeline"
+
+
+# --------------------------------------------------------------------------- #
+# run engine
+# --------------------------------------------------------------------------- #
+def _error_from_logs(logs):
+    """Pick the most informative recent line instead of blindly the last one."""
+    markers = ("error", "traceback", "failed", "exception", "not found", "not recognized")
+    for line in reversed(logs[-40:]):
+        low = line.lower()
+        if low.strip() and any(m in low for m in markers):
+            return line.strip()
+    for line in reversed(logs):
+        if line.strip():
+            return line.strip()
+    return "pipeline failed"
+
+
+def _run_subprocess(run_id, argv):
+    cmd = [sys.executable, "-u", str(ROOT / "main.py"), "--emit-progress"] + argv
+    with RUNS_LOCK:
+        run = RUNS[run_id]
+        run["status"] = "running"
+        run["command"] = " ".join(cmd)
+
+    print(f"\n>>> {run['command']}", flush=True)
+
+    popen_kwargs = dict(
+        cwd=str(ROOT), stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, encoding="utf-8", errors="replace", bufsize=1,
+    )
+    if sys.platform == "win32":
+        popen_kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        popen_kwargs["start_new_session"] = True
+
+    proc = subprocess.Popen(cmd, **popen_kwargs)
+    with RUNS_LOCK:
+        run["proc"] = proc
+
+    for raw in proc.stdout:
+        line = raw.rstrip("\r\n")
+        if line.startswith("@@PROGRESS@@"):
+            try:
+                data = json.loads(line.split(" ", 1)[1])
+            except Exception:  # noqa: BLE001
+                continue
+            with RUNS_LOCK:
+                run["percent"] = data.get("percent")
+                run["stage"] = data.get("stage")
+                run["message"] = data.get("message", "")
+            # mirror to the backend console as a compact status line
+            print(f"   [{data.get('percent', 0):>5.1f}%] {data.get('stage')} - {data.get('message', '')}", flush=True)
+        elif line.startswith("@@EVENT@@"):
+            try:
+                ev = json.loads(line.split(" ", 1)[1])
+                publish_event(ev.get("kind", "unknown"), ev.get("data"))
+            except Exception:  # noqa: BLE001
+                pass
+            continue
+        else:
+            with RUNS_LOCK:
+                run["logs"].append(line)
+                run["log_count"] += 1
+                if len(run["logs"]) > MAX_LOGS:
+                    excess = len(run["logs"]) - MAX_LOGS
+                    del run["logs"][:excess]
+                    run["log_offset"] += excess
+            print(line, flush=True)
+
+    proc.wait()
+    with RUNS_LOCK:
+        run["exit_code"] = proc.returncode
+        if run.get("cancelled"):
+            run["status"] = "cancelled"
+            run["error"] = "Cancelled by user."
+        elif proc.returncode == 0:
+            run["status"] = "ok"
+            run["percent"] = 100
+        else:
+            run["status"] = "error"
+            run["error"] = _error_from_logs(run["logs"])
+    print(f"\n<<< run {run_id} finished ({run['status']})\n", flush=True)
+
+    # Lifecycle events — one per run terminal state. export / explore-style
+    # successes are skipped here because main.py emits richer export_done /
+    # explore_done events for those (republished via @@EVENT@@).
+    mode = _mode_from_argv(run.get("argv") or [])
+    ev_common = {"mode": mode, "video_id": run.get("video_id"),
+                  "campaign_id": run.get("campaign_id")}
+    if run["status"] == "cancelled":
+        publish_event("run_cancelled", ev_common)
+    elif run["status"] == "error":
+        publish_event("run_error", {**ev_common, "error": run.get("error")})
+    elif mode not in ("export", "explore-style"):
+        publish_event("run_ok", ev_common)
+
+
+def start_run(argv, campaign_id=None, video_id=None):
+    run_id = uuid.uuid4().hex[:12]
+    with RUNS_LOCK:
+        RUNS[run_id] = {
+            "status": "queued", "logs": [], "log_offset": 0, "log_count": 0,
+            "percent": 0, "stage": "start", "message": "Starting",
+            "command": "", "exit_code": None, "error": None,
+            "cancelled": False, "proc": None,
+            "campaign_id": campaign_id, "video_id": video_id,
+            "argv": list(argv),
+        }
+    threading.Thread(target=_run_subprocess, args=(run_id, argv), daemon=True).start()
+    return run_id
+
+
+def _kill_tree(proc):
+    """Terminate a process and its children (ffmpeg runs as a grandchild)."""
+    if proc is None or proc.poll() is not None:
+        return
+    try:
+        if sys.platform == "win32":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)],
+                           capture_output=True, timeout=10)
+        else:
+            import signal
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+            except (AttributeError, ProcessLookupError):
+                proc.terminate()
+    except Exception:  # noqa: BLE001
+        try:
+            proc.kill()
+        except Exception:  # noqa: BLE001
+            pass
+
+
+def cancel_run(run_id):
+    with RUNS_LOCK:
+        run = RUNS.get(run_id)
+        if not run:
+            return False
+        run["cancelled"] = True
+        proc = run.get("proc")
+    _kill_tree(proc)
+    return True
+
+
+# --------------------------------------------------------------------------- #
+# helpers
+# --------------------------------------------------------------------------- #
+def _cid(request, extra=None):
+    cid = request.path_params.get("campaign_id") or request.query_params.get("campaign_id")
+    if not cid and extra:
+        cid = extra.get("campaign_id")
+    return cid or None
+
+
+def _camp(campaign_id):
+    return camp_mod.get_campaign(campaign_id) if campaign_id else None
+
+
+def _input_dir(campaign_id=None):
+    return config.input_dir_for(campaign_id)
+
+
+def _output_dir(campaign_id=None):
+    return config.output_dir_for(campaign_id)
+
+
+def _raw_dir(campaign_id=None):
+    return config.raw_dir_for(campaign_id)
+
+
+def _candidates_dir(campaign_id=None):
+    if campaign_id:
+        return config.campaign_root(campaign_id) / "clip_candidates"
+    return config.candidates_dir
+
+
+def _email_status_for(video_id, campaign_id=None):
+    from src import email_status
+    return email_status.read_status(_candidates_dir(campaign_id), video_id)
+
+
+def _frames_dir(campaign_id=None):
+    if campaign_id:
+        return config.campaign_root(campaign_id) / "frames"
+    return config.frames_dir
+
+
+def _transcripts_dir(campaign_id=None):
+    if campaign_id:
+        return config.campaign_root(campaign_id) / "transcripts"
+    return config.transcripts_dir
+
+
+def _list_videos(campaign_id=None):
+    folder = _input_dir(campaign_id)
+    folder.mkdir(parents=True, exist_ok=True)
+    vids = []
+    for p in sorted(folder.iterdir()):
+        if p.suffix.lower() in VIDEO_EXTS:
+            vids.append({"name": p.name, "id": p.stem, "size": p.stat().st_size})
+    return vids
+
+
+def _list_templates(campaign_id=None):
+    tdir = ROOT / "templates"
+    out = []
+    camp = _camp(campaign_id)
+    if camp and camp.has_template():
+        d = _read_json(camp.template_path) or {}
+        out.append({
+            "name": str(camp.template_path),
+            "label": d.get("name") or "Campaign style",
+            "description": d.get("description", "Style Lab draft for this campaign"),
+            "file": "template.json",
+        })
+    for p in sorted(tdir.glob("*.json")):
+        try:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            out.append({
+                "name": d.get("name", p.stem),
+                "label": d.get("label") or d.get("name", p.stem),
+                "description": d.get("description", ""),
+                "file": p.name,
+                "golden": bool(d.get("golden")),
+            })
+        except Exception:  # noqa: BLE001
+            continue
+    return out
+
+
+def _read_json(p: Path):
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _candidates_for(video_id, campaign_id=None):
+    return _read_json(_candidates_dir(campaign_id) / f"{video_id}_candidates.json")
+
+
+def _transcript_segments(video_id, campaign_id=None):
+    from src.clean_transcript import best_transcript_path
+    data = _read_json(best_transcript_path(video_id, transcripts_dir=_transcripts_dir(campaign_id)))
+    if not data:
+        return []
+    return [{"start": s["start"], "end": s["end"], "text": s.get("text", "")}
+            for s in data.get("segments", [])]
+
+
+def _media_list(video_id, base_dir, prefix=""):
+    base_dir.mkdir(parents=True, exist_ok=True)
+    key = prefix or video_id
+    out = []
+    for p in sorted(base_dir.iterdir()):
+        if p.suffix.lower() not in VIDEO_EXTS:
+            continue
+        if p.stem == key or p.stem.startswith(key + "_"):
+            out.append({"name": p.name, "size": p.stat().st_size,
+                        "url": f"/api/media?path={p.relative_to(ROOT).as_posix()}"})
+    return out
+
+
+def _run_busy(campaign_id=None, video_id=None):
+    with RUNS_LOCK:
+        for run in RUNS.values():
+            if run["status"] not in ("running", "queued"):
+                continue
+            if campaign_id and run.get("campaign_id") != campaign_id:
+                continue
+            if video_id and run.get("video_id") != video_id:
+                continue
+            return True
+    return False
+
+
+def _public(camp, detail=False):
+    out = camp.public(detail=detail)
+    out["processing_status"] = "running" if _run_busy(camp.id) else "idle"
+    return out
+
+
+def _source_counts(camp, stem):
+    data = camp.candidates_for(stem) or {}
+    clips = data.get("clips") if isinstance(data.get("clips"), list) else []
+    approved = sum(1 for c in clips if c.get("status") == "approved")
+    outputs = _media_list(stem, camp.output_dir)
+    return {
+        "candidates": len(clips),
+        "approved": approved,
+        "exported": len(outputs),
+        "outputs": outputs,
+        "clips": clips,
+        "data": data,
+    }
+
+
+def _transcript_snippet(segments, start, end, limit=220):
+    parts = []
+    for s in segments or []:
+        try:
+            if float(s.get("end", 0)) > float(start) and float(s.get("start", 0)) < float(end):
+                parts.append(str(s.get("text") or "").strip())
+        except (TypeError, ValueError):
+            continue
+    text = " ".join(p for p in parts if p).strip()
+    if len(text) > limit:
+        return text[:limit].rstrip() + "…"
+    return text
+
+
+def _safe_resolve(rel):
+    """Resolve a web-relative path and refuse anything escaping ROOT."""
+    try:
+        p = (ROOT / rel).resolve()
+        p.relative_to(ROOT.resolve())
+    except (ValueError, OSError):
+        return None
+    return p if p.is_file() else None
+
+
+def _resolve_video_arg(video, campaign_id=None):
+    """Accept a stem ('sample3'), filename, or path; return an absolute path."""
+    p = Path(video)
+    folder = _input_dir(campaign_id)
+    if p.is_absolute() and p.exists():
+        return str(p)
+    if p.suffix:
+        candidate = folder / p.name
+        if candidate.exists():
+            return str(candidate)
+        return str(p)
+    if folder.is_dir():
+        for f in sorted(folder.iterdir()):
+            if f.stem == video and f.suffix.lower() in VIDEO_EXTS:
+                return str(f)
+    return str(p)
+
+
+# --------------------------------------------------------------------------- #
+# routes
+# --------------------------------------------------------------------------- #
+async def index(request):
+    return FileResponse(WEB_DIR / "index.html", headers={"Cache-Control": "no-store"})
+
+
+async def api_state(request):
+    campaign_id = _cid(request)
+    camp = _camp(campaign_id)
+    settings = camp.settings() if camp else {}
+    default_tpl = settings.get("default_template") if camp else None
+    if not default_tpl:
+        default_tpl = str(camp.template_path) if camp and camp.has_template() else config.default_template
+    return JSONResponse({
+        "videos": _list_videos(campaign_id),
+        "templates": _list_templates(campaign_id),
+        "campaign_id": campaign_id,
+        "config": {
+            "llm_model": config.llm_model,
+            "whisper_model": config.whisper_model,
+            "min_score": settings.get("min_score", config.llm_min_score) if camp else config.llm_min_score,
+            "max_clips": settings.get("max_clips", config.llm_max_clips) if camp else config.llm_max_clips,
+            "default_template": default_tpl,
+            "input_dir": str(_input_dir(campaign_id)),
+            "output_dir": str(_output_dir(campaign_id)),
+        },
+        "telegram": {
+            "enabled": bool(config.telegram_enabled),
+            "configured": bool(config.telegram_bot_token and config.telegram_chat_id),
+        },
+    })
+
+
+async def api_video(request):
+    video_id = request.path_params["video_id"]
+    campaign_id = _cid(request)
+    candidates = _candidates_for(video_id, campaign_id)
+    return JSONResponse({
+        "candidates": candidates,
+        "transcript_segments": _transcript_segments(video_id, campaign_id),
+        "outputs": _media_list(video_id, _output_dir(campaign_id)),
+        "raws": _media_list(video_id, _raw_dir(campaign_id)),
+    })
+
+
+async def api_video_delete(request):
+    """Delete a source video from input/ (keeps transcripts/candidates/outputs
+    so already-rendered clips stay usable). Refuses while a run is active."""
+    video_id = request.path_params["video_id"]
+    with RUNS_LOCK:
+        busy = any(r["status"] in ("running", "queued") for r in RUNS.values())
+    if busy:
+        return JSONResponse(
+            {"error": "A pipeline run is in progress - cancel it before deleting a source video."},
+            status_code=409)
+    campaign_id = _cid(request)
+    folder = _input_dir(campaign_id)
+    if not folder.is_dir():
+        return JSONResponse({"error": "input/ folder missing"}, status_code=404)
+    src = None
+    for f in sorted(folder.iterdir()):
+        if f.is_file() and f.stem == video_id and f.suffix.lower() in VIDEO_EXTS:
+            src = f
+            break
+    if src is None:
+        return JSONResponse({"error": f"no source video '{video_id}' in input/"},
+                            status_code=404)
+    try:
+        src.unlink()
+    except OSError as exc:
+        return JSONResponse({"error": f"could not delete {src.name}: {exc}"},
+                            status_code=500)
+    print(f"[delete] removed source video {src.name}", flush=True)
+    return JSONResponse({"ok": True, "name": src.name})
+
+
+async def api_run(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    mode = data.get("mode", "pipeline")
+    video = data.get("video")
+    campaign_id = data.get("campaign_id")
+    if not video:
+        return JSONResponse({"error": "missing 'video'"}, status_code=400)
+
+    if mode not in ("analyze", "export", "pipeline", "transcribe", "context",
+                    "select", "cut", "render", "frames", "style", "explore-style"):
+        return JSONResponse({"error": f"unknown mode {mode}"}, status_code=400)
+
+    argv = [mode, _resolve_video_arg(video, campaign_id)]
+    if campaign_id:
+        argv = ["--campaign", str(campaign_id)] + argv
+    template = data.get("template")
+    min_score = data.get("min_score")
+    max_clips = data.get("max_clips")
+    auto = data.get("auto")
+
+    if mode == "analyze":
+        if min_score is not None:
+            argv += ["--min-score", str(min_score)]
+        if max_clips is not None:
+            argv += ["--max-clips", str(max_clips)]
+    elif mode == "export":
+        if template:
+            argv += ["--template", template]
+        if auto:
+            argv += ["--auto"]
+        if data.get("instructions"):
+            argv += ["--instructions", str(data["instructions"])]
+    elif mode == "pipeline":
+        if template:
+            argv += ["--template", template]
+        if min_score is not None:
+            argv += ["--min-score", str(min_score)]
+        if max_clips is not None:
+            argv += ["--max-clips", str(max_clips)]
+        if auto:
+            argv += ["--auto"]
+        argv += ["--skip-review"]
+    elif mode == "render":
+        if template:
+            argv += ["--template", template]
+        if auto:
+            argv += ["--auto"]
+    elif mode == "select":
+        if min_score is not None:
+            argv += ["--min-score", str(min_score)]
+        if max_clips is not None:
+            argv += ["--max-clips", str(max_clips)]
+        if data.get("local"):
+            argv += ["--local"]
+    elif mode == "frames":
+        if data.get("frames_mode"):
+            argv += ["--mode", str(data["frames_mode"])]
+        if data.get("num") is not None:
+            argv += ["--num", str(int(data["num"]))]
+        if data.get("grid"):
+            argv += ["--grid", str(data["grid"])]
+    elif mode == "style":
+        if data.get("name"):
+            argv += ["--name", str(data["name"])]
+        if data.get("cta_text"):
+            argv += ["--cta-text", str(data["cta_text"])]
+    elif mode == "explore-style":
+        if data.get("brief"):
+            argv += ["--brief", str(data["brief"])]
+        if data.get("variants") is not None:
+            argv += ["--variants", str(int(data["variants"]))]
+        if data.get("probe") is not None:
+            argv += ["--probe", str(int(data["probe"]))]
+        if auto:
+            argv += ["--auto"]
+    elif mode == "cut":
+        if auto:
+            argv += ["--auto"]
+    elif mode == "transcribe":
+        if data.get("skip_email"):
+            argv += ["--skip-email"]
+    # context takes no extra args from the UI
+
+    video_id = Path(video).stem if video else None
+    run_id = start_run(argv, campaign_id=campaign_id, video_id=video_id)
+    publish_event("run_started", {"mode": mode, "video": video_id,
+                                    "video_id": video_id,
+                                    "campaign_id": campaign_id})
+    return JSONResponse({"run": run_id})
+
+
+async def api_run_status(request):
+    run_id = request.path_params["run_id"]
+    try:
+        since = max(0, int(request.query_params.get("since", "0") or 0))
+    except ValueError:
+        since = 0
+    with RUNS_LOCK:
+        run = RUNS.get(run_id)
+        if not run:
+            return JSONResponse({"error": "no such run"}, status_code=404)
+        logs, offset, total = run["logs"], run["log_offset"], run["log_count"]
+        # client asks for absolute index `since`; clamp into the retained window
+        idx = max(since, offset)
+        fresh = logs[idx - offset:]
+        dropped = max(0, idx - since)
+        return JSONResponse({
+            "run": run_id,
+            "status": run["status"],
+            "percent": run["percent"],
+            "stage": run["stage"],
+            "message": run["message"],
+            "command": run["command"],
+            "error": run["error"],
+            "logs": fresh,
+            "log_index": idx + len(fresh),
+            "log_dropped": dropped,
+            "log_total": total,
+        })
+
+
+async def api_run_cancel(request):
+    run_id = request.path_params["run_id"]
+    ok = cancel_run(run_id)
+    if not ok:
+        return JSONResponse({"error": "no such run"}, status_code=404)
+    return JSONResponse({"ok": True})
+
+
+async def api_save_candidates(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    video_id = data.get("video_id")
+    clips = data.get("clips")
+    if not video_id or not isinstance(clips, list):
+        return JSONResponse({"error": "need video_id and clips[]"}, status_code=400)
+
+    campaign_id = data.get("campaign_id")
+    p = _candidates_dir(campaign_id) / f"{video_id}_candidates.json"
+    if not p.exists():
+        return JSONResponse({"error": "no candidates file"}, status_code=404)
+
+    cur = _read_json(p)
+    cleaned = []
+    for c in clips:
+        if not all(k in c for k in ("start", "end", "score", "reason")):
+            continue
+        item = {
+            "start": round(float(c["start"]), 3),
+            "end": round(float(c["end"]), 3),
+            "score": round(float(c["score"]), 3),
+            "reason": str(c.get("reason", "")),
+            "hook": str(c.get("hook", "") or ""),
+            "status": c.get("status", "pending"),
+        }
+        # preserve pipeline metadata when present
+        for key in ("start_segment", "end_segment"):
+            if isinstance(c.get(key), int):
+                item[key] = c[key]
+        if isinstance(c.get("broll"), list):
+            item["broll"] = c["broll"]
+        cleaned.append(item)
+    cur["clips"] = cleaned
+    p.write_text(json.dumps(cur, ensure_ascii=False, indent=2), encoding="utf-8")
+    camp = _camp(campaign_id)
+    if camp:
+        camp.touch()
+        camp_mod.sync_clips_from_candidates(camp, video_id, cleaned, status="reviewing")
+    return JSONResponse({"ok": True, "count": len(cleaned)})
+
+
+async def api_highlights_upload(request):
+    """Upload a highlights JSON file (video_id + clips[] with segment ids)
+    and ingest it exactly like an emailed AI reply — segment ids are resolved
+    against the stored transcript into the same candidates file review uses."""
+    import anyio
+    from src.email_highlights import ingest_highlight_payload
+
+    form = await request.form()
+    upload = form.get("file")
+    video_id = (form.get("video_id") or "").strip()
+    campaign_id = (form.get("campaign_id") or "").strip() or None
+    if not upload or not getattr(upload, "filename", None):
+        return JSONResponse({"error": "no file uploaded"}, status_code=400)
+    if not video_id:
+        return JSONResponse({"error": "need video_id"}, status_code=400)
+
+    raw = await upload.read()
+    if not raw:
+        return JSONResponse({"error": "uploaded file was empty"}, status_code=400)
+    try:
+        payload = json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        return JSONResponse({"error": f"invalid JSON: {exc}"}, status_code=400)
+    if not isinstance(payload, dict) or not isinstance(payload.get("clips"), list):
+        return JSONResponse({"error": "JSON must be an object with a clips[] list"},
+                            status_code=400)
+    if not payload.get("video_id"):
+        payload["video_id"] = video_id
+
+    def _ingest():
+        return ingest_highlight_payload(payload, source="upload", campaign_id=campaign_id)
+
+    try:
+        out_path = await anyio.to_thread.run_sync(_ingest)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": f"ingest failed: {exc}"}, status_code=500)
+    if out_path is None:
+        return JSONResponse({
+            "error": (f"could not ingest highlights — check that a transcript "
+                      f"exists for '{payload.get('video_id')}' and the JSON has "
+                      f"valid clips with segment ids"),
+        }, status_code=400)
+    try:
+        clip_count = len(json.loads(out_path.read_text(encoding="utf-8")).get("clips") or [])
+    except Exception:  # noqa: BLE001
+        clip_count = len(payload.get("clips") or [])
+    publish_event("highlights_received", {
+        "video_id": payload.get("video_id"),
+        "clip_count": clip_count,
+        "source": "upload",
+    })
+    return JSONResponse({"ok": True, "video_id": payload.get("video_id"),
+                         "clip_count": clip_count})
+
+
+async def api_broll(request):
+    from src.fetch_broll import cache_stats
+    stats = cache_stats()
+    return JSONResponse({
+        "cache": stats,
+        "total": stats["files"],
+        "providers": {
+            "pexels": bool(config.broll_pexels_key),
+            "pixabay": bool(config.broll_pixabay_key),
+        },
+    })
+
+
+async def api_rules_get(request):
+    try:
+        text = config.rules_file.read_text(encoding="utf-8")
+    except OSError:
+        text = ""
+    return JSONResponse({"rules": text, "path": str(config.rules_file)})
+
+
+async def api_rules_save(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    rules = data.get("rules")
+    if rules is None or not isinstance(rules, str):
+        return JSONResponse({"error": "need 'rules' string"}, status_code=400)
+    config.rules_file.parent.mkdir(parents=True, exist_ok=True)
+    config.rules_file.write_text(rules, encoding="utf-8")
+    return JSONResponse({"ok": True})
+
+
+def _music_tracks():
+    from src.apply_template import AUDIO_EXTS
+    config.music_dir.mkdir(parents=True, exist_ok=True)
+    return sorted(p.name for p in config.music_dir.iterdir()
+                  if p.is_file() and p.suffix.lower() in AUDIO_EXTS)
+
+
+def _read_template(name):
+    from src.apply_template import load_template
+    try:
+        return load_template(name)
+    except FileNotFoundError:
+        return None
+
+
+async def api_music_get(request):
+    t = _read_template(config.default_template) or {}
+    mus = t.get("music", {}) or {}
+    return JSONResponse({
+        "enabled": bool(mus.get("enabled")),
+        "volume": float(mus.get("volume", 0.12)),
+        "track": mus.get("track", "") or "",
+        "tracks": _music_tracks(),
+    })
+
+
+async def api_music_save(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    t = _read_template(config.default_template)
+    if t is None:
+        return JSONResponse({"error": "default template not found"}, status_code=404)
+    mus = t.setdefault("music", {})
+    if "enabled" in data:
+        mus["enabled"] = bool(data["enabled"])
+    if "volume" in data:
+        try:
+            mus["volume"] = min(1.0, max(0.0, float(data["volume"])))
+        except (TypeError, ValueError):
+            return JSONResponse({"error": "volume must be a number 0-1"}, status_code=400)
+    if "track" in data:
+        mus["track"] = str(data["track"] or "")
+    path = (config.root / "templates" / config.default_template).with_suffix(".json")
+    path.write_text(json.dumps(t, ensure_ascii=False, indent=2), encoding="utf-8")
+    return JSONResponse({"ok": True})
+
+
+async def api_music_upload(request):
+    form = await request.form()
+    upload = form.get("file")
+    if not upload or not getattr(upload, "filename", None):
+        return JSONResponse({"error": "no file uploaded"}, status_code=400)
+    from src.apply_template import AUDIO_EXTS
+    raw_name = Path(upload.filename).name.strip()
+    if Path(raw_name).suffix.lower() not in AUDIO_EXTS:
+        return JSONResponse({"error": f"unsupported audio type: {raw_name}"}, status_code=400)
+    config.music_dir.mkdir(parents=True, exist_ok=True)
+    dest = _unique_dest(config.music_dir, raw_name)
+    size = 0
+    with open(dest, "wb") as f:
+        while True:
+            chunk = await upload.read(1024 * 1024)
+            if not chunk:
+                break
+            f.write(chunk)
+            size += len(chunk)
+    if size == 0:
+        dest.unlink(missing_ok=True)
+        return JSONResponse({"error": "uploaded file was empty"}, status_code=400)
+    return JSONResponse({"name": dest.name, "size": size})
+
+
+def _unique_dest(directory, filename):
+    """Return a non-colliding destination path (append a counter before ext)."""
+    stem, suffix = Path(filename).stem, Path(filename).suffix
+    candidate = directory / filename
+    n = 1
+    while candidate.exists():
+        candidate = directory / f"{stem}_{n}{suffix}"
+        n += 1
+    return candidate
+
+
+async def api_upload(request):
+    form = await request.form()
+    upload = form.get("file")
+    if not upload or not getattr(upload, "filename", None):
+        return JSONResponse({"error": "no file uploaded"}, status_code=400)
+
+    raw_name = Path(upload.filename).name.strip()
+    if not raw_name or raw_name in (".", ".."):
+        return JSONResponse({"error": "invalid filename"}, status_code=400)
+    if Path(raw_name).suffix.lower() not in VIDEO_EXTS:
+        return JSONResponse({"error": f"unsupported file type: {raw_name}"}, status_code=400)
+
+    campaign_id = form.get("campaign_id")
+    folder = _input_dir(campaign_id)
+    folder.mkdir(parents=True, exist_ok=True)
+    dest = _unique_dest(folder, raw_name)
+
+    size = 0
+    with open(dest, "wb") as f:
+        while True:
+            chunk = await upload.read(1024 * 1024)
+            if not chunk:
+                break
+            f.write(chunk)
+            size += len(chunk)
+
+    if size == 0:
+        dest.unlink(missing_ok=True)
+        return JSONResponse({"error": "uploaded file was empty"}, status_code=400)
+
+    print(f"[upload] {raw_name} -> {dest} ({size / 1048576:.1f} MB)", flush=True)
+    camp = _camp(campaign_id)
+    if camp:
+        camp.touch()
+    publish_event("upload_done", {"name": dest.name, "size": size,
+                                    "video_id": dest.stem,
+                                    "campaign_id": campaign_id})
+    return JSONResponse({"name": dest.name, "id": dest.stem, "size": size})
+
+
+async def api_media(request):
+    rel = request.query_params.get("path", "")
+    p = _safe_resolve(rel)
+    if p is None or not p.is_file():
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return FileResponse(p)
+
+
+async def api_preview(request):
+    import anyio
+    from src.cut_clips import cut_one
+
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    video = data.get("video")
+    try:
+        start, end = float(data.get("start")), float(data.get("end"))
+    except (TypeError, ValueError):
+        return JSONResponse({"error": "need numeric start and end"}, status_code=400)
+    if not video or start < 0 or end <= start:
+        return JSONResponse({"error": "need video + valid start < end"}, status_code=400)
+
+    campaign_id = data.get("campaign_id")
+    src = Path(_resolve_video_arg(video, campaign_id))
+    if not src.exists():
+        return JSONResponse({"error": f"source video not found: {src}"}, status_code=404)
+
+    raw = _raw_dir(campaign_id)
+    raw.mkdir(parents=True, exist_ok=True)
+    dest = raw / f"preview_{src.stem}_{int(start)}-{int(end)}.mp4"
+    # drop older previews of this video to avoid unlimited raw/ growth
+    for old in raw.glob(f"preview_{src.stem}_*.mp4"):
+        old.unlink(missing_ok=True)
+
+    try:
+        def do_cut():
+            return cut_one(src, start, end, dest, lead_in=0.0, lead_out=0.0)
+
+        await anyio.to_thread.run_sync(do_cut)
+    except Exception as exc:  # noqa: BLE001
+        dest.unlink(missing_ok=True)
+        return JSONResponse({"error": str(exc)[-500:]}, status_code=500)
+
+    return JSONResponse({
+        "url": f"/api/media?path={dest.relative_to(ROOT).as_posix()}",
+    })
+
+
+async def api_frames_list(request):
+    """List extracted frame sets with their sheets/reports."""
+    campaign_id = _cid(request)
+    fdir = _frames_dir(campaign_id)
+    fdir.mkdir(parents=True, exist_ok=True)
+    out = []
+    for d in sorted(fdir.iterdir()):
+        if not d.is_dir():
+            continue
+        man = _read_json(d / "manifest.json") or {}
+        has_report = (d / "style_report.json").exists()
+        frames = [f["file"] for f in man.get("frames", [])]
+        out.append({
+            "stem": d.name,
+            "frames": len(frames),
+            "sheets": man.get("sheets", []),
+            "has_report": has_report,
+            "mode": man.get("mode"),
+        })
+    return JSONResponse({"frame_sets": out})
+
+
+async def api_style_report(request):
+    """Return the stored style report + draft template for a stem."""
+    stem = request.path_params["stem"]
+    campaign_id = _cid(request)
+    d = _frames_dir(campaign_id) / stem
+    report = _read_json(d / "style_report.json")
+    if report is None:
+        return JSONResponse({"error": f"no style report for '{stem}'"}, status_code=404)
+    camp = _camp(campaign_id)
+    if camp and camp.has_template():
+        tpl = _read_json(camp.template_path)
+        tpl_name = "template.json"
+    else:
+        tpl_name = f"{stem}_style" if not stem.endswith("_style") else stem
+        tpl = _read_json(config.root / "templates" / f"{tpl_name}.json")
+    return JSONResponse({
+        "report": report,
+        "template": tpl,
+        "template_name": tpl_name,
+    })
+
+
+async def api_frames_media(request):
+    """Serve a frame image or contact sheet from data/frames/."""
+    stem = request.path_params["stem"]
+    name = request.query_params.get("file", "")
+    if "/" in name or chr(92) in name or ".." in name:
+        return JSONResponse({"error": "bad file name"}, status_code=400)
+    campaign_id = _cid(request)
+    p = _frames_dir(campaign_id) / stem / name
+    if not p.is_file():
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return FileResponse(p)
+
+
+# --------------------------------------------------------------------------- #
+# campaigns
+# --------------------------------------------------------------------------- #
+async def api_campaigns_list(request):
+    return JSONResponse({
+        "campaigns": [_public(c) for c in camp_mod.list_campaigns()],
+    })
+
+
+async def api_campaigns_create(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    try:
+        camp = camp_mod.create_campaign(data.get("name"))
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    publish_event("campaign_created", {"name": camp.meta.get("name"),
+                                         "id": camp.id})
+    return JSONResponse(_public(camp, detail=True), status_code=201)
+
+
+async def api_campaign_get(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    return JSONResponse(_public(camp, detail=True))
+
+
+async def api_campaign_patch(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    try:
+        camp = camp_mod.update_campaign(request.path_params["campaign_id"], data)
+    except FileNotFoundError:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse(_public(camp, detail=True))
+
+
+async def api_campaign_delete(request):
+    """Delete a campaign and everything in it: sources, transcripts, clips,
+    candidates, style/template files and exported videos."""
+    campaign_id = request.path_params["campaign_id"]
+    if _run_busy(campaign_id):
+        return JSONResponse(
+            {"error": "A pipeline run is in progress - cancel it before deleting this campaign."},
+            status_code=409)
+    camp = _camp(campaign_id)
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    try:
+        import shutil
+        shutil.rmtree(camp.root)
+    except OSError as exc:
+        return JSONResponse({"error": f"could not delete campaign: {exc}"},
+                            status_code=500)
+    print(f"[delete] removed campaign {campaign_id} ({camp.root})", flush=True)
+    return JSONResponse({"ok": True, "id": campaign_id})
+
+
+async def api_campaign_sources(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    sources = []
+    for p in camp.source_files():
+        counts = _source_counts(camp, p.stem)
+        data = counts.get("data") or {}
+        clips = counts.get("clips") or []
+        awaiting = (data.get("highlights_from") == "pending" and not clips)
+        sources.append({
+            "id": p.stem,
+            "name": p.name,
+            "size": p.stat().st_size,
+            "stage": camp.source_stage(p.stem, counts["approved"], counts["exported"]),
+            "candidates": counts["candidates"],
+            "approved": counts["approved"],
+            "exported": counts["exported"],
+            "running": _run_busy(camp.id, p.stem),
+            "awaiting_email": awaiting,
+            "highlights_from": data.get("highlights_from"),
+            "email_status": _email_status_for(p.stem, camp.id),
+        })
+    return JSONResponse({"sources": sources})
+
+
+async def api_campaign_candidates(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    groups = []
+    for p in camp.source_files():
+        data = camp.candidates_for(p.stem)
+        clips = (data.get("clips") if data and isinstance(data.get("clips"), list) else []) or []
+        segments = _transcript_segments(p.stem, camp.id)
+        items = []
+        for clip in clips:
+            item = dict(clip)
+            item["source_id"] = p.stem
+            item["source_name"] = p.name
+            try:
+                item["snippet"] = _transcript_snippet(
+                    segments, clip.get("start", 0), clip.get("end", 0))
+            except Exception:  # noqa: BLE001
+                item["snippet"] = ""
+            items.append(item)
+        groups.append({
+            "source_id": p.stem,
+            "source_name": p.name,
+            "video_id": (data or {}).get("video_id") or p.stem,
+            "highlights_from": (data or {}).get("highlights_from") or "local",
+            "email_status": _email_status_for(p.stem, camp.id),
+            "clips": items,
+        })
+    return JSONResponse({"groups": groups})
+
+
+async def api_campaign_exports(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    groups = []
+    for p in camp.source_files():
+        outputs = _media_list(p.stem, camp.output_dir)
+        groups.append({
+            "source_id": p.stem,
+            "source_name": p.name,
+            "outputs": outputs,
+        })
+    return JSONResponse({"groups": groups})
+
+
+async def api_campaign_rules_upload(request):
+    campaign_id = request.path_params["campaign_id"]
+    camp = _camp(campaign_id)
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    form = await request.form()
+    upload = form.get("file")
+    if not upload or not getattr(upload, "filename", None):
+        return JSONResponse({"error": "no file uploaded"}, status_code=400)
+    raw_name = Path(upload.filename).name.strip()
+    data = await upload.read()
+    if not data:
+        return JSONResponse({"error": "uploaded file was empty"}, status_code=400)
+    try:
+        dest = camp_mod.save_rules_upload(camp, raw_name, data)
+        extracted = await asyncio.to_thread(camp_mod.extract_rules_text, dest)
+        summary, warning = await asyncio.to_thread(
+            camp_mod.summarize_rules, extracted)
+        camp.write_rules_summary(summary)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    except RuntimeError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=500)
+    return JSONResponse({
+        "ok": True,
+        "rules_summary": summary,
+        "rules_full": dest.name,
+        "warning": warning,
+    })
+
+
+async def api_campaign_rules_patch(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    current = camp.rules_summary()
+    if "section" in data:
+        try:
+            updated = camp_mod.patch_rules_section(
+                current, data.get("section"), data.get("value"))
+        except ValueError as exc:
+            return JSONResponse({"error": str(exc)}, status_code=400)
+    elif isinstance(data.get("rules_summary"), dict):
+        updated = camp_mod.normalize_rules(data["rules_summary"])
+        updated["submission_done"] = current.get("submission_done", False)
+        if "submission_done" in data["rules_summary"]:
+            updated["submission_done"] = bool(data["rules_summary"]["submission_done"])
+    else:
+        return JSONResponse(
+            {"error": "need {section, value} or rules_summary object"},
+            status_code=400)
+    camp.write_rules_summary(updated)
+    return JSONResponse({"ok": True, "rules_summary": updated})
+
+
+async def api_campaign_rules_file(request):
+    camp = _camp(request.path_params["campaign_id"])
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    path = camp.rules_full_path()
+    if path is None:
+        return JSONResponse({"error": "no rules document uploaded"}, status_code=404)
+    return FileResponse(path, filename=path.name)
+
+
+async def api_campaign_clip_patch(request):
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+    status = data.get("status")
+    try:
+        clip = camp_mod.update_clip_status(
+            request.path_params["campaign_id"],
+            request.path_params["clip_id"],
+            status,
+        )
+    except FileNotFoundError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    return JSONResponse({"ok": True, "clip": clip})
+
+
+# --------------------------------------------------------------------------- #
+# style exploration
+# --------------------------------------------------------------------------- #
+def _previews_dir(campaign_id=None):
+    if campaign_id:
+        return config.campaign_root(campaign_id) / "previews"
+    return config.previews_dir
+
+
+def _explorations_dir(campaign_id=None):
+    if campaign_id:
+        return config.campaign_root(campaign_id) / "style_explorations"
+    return config.explorations_dir
+
+
+async def api_exploration_get(request):
+    """Return the exploration report + preview URLs for a video stem."""
+    video_id = request.path_params["video_id"]
+    campaign_id = _cid(request)
+    report = _read_json(_explorations_dir(campaign_id) / f"{video_id}_exploration.json")
+    if report is None:
+        return JSONResponse({"error": f"no exploration for '{video_id}'"},
+                            status_code=404)
+    pdir = _previews_dir(campaign_id) / video_id
+    for v in report.get("variants", []):
+        url = None
+        if v.get("file"):
+            p = pdir / v["file"]
+            if p.is_file():
+                url = f"/api/media?path={p.relative_to(ROOT).as_posix()}"
+        v["preview_url"] = url
+        frames = []
+        for fn in v.get("frames", []):
+            fp = pdir / fn
+            if fp.is_file():
+                frames.append(f"/api/media?path={fp.relative_to(ROOT).as_posix()}")
+        v["frame_urls"] = frames
+    winner_name = report.get("winner")
+    if winner_name:
+        wp = config.root / "templates" / f"{video_id}_winner.json"
+        report["winner_template"] = wp.name if wp.is_file() else None
+    return JSONResponse(report)
+
+
+async def api_exploration_save(request):
+    """Copy the exploration winner into the campaign template (template.json),
+    making it the campaign's default style for future exports."""
+    video_id = request.path_params["video_id"]
+    campaign_id = _cid(request)
+    camp = _camp(campaign_id)
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+    src = config.root / "templates" / f"{video_id}_winner.json"
+    if not src.is_file():
+        return JSONResponse({"error": f"no winner template for '{video_id}'"},
+                            status_code=404)
+    try:
+        tpl = json.loads(src.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return JSONResponse({"error": f"winner template unreadable: {exc}"},
+                            status_code=500)
+    tpl["name"] = f"{camp.id}_style"
+    tpl["golden"] = True
+    tpl["label"] = "Style Explorer winner"
+    camp.template_path.parent.mkdir(parents=True, exist_ok=True)
+    camp.template_path.write_text(json.dumps(tpl, ensure_ascii=False, indent=2),
+                                  encoding="utf-8")
+    camp.touch()
+    print(f"[explore] saved winner template -> {camp.template_path}", flush=True)
+    return JSONResponse({"ok": True, "template_path": str(camp.template_path)})
+
+
+async def api_events(request):
+    """Long-poll: returns events with seq > `since`. Waits up to `timeout` s
+    for new events before returning (so the browser gets near-realtime updates
+    without websockets)."""
+    import anyio
+
+    try:
+        since = int(request.query_params.get("since", "0") or 0)
+    except ValueError:
+        since = 0
+    try:
+        timeout = min(120.0, max(1.0, float(request.query_params.get("timeout", "25") or 25)))
+    except ValueError:
+        timeout = 25.0
+
+    def _snapshot(since_seq):
+        with EVENTS_LOCK:
+            return [e for e in EVENTS if e["seq"] > since_seq]
+
+    fresh = _snapshot(since)
+    if fresh:
+        return JSONResponse({"events": fresh, "next": EVENTS[-1]["seq"] if EVENTS else since})
+
+    # Wait for at least one new event or until timeout.
+    waiter = threading.Event()
+    with EVENTS_LOCK:
+        EVENT_WAITERS.append(waiter)
+    try:
+        await anyio.to_thread.run_sync(lambda: waiter.wait(timeout))
+    finally:
+        with EVENTS_LOCK:
+            if waiter in EVENT_WAITERS:
+                EVENT_WAITERS.remove(waiter)
+
+    fresh = _snapshot(since)
+    next_seq = 0
+    with EVENTS_LOCK:
+        next_seq = EVENTS[-1]["seq"] if EVENTS else since
+    return JSONResponse({"events": fresh, "next": next_seq})
+
+
+async def api_email_status(request):
+    """Return email-pipeline status for a single source video."""
+    video_id = request.path_params["video_id"]
+    campaign_id = _cid(request)
+    status = _email_status_for(video_id, campaign_id)
+    return JSONResponse({"video_id": video_id, "status": status})
+
+
+async def api_email_check(request):
+    """Trigger an immediate inbox poll (used by a 'Check now' button)."""
+    results = email_highlights.poll_highlight_emails(
+        on_ingested=lambda summary: publish_event("highlights_received", summary))
+    return JSONResponse({"ingested": len(results), "video_ids": [s.get("video_id") for s in results]})
+
+
+async def api_transcript_view(request):
+    """Return the formatted transcript body for a video (for the approval
+    page to display the transcript on-screen)."""
+    video_id = request.path_params["video_id"]
+    campaign_id = _cid(request)
+    from src.clean_transcript import best_transcript_path
+    from src.email_transcript import build_transcript_body
+    path = best_transcript_path(video_id, transcripts_dir=_transcripts_dir(campaign_id))
+    data = _read_json(path)
+    if not data:
+        return JSONResponse({"error": "no transcript"}, status_code=404)
+    body = build_transcript_body(data, video_id=video_id)
+    return JSONResponse({"body": body, "video_id": video_id})
+
+
+async def api_open_folder(request):
+    directory = request.query_params.get("dir", "output")
+    campaign_id = _cid(request)
+    if directory == "input":
+        target = _input_dir(campaign_id)
+    else:
+        target = _output_dir(campaign_id)
+    target.mkdir(parents=True, exist_ok=True)
+    try:
+        if sys.platform == "win32":
+            os.startfile(str(target))  # noqa: S606
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(target)])
+        else:
+            subprocess.Popen(["xdg-open", str(target)])
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": f"could not open folder: {exc}"}, status_code=500)
+    return JSONResponse({"ok": True, "dir": str(target)})
+
+
+routes = [
+    Route("/", index),
+    Route("/api/state", api_state, methods=["GET"]),
+    Route("/api/video/{video_id}", api_video, methods=["GET"]),
+    Route("/api/video/{video_id}", api_video_delete, methods=["POST"]),
+    Route("/api/run", api_run, methods=["POST"]),
+    Route("/api/run/{run_id}", api_run_status, methods=["GET"]),
+    Route("/api/run/{run_id}/cancel", api_run_cancel, methods=["POST"]),
+    Route("/api/candidates", api_save_candidates, methods=["POST"]),
+    Route("/api/highlights/upload", api_highlights_upload, methods=["POST"]),
+    Route("/api/rules", api_rules_get, methods=["GET"]),
+    Route("/api/rules", api_rules_save, methods=["POST"]),
+    Route("/api/music", api_music_get, methods=["GET"]),
+    Route("/api/music", api_music_save, methods=["POST"]),
+    Route("/api/music/upload", api_music_upload, methods=["POST"]),
+    Route("/api/broll", api_broll, methods=["GET"]),
+    Route("/api/upload", api_upload, methods=["POST"]),
+    Route("/api/media", api_media, methods=["GET"]),
+    Route("/api/preview", api_preview, methods=["POST"]),
+    Route("/api/frames", api_frames_list, methods=["GET"]),
+    Route("/api/frames/{stem}/style", api_style_report, methods=["GET"]),
+    Route("/api/frames/{stem}/media", api_frames_media, methods=["GET"]),
+    Route("/api/open-folder", api_open_folder, methods=["POST"]),
+    Route("/api/events", api_events, methods=["GET"]),
+    Route("/api/email/check", api_email_check, methods=["POST"]),
+    Route("/api/email/status/{video_id}", api_email_status, methods=["GET"]),
+    Route("/api/transcript/{video_id}", api_transcript_view, methods=["GET"]),
+    Route("/api/campaigns", api_campaigns_list, methods=["GET"]),
+    Route("/api/campaigns", api_campaigns_create, methods=["POST"]),
+    Route("/api/campaigns/{campaign_id}", api_campaign_get, methods=["GET"]),
+    Route("/api/campaigns/{campaign_id}", api_campaign_patch, methods=["PATCH"]),
+    Route("/api/campaigns/{campaign_id}", api_campaign_delete, methods=["DELETE"]),
+    Route("/api/campaigns/{campaign_id}/rules", api_campaign_rules_upload, methods=["POST"]),
+    Route("/api/campaigns/{campaign_id}/rules", api_campaign_rules_patch, methods=["PATCH"]),
+    Route("/api/campaigns/{campaign_id}/rules/file", api_campaign_rules_file, methods=["GET"]),
+    Route("/api/campaigns/{campaign_id}/clips/{clip_id}", api_campaign_clip_patch, methods=["PATCH"]),
+    Route("/api/campaigns/{campaign_id}/sources", api_campaign_sources, methods=["GET"]),
+    Route("/api/campaigns/{campaign_id}/candidates", api_campaign_candidates, methods=["GET"]),
+    Route("/api/campaigns/{campaign_id}/exports", api_campaign_exports, methods=["GET"]),
+    Route("/api/exploration/{video_id}", api_exploration_get, methods=["GET"]),
+    Route("/api/exploration/{video_id}/save-to-campaign", api_exploration_save, methods=["POST"]),
+    Mount("/static", app=StaticFiles(directory=str(WEB_DIR)), name="static"),
+]
+
+app = Starlette(routes=routes)
+
+
+def _email_poll_loop():
+    """Background poller: ingest AI highlight replies from the inbox and
+    publish UI events so the approval page / notifications update live."""
+    while True:
+        try:
+            email_highlights.poll_highlight_emails(
+                on_ingested=lambda summary: publish_event("highlights_received", summary))
+        except Exception as exc:  # noqa: BLE001
+            print(f"[email] poll failed: {exc}", flush=True)
+        time.sleep(30)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8600
+    config.ensure_dirs()
+    if config.smtp_user and config.smtp_pass and config.highlight_reply_sender:
+        threading.Thread(target=_email_poll_loop, name="email-poll", daemon=True).start()
+        print(f"  Email highlights: watching inbox for replies from "
+              f"{config.highlight_reply_sender}.")
+    print("=" * 60)
+    print("  ClipForge - AI auto-clipper")
+    print(f"  Web UI:  http://localhost:{port}")
+    print(f"  Input:   {config.input_dir}")
+    print(f"  Output:  {config.output_dir}")
+    print("  Backend logs stream below (also shown in the web UI).")
+    print("  Press Ctrl+C to stop.")
+    print("=" * 60)
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="info")

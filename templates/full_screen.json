@@ -1,0 +1,68 @@
+{
+  "name": "full_screen",
+  "golden": true,
+  "label": "Full screen",
+  "description": "9:16 fully covered by the video — no bars. Black text with crisp white outline on every letter for both top hook and bottom captions.",
+  "output": {
+    "aspect_ratio": "9:16",
+    "resolution": "1080x1920"
+  },
+  "crop": {
+    "mode": "fill",
+    "background": "#000000",
+    "follow_speaker": true
+  },
+  "effects": {
+    "grade": "none",
+    "vignette": 0.0
+  },
+  "safe_top": 70,
+  "hook": {
+    "enabled": true,
+    "font": "Bebas Neue",
+    "size": 68,
+    "color": "#000000",
+    "outline_color": "#FFFFFF",
+    "outline_width": 5,
+    "box_enabled": false,
+    "position": "top",
+    "preferred_y": 0.04
+  },
+  "captions": {
+    "enabled": true,
+    "font": "Poppins-Bold",
+    "size": 68,
+    "color": "#000000",
+    "outline_color": "#FFFFFF",
+    "outline_width": 5,
+    "box_enabled": false,
+    "position": "bottom_center",
+    "max_words": 4,
+    "gradient": {
+      "enabled": false
+    },
+    "highlight_keyword": {
+      "enabled": true,
+      "color": "#E50914"
+    }
+  },
+  "music": {
+    "enabled": true,
+    "track": "",
+    "volume": 0.12
+  },
+  "broll": {
+    "enabled": false,
+    "mode": "cutaway",
+    "pip_scale": 0.6
+  },
+  "intro": {
+    "enabled": false
+  },
+  "outro": {
+    "enabled": false
+  },
+  "watermark": {
+    "enabled": false
+  }
+}
