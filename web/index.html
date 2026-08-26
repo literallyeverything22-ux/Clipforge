@@ -697,30 +697,86 @@
               <div class="safe-guide-bottom"><span>Bottom Captions Bar</span></div>
             </div>
 
-            <!-- Draggable Hook Box -->
+            <!-- Draggable & Directly Resizable Hook Box -->
             <div class="canvas-drag-box" id="canvasHookBox" data-type="hook" tabindex="0">
-              <div class="drag-handle" title="Drag to reposition hook"><span class="drag-dot"></span><span class="drag-label">HOOK TITLE</span></div>
+              <div class="drag-handle" title="Drag to reposition hook">
+                <span class="drag-dot"></span>
+                <span class="drag-label">HOOK TITLE</span>
+                <div class="canvas-box-stepper">
+                  <button type="button" class="btn-stepper" id="hookStepMinus" title="Make hook smaller">−</button>
+                  <span class="stepper-val" id="hookStepperVal">76px</span>
+                  <button type="button" class="btn-stepper" id="hookStepPlus" title="Make hook larger">+</button>
+                </div>
+              </div>
               <div class="canvas-text-content" id="canvasHookText">THE MOST IMPORTANT ADVICE</div>
               <div class="pos-badge" id="canvasHookPosBadge">Top: 8%</div>
+              <!-- Corner Resize Handles (CapCut style) -->
+              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
             </div>
 
-            <!-- Draggable Captions Box -->
+            <!-- Draggable & Directly Resizable Captions Box -->
             <div class="canvas-drag-box" id="canvasCaptionBox" data-type="caption" tabindex="0">
-              <div class="drag-handle" title="Drag to reposition captions"><span class="drag-dot"></span><span class="drag-label">SUBTITLES</span></div>
+              <div class="drag-handle" title="Drag to reposition captions">
+                <span class="drag-dot"></span>
+                <span class="drag-label">SUBTITLES</span>
+                <div class="canvas-box-stepper">
+                  <button type="button" class="btn-stepper" id="capStepMinus" title="Make subtitles smaller">−</button>
+                  <span class="stepper-val" id="captionStepperVal">68px</span>
+                  <button type="button" class="btn-stepper" id="capStepPlus" title="Make subtitles larger">+</button>
+                </div>
+              </div>
               <div class="canvas-text-content" id="canvasCaptionText">die <span class="hl-word">and I want</span> to live</div>
               <div class="pos-badge" id="canvasCaptionPosBadge">Top: 72%</div>
+              <!-- Corner Resize Handles (CapCut style) -->
+              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
             </div>
 
-            <!-- Draggable Extra Text / CTA Box -->
+            <!-- Draggable & Directly Resizable Extra Text / CTA Box -->
             <div class="canvas-drag-box" id="canvasCtaBox" data-type="cta" tabindex="0" hidden>
-              <div class="drag-handle" title="Drag to reposition watermark"><span class="drag-dot"></span><span class="drag-label">EXTRA TEXT</span></div>
+              <div class="drag-handle" title="Drag to reposition watermark">
+                <span class="drag-dot"></span>
+                <span class="drag-label">EXTRA TEXT</span>
+                <div class="canvas-box-stepper">
+                  <button type="button" class="btn-stepper" id="ctaStepMinus" title="Make smaller">−</button>
+                  <span class="stepper-val" id="ctaStepperVal">38px</span>
+                  <button type="button" class="btn-stepper" id="ctaStepPlus" title="Make larger">+</button>
+                </div>
+              </div>
               <div class="canvas-text-content" id="canvasCtaText">@mychannel · Part 1</div>
               <div class="pos-badge" id="canvasCtaPosBadge">Top: 92%</div>
+              <!-- Corner Resize Handles (CapCut style) -->
+              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
+              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
+            </div>
+          </div>
+
+          <!-- Direct Canvas Quick Size Toolbar -->
+          <div class="canvas-quick-toolbar">
+            <div class="quick-btn-group">
+              <span class="btn-group-label">Hook:</span>
+              <button type="button" class="btn btn-tiny btn-ghost" id="quickHookMinus" title="Decrease hook size">A−</button>
+              <span id="quickHookVal" class="quick-val">76px</span>
+              <button type="button" class="btn btn-tiny btn-ghost" id="quickHookPlus" title="Increase hook size">A+</button>
+            </div>
+            <span class="toolbar-divider">|</span>
+            <div class="quick-btn-group">
+              <span class="btn-group-label">Subtitles:</span>
+              <button type="button" class="btn btn-tiny btn-ghost" id="quickCapMinus" title="Decrease subtitle size">A−</button>
+              <span id="quickCapVal" class="quick-val">68px</span>
+              <button type="button" class="btn btn-tiny btn-ghost" id="quickCapPlus" title="Increase subtitle size">A+</button>
             </div>
           </div>
 
           <div class="canvas-playback-controls">
-            <span class="canvas-tip-text">💡 Tip: Drag boxes directly on the video or use the precision sliders on the right.</span>
+            <span class="canvas-tip-text">💡 Tip: Drag box corners or use the [−] [+] buttons directly on the canvas to resize.</span>
             <button class="btn btn-tiny btn-ghost" id="canvasRefreshFrame">
               <svg class="btn-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
               <span>Refresh Snapshot</span>

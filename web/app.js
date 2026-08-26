@@ -177,6 +177,21 @@
     canvasApplyClipBtn: $("#canvasApplyClipBtn"),
     canvasSingleLineToggle: $("#canvasSingleLineToggle"),
     canvasHookTextInput: $("#canvasHookTextInput"),
+    hookStepMinus: $("#hookStepMinus"),
+    hookStepPlus: $("#hookStepPlus"),
+    hookStepperVal: $("#hookStepperVal"),
+    capStepMinus: $("#capStepMinus"),
+    capStepPlus: $("#capStepPlus"),
+    captionStepperVal: $("#captionStepperVal"),
+    ctaStepMinus: $("#ctaStepMinus"),
+    ctaStepPlus: $("#ctaStepPlus"),
+    ctaStepperVal: $("#ctaStepperVal"),
+    quickHookMinus: $("#quickHookMinus"),
+    quickHookPlus: $("#quickHookPlus"),
+    quickHookVal: $("#quickHookVal"),
+    quickCapMinus: $("#quickCapMinus"),
+    quickCapPlus: $("#quickCapPlus"),
+    quickCapVal: $("#quickCapVal"),
   };
 
   const LABELS = {
@@ -767,6 +782,97 @@
       });
     }
 
+    // Direct in-canvas size steppers [ - ] [ + ]
+    function stepSize(type, delta) {
+      const key = type === "caption" ? "captions" : type;
+      if (!canvasState[key]) return;
+      const current = canvasState[key].size || (key === "hook" ? 76 : 64);
+      canvasState[key].size = Math.max(20, Math.min(130, current + delta));
+      updateCanvasElementsView();
+    }
+
+    if (els.hookStepMinus) els.hookStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("hook", -4); });
+    if (els.hookStepPlus) els.hookStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("hook", 4); });
+    if (els.capStepMinus) els.capStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("captions", -4); });
+    if (els.capStepPlus) els.capStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("captions", 4); });
+    if (els.ctaStepMinus) els.ctaStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("cta", -4); });
+    if (els.ctaStepPlus) els.ctaStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("cta", 4); });
+
+    // Quick toolbar buttons
+    if (els.quickHookMinus) els.quickHookMinus.addEventListener("click", () => stepSize("hook", -4));
+    if (els.quickHookPlus) els.quickHookPlus.addEventListener("click", () => stepSize("hook", 4));
+    if (els.quickCapMinus) els.quickCapMinus.addEventListener("click", () => stepSize("captions", -4));
+    if (els.quickCapPlus) els.quickCapPlus.addEventListener("click", () => stepSize("captions", 4));
+
+    // Mouse wheel resize directly on canvas boxes
+    function onWheelScale(e, type) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 2 : -2;
+      stepSize(type, delta);
+    }
+    if (els.canvasHookBox) els.canvasHookBox.addEventListener("wheel", (e) => onWheelScale(e, "hook"), { passive: false });
+    if (els.canvasCaptionBox) els.canvasCaptionBox.addEventListener("wheel", (e) => onWheelScale(e, "captions"), { passive: false });
+    if (els.canvasCtaBox) els.canvasCtaBox.addEventListener("wheel", (e) => onWheelScale(e, "cta"), { passive: false });
+
+    // Box selection highlighting
+    function selectCanvasBox(targetBox) {
+      [els.canvasHookBox, els.canvasCaptionBox, els.canvasCtaBox].forEach((b) => {
+        if (b) b.classList.toggle("is-selected", b === targetBox);
+      });
+    }
+    if (els.canvasHookBox) els.canvasHookBox.addEventListener("click", () => selectCanvasBox(els.canvasHookBox));
+    if (els.canvasCaptionBox) els.canvasCaptionBox.addEventListener("click", () => selectCanvasBox(els.canvasCaptionBox));
+    if (els.canvasCtaBox) els.canvasCtaBox.addEventListener("click", () => selectCanvasBox(els.canvasCtaBox));
+
+    // CapCut-style corner drag handles for interactive resizing
+    function initCornerResizeHandlers() {
+      const handles = els.canvasContainer ? els.canvasContainer.querySelectorAll(".resize-handle") : [];
+      handles.forEach((handle) => {
+        function onHandleDown(e) {
+          e.stopPropagation();
+          e.preventDefault();
+          const box = handle.closest(".canvas-drag-box");
+          if (!box) return;
+          const type = box.dataset.type === "caption" ? "captions" : box.dataset.type;
+          const startX = e.clientX || (e.touches && e.touches[0].clientX);
+          const startY = e.clientY || (e.touches && e.touches[0].clientY);
+          const startSize = canvasState[type].size || 64;
+          const dir = handle.dataset.handle; // "br" | "bl" | "tr" | "tl"
+
+          function onHandleMove(ev) {
+            const cx = ev.clientX || (ev.touches && ev.touches[0].clientX);
+            const cy = ev.clientY || (ev.touches && ev.touches[0].clientY);
+            let dx = cx - startX;
+            let dy = cy - startY;
+            if (dir === "tl") { dx = -dx; dy = -dy; }
+            else if (dir === "tr") { dy = -dy; }
+            else if (dir === "bl") { dx = -dx; }
+            const delta = (dx + dy) * 0.45;
+            const newSize = Math.max(20, Math.min(130, Math.round(startSize + delta)));
+            canvasState[type].size = newSize;
+            updateCanvasElementsView();
+            if (ev.cancelable) ev.preventDefault();
+          }
+
+          function onHandleUp() {
+            document.removeEventListener("mousemove", onHandleMove);
+            document.removeEventListener("mouseup", onHandleUp);
+            document.removeEventListener("touchmove", onHandleMove);
+            document.removeEventListener("touchend", onHandleUp);
+          }
+
+          document.addEventListener("mousemove", onHandleMove);
+          document.addEventListener("mouseup", onHandleUp);
+          document.addEventListener("touchmove", onHandleMove, { passive: false });
+          document.addEventListener("touchend", onHandleUp);
+        }
+
+        handle.addEventListener("mousedown", onHandleDown);
+        handle.addEventListener("touchstart", onHandleDown, { passive: false });
+      });
+    }
+    initCornerResizeHandlers();
+
     if (els.canvasRefreshFrame) {
       els.canvasRefreshFrame.addEventListener("click", () => {
         const time = currentCanvasClip ? (currentCanvasClip.start + currentCanvasClip.end) / 2 : 2.5;
@@ -982,6 +1088,13 @@
       if (els.canvasCtaBox) els.canvasCtaBox.hidden = true;
     }
 
+    // Update in-canvas stepper & quick toolbar display values
+    if (els.hookStepperVal) els.hookStepperVal.textContent = `${canvasState.hook.size || 72}px`;
+    if (els.captionStepperVal) els.captionStepperVal.textContent = `${canvasState.captions.size || 64}px`;
+    if (els.ctaStepperVal) els.ctaStepperVal.textContent = `${(canvasState.cta && canvasState.cta.size) || 38}px`;
+    if (els.quickHookVal) els.quickHookVal.textContent = `${canvasState.hook.size || 72}px`;
+    if (els.quickCapVal) els.quickCapVal.textContent = `${canvasState.captions.size || 64}px`;
+
     // Form inputs sync
     if (els.canvasFontSelect) els.canvasFontSelect.value = canvasState.captions.font || "Poppins-Bold";
     if (els.canvasTextColor) els.canvasTextColor.value = canvasState.captions.color || "#FFFFFF";
@@ -1041,16 +1154,18 @@
       if (els.canvasClipTitle) {
         els.canvasClipTitle.textContent = `Clip #${idx >= 0 ? idx + 1 : "1"} (${durationFmt(clip.start, clip.end)})`;
       }
-      const hookTitle = clip.hook || "THE MOST ENGAGING HOOK TITLE";
+      const rawHook = clip.hook || "THE MOST ENGAGING HOOK TITLE";
+      const cleanHook = rawHook.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
       if (els.canvasHookText) {
-        els.canvasHookText.textContent = hookTitle;
+        els.canvasHookText.textContent = cleanHook;
       }
       if (els.canvasHookTextInput) {
-        els.canvasHookTextInput.value = hookTitle;
+        els.canvasHookTextInput.value = cleanHook;
       }
       if (els.canvasCaptionText) {
         const rawSnippet = clip.snippet || "decided that you're supposed to feel good";
-        const words = rawSnippet.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
+        const cleanSnippet = rawSnippet.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+        const words = cleanSnippet.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
         const chunk = words.slice(0, 3);
         if (chunk.length >= 2) {
           const lead = escapeHtml(chunk.slice(0, -1).join(" "));

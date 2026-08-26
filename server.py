@@ -322,7 +322,12 @@ def _read_json(p: Path):
 
 
 def _candidates_for(video_id, campaign_id=None):
-    return _read_json(_candidates_dir(campaign_id) / f"{video_id}_candidates.json")
+    data = _read_json(_candidates_dir(campaign_id) / f"{video_id}_candidates.json")
+    if isinstance(data, list):
+        for c in data:
+            if isinstance(c, dict) and "hook" in c and isinstance(c["hook"], str):
+                c["hook"] = " ".join(c["hook"].replace("\r", " ").replace("\n", " ").split())
+    return data
 
 
 def _transcript_segments(video_id, campaign_id=None):

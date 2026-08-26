@@ -276,6 +276,8 @@ def _build_ass(lines, template, resx, resy, clip_duration, hook_text=None,
     cta_text = cta.get("text") if cta_enabled else None
 
     # --- layout engine: one source of truth for x/y/font-size ---------------
+    if hook_text and hook.get("max_lines", 1) == 1:
+        hook_text = " ".join(hook_text.replace("\r", " ").replace("\n", " ").split())
     cap_strings = _caption_line_strings(lines) if caps.get("enabled") else []
     safe = _template_safe_area(template, band_offset, band_height)
     elements = tl.elements_from_template(template, hook_text,

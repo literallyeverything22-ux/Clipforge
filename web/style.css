@@ -3198,20 +3198,110 @@ summary:focus-visible {
   color: var(--teal);
   background: rgba(0, 0, 0, 0.85);
   border: 1px solid rgba(34, 211, 238, 0.4);
-  border-radius: 3px;
-  padding: 1px 5px;
-  margin: 0 auto 3px auto;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin: 0 auto 4px auto;
   width: fit-content;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  pointer-events: none;
+  user-select: none;
 }
 
 .drag-dot {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: var(--teal);
+}
+
+/* In-Box Stepper Buttons on Drag Handle */
+.canvas-box-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  padding: 1px 3px;
+}
+
+.btn-stepper {
+  background: transparent;
+  border: none;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 900;
+  width: 16px;
+  height: 16px;
+  line-height: 14px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.btn-stepper:hover {
+  background: var(--teal);
+  color: #000;
+}
+
+.btn-stepper:active {
+  transform: scale(0.9);
+}
+
+.stepper-val {
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* Corner Resize Handles (CapCut Style) */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--teal);
+  border: 1.5px solid #000;
+  border-radius: 50%;
+  z-index: 25;
+  cursor: nwse-resize;
+  opacity: 0.7;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.canvas-drag-box:hover .resize-handle,
+.canvas-drag-box.is-selected .resize-handle {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.resize-handle.handle-br {
+  right: -5px;
+  bottom: -5px;
+  cursor: nwse-resize;
+}
+
+.resize-handle.handle-bl {
+  left: -5px;
+  bottom: -5px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.handle-tr {
+  right: -5px;
+  top: -5px;
+  cursor: nesw-resize;
+}
+
+.resize-handle.handle-tl {
+  left: -5px;
+  top: -5px;
+  cursor: nwse-resize;
 }
 
 .pos-badge {
@@ -3239,14 +3329,54 @@ summary:focus-visible {
   font-size: 15px;
   font-weight: 800;
   line-height: 1.2;
-  word-break: keep-all; /* Never break words */
-  white-space: nowrap; /* Single line */
+  word-break: keep-all !important;
+  white-space: nowrap !important;
   overflow: visible;
   display: block;
+  user-select: none;
 }
 
 .canvas-text-content .hl-word {
   color: #FFF35C;
+}
+
+/* Direct Canvas Quick Size Toolbar */
+.canvas-quick-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 320px;
+  padding: 6px 10px;
+  background: var(--surface-base);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+}
+
+.quick-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.quick-val {
+  font-weight: 800;
+  color: var(--teal);
+  font-size: 11px;
+  min-width: 28px;
+  text-align: center;
+}
+
+.toolbar-divider {
+  color: var(--line);
+  font-size: 12px;
 }
 
 .canvas-playback-controls {
@@ -3259,7 +3389,7 @@ summary:focus-visible {
 }
 
 .canvas-tip-text {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-3);
 }
 

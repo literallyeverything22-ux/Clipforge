@@ -341,7 +341,7 @@ def _finalize(clips_raw, segments, duration, min_score=None, max_clips=None,
             "end_segment": sid_end,
             "reason": str(c.get("reason", "")).strip(),
             "score": round(score, 3),
-            "hook": str(c.get("hook", "") or "").strip(),
+            "hook": " ".join(str(c.get("hook", "") or "").replace("\r", " ").replace("\n", " ").split()),
             "status": "pending",
         })
 
