@@ -14,6 +14,8 @@ import uuid
 from pathlib import Path
 
 from starlette.applications import Starlette
+from starlette.middleware import Middleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.routing import Mount, Route
@@ -1675,7 +1677,18 @@ routes = [
     Mount("/static", app=StaticFiles(directory=str(WEB_DIR)), name="static"),
 ]
 
-app = Starlette(routes=routes)
+
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/static") or request.url.path in ("/", "/index.html"):
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+            response.headers["Pragma"] = "no-cache"
+            response.headers["Expires"] = "0"
+        return response
+
+
+app = Starlette(routes=routes, middleware=[Middleware(NoCacheMiddleware)])
 
 
 def _email_poll_loop():

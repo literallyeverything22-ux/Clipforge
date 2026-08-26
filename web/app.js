@@ -172,6 +172,18 @@
     canvasCtaTextInput: $("#canvasCtaTextInput"),
     canvasCtaYSlider: $("#canvasCtaYSlider"),
     canvasCtaYVal: $("#canvasCtaYVal"),
+    canvasCtaXSlider: $("#canvasCtaXSlider"),
+    canvasCtaXVal: $("#canvasCtaXVal"),
+    canvasHookXSlider: $("#canvasHookXSlider"),
+    canvasHookXVal: $("#canvasHookXVal"),
+    canvasCaptionXSlider: $("#canvasCaptionXSlider"),
+    canvasCaptionXVal: $("#canvasCaptionXVal"),
+    hookAlignLeft: $("#hookAlignLeft"),
+    hookAlignCenter: $("#hookAlignCenter"),
+    hookAlignRight: $("#hookAlignRight"),
+    capAlignLeft: $("#capAlignLeft"),
+    capAlignCenter: $("#capAlignCenter"),
+    capAlignRight: $("#capAlignRight"),
     canvasResetBtn: $("#canvasResetBtn"),
     canvasApplyCampaignBtn: $("#canvasApplyCampaignBtn"),
     canvasApplyClipBtn: $("#canvasApplyClipBtn"),
@@ -566,6 +578,7 @@
   let activePresetId = "hormozi";
   let canvasState = {
     hook: {
+      preferred_x: 0.50,
       preferred_y: 0.08,
       font: "Anton",
       size: 76,
@@ -576,6 +589,7 @@
       background_color: "#000000",
     },
     captions: {
+      preferred_x: 0.50,
       preferred_y: 0.72,
       font: "Anton",
       size: 68,
@@ -589,6 +603,7 @@
     cta: {
       enabled: false,
       text: "@mychannel · Part 1",
+      preferred_x: 0.50,
       preferred_y: 0.92,
       font: "Poppins-Bold",
       size: 38,
@@ -597,17 +612,21 @@
   };
 
   let activeDragTarget = null;
+  let dragStartX = 0;
   let dragStartY = 0;
-  let dragInitialYPct = 0;
+  let dragInitialXPct = 0.5;
+  let dragInitialYPct = 0.5;
 
   function initCanvasInteractions() {
     function onPointerDown(e, targetType) {
       activeDragTarget = targetType;
+      dragStartX = e.clientX || (e.touches && e.touches[0].clientX);
       dragStartY = e.clientY || (e.touches && e.touches[0].clientY);
       const box = targetType === "hook" ? els.canvasHookBox : (targetType === "caption" ? els.canvasCaptionBox : els.canvasCtaBox);
       if (box) box.classList.add("is-dragging");
       const key = targetType === "caption" ? "captions" : targetType;
-      dragInitialYPct = canvasState[key] ? canvasState[key].preferred_y : 0.5;
+      dragInitialXPct = canvasState[key] && canvasState[key].preferred_x != null ? canvasState[key].preferred_x : 0.5;
+      dragInitialYPct = canvasState[key] && canvasState[key].preferred_y != null ? canvasState[key].preferred_y : 0.5;
       document.addEventListener("mousemove", onPointerMove);
       document.addEventListener("mouseup", onPointerUp);
       document.addEventListener("touchmove", onPointerMove, { passive: false });
@@ -617,14 +636,20 @@
 
     function onPointerMove(e) {
       if (!activeDragTarget || !els.canvasContainer) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
       const clientY = e.clientY || (e.touches && e.touches[0].clientY);
       const rect = els.canvasContainer.getBoundingClientRect();
+      const deltaX = clientX - dragStartX;
       const deltaY = clientY - dragStartY;
-      const deltaPct = deltaY / (rect.height || 533);
-      let newY = Math.max(0.02, Math.min(0.98, dragInitialYPct + deltaPct));
+      const deltaXPct = deltaX / (rect.width || 320);
+      const deltaYPct = deltaY / (rect.height || 569);
+      let newX = Math.max(0.05, Math.min(0.95, dragInitialXPct + deltaXPct));
+      let newY = Math.max(0.02, Math.min(0.98, dragInitialYPct + deltaYPct));
+      newX = Math.round(newX * 100) / 100;
       newY = Math.round(newY * 100) / 100;
       const key = activeDragTarget === "caption" ? "captions" : activeDragTarget;
       if (canvasState[key]) {
+        canvasState[key].preferred_x = newX;
         canvasState[key].preferred_y = newY;
       }
       updateCanvasElementsView();
@@ -664,10 +689,22 @@
       });
     }
 
-    // Sliders & inputs
+    // 2D Sliders & snap alignment inputs
+    if (els.canvasHookXSlider) {
+      els.canvasHookXSlider.addEventListener("input", () => {
+        canvasState.hook.preferred_x = Number(els.canvasHookXSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
     if (els.canvasHookYSlider) {
       els.canvasHookYSlider.addEventListener("input", () => {
         canvasState.hook.preferred_y = Number(els.canvasHookYSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCaptionXSlider) {
+      els.canvasCaptionXSlider.addEventListener("input", () => {
+        canvasState.captions.preferred_x = Number(els.canvasCaptionXSlider.value) / 100;
         updateCanvasElementsView();
       });
     }
@@ -677,9 +714,53 @@
         updateCanvasElementsView();
       });
     }
+    if (els.canvasCtaXSlider) {
+      els.canvasCtaXSlider.addEventListener("input", () => {
+        canvasState.cta.preferred_x = Number(els.canvasCtaXSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
     if (els.canvasCtaYSlider) {
       els.canvasCtaYSlider.addEventListener("input", () => {
         canvasState.cta.preferred_y = Number(els.canvasCtaYSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
+
+    // Quick snap alignment buttons
+    if (els.hookAlignLeft) {
+      els.hookAlignLeft.addEventListener("click", () => {
+        canvasState.hook.preferred_x = 0.18;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.hookAlignCenter) {
+      els.hookAlignCenter.addEventListener("click", () => {
+        canvasState.hook.preferred_x = 0.50;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.hookAlignRight) {
+      els.hookAlignRight.addEventListener("click", () => {
+        canvasState.hook.preferred_x = 0.82;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.capAlignLeft) {
+      els.capAlignLeft.addEventListener("click", () => {
+        canvasState.captions.preferred_x = 0.18;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.capAlignCenter) {
+      els.capAlignCenter.addEventListener("click", () => {
+        canvasState.captions.preferred_x = 0.50;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.capAlignRight) {
+      els.capAlignRight.addEventListener("click", () => {
+        canvasState.captions.preferred_x = 0.82;
         updateCanvasElementsView();
       });
     }
@@ -889,8 +970,11 @@
     if (els.canvasResetBtn) {
       els.canvasResetBtn.addEventListener("click", () => {
         applyPresetStyle(STYLE_PRESETS[0]);
+        canvasState.hook.preferred_x = 0.50;
         canvasState.hook.preferred_y = 0.08;
+        canvasState.captions.preferred_x = 0.50;
         canvasState.captions.preferred_y = 0.72;
+        canvasState.cta.preferred_x = 0.50;
         canvasState.cta.preferred_y = 0.92;
         updateCanvasElementsView();
         toast("Reset layout positions to default.", "ok");
@@ -951,8 +1035,8 @@
     updateCanvasElementsView();
   }
 
-  function fitSingleLine(textEl, targetSizePx, maxWidthRatio = 0.86, minSizePx = 10) {
-    if (!textEl || !els.canvasContainer) return targetSizePx;
+  function fitSingleLine(textEl, targetSizePx, maxWidthRatio = 0.88, minSizePx = 11) {
+    if (!textEl) return targetSizePx;
     const isSingleLine = els.canvasSingleLineToggle ? els.canvasSingleLineToggle.checked : true;
     if (!isSingleLine) {
       textEl.style.whiteSpace = "normal";
@@ -961,26 +1045,37 @@
       return targetSizePx;
     }
 
-    const containerW = els.canvasContainer.clientWidth || 320;
+    const containerW = (els.canvasContainer && els.canvasContainer.clientWidth) || 320;
     const maxAllowedW = Math.floor(containerW * maxWidthRatio);
 
     textEl.style.whiteSpace = "nowrap";
     textEl.style.wordBreak = "keep-all";
     textEl.style.fontSize = `${targetSizePx}px`;
 
-    let w = textEl.scrollWidth || textEl.offsetWidth;
+    let w = textEl.scrollWidth || textEl.offsetWidth || 0;
+    const charCount = (textEl.textContent || "").length;
+
+    if (w === 0 && charCount > 0) {
+      const estimatedW = charCount * targetSizePx * 0.55;
+      if (estimatedW > maxAllowedW) {
+        targetSizePx = Math.max(minSizePx, Math.floor(targetSizePx * (maxAllowedW / estimatedW)));
+        textEl.style.fontSize = `${targetSizePx}px`;
+      }
+      w = textEl.scrollWidth || textEl.offsetWidth || estimatedW;
+    }
+
     let effectiveSize = targetSizePx;
     if (w > maxAllowedW && w > 0) {
-      const scale = maxAllowedW / w;
+      const scale = (maxAllowedW - 8) / w;
       effectiveSize = Math.max(minSizePx, Math.floor(targetSizePx * scale));
       textEl.style.fontSize = `${effectiveSize}px`;
 
-      // Refinement loop to avoid single-pixel overflow
-      w = textEl.scrollWidth || textEl.offsetWidth;
+      // Refinement loop to guarantee it never touches or exceeds maxAllowedW
+      w = textEl.scrollWidth || textEl.offsetWidth || 0;
       while (w > maxAllowedW && effectiveSize > minSizePx) {
         effectiveSize -= 1;
         textEl.style.fontSize = `${effectiveSize}px`;
-        w = textEl.scrollWidth || textEl.offsetWidth;
+        w = textEl.scrollWidth || textEl.offsetWidth || 0;
       }
     }
     return effectiveSize;
@@ -992,9 +1087,13 @@
     const scaleFactor = containerW / 1080; // normalized to 1080 canonical ASS canvas
 
     // 1. Hook
+    const hookX = Math.round((canvasState.hook.preferred_x != null ? canvasState.hook.preferred_x : 0.5) * 100);
     const hookY = Math.round(canvasState.hook.preferred_y * 100);
+    els.canvasHookBox.style.left = `${hookX}%`;
     els.canvasHookBox.style.top = `${hookY}%`;
-    if (els.canvasHookPosBadge) els.canvasHookPosBadge.textContent = `Top: ${hookY}%`;
+    if (els.canvasHookPosBadge) els.canvasHookPosBadge.textContent = `X: ${hookX}% · Y: ${hookY}%`;
+    if (els.canvasHookXSlider) els.canvasHookXSlider.value = hookX;
+    if (els.canvasHookXVal) els.canvasHookXVal.textContent = `${hookX}%`;
     if (els.canvasHookYSlider) els.canvasHookYSlider.value = hookY;
     if (els.canvasHookYVal) els.canvasHookYVal.textContent = `${hookY}%`;
 
@@ -1031,9 +1130,13 @@
     }
 
     // 2. Caption
+    const capX = Math.round((canvasState.captions.preferred_x != null ? canvasState.captions.preferred_x : 0.5) * 100);
     const capY = Math.round(canvasState.captions.preferred_y * 100);
+    els.canvasCaptionBox.style.left = `${capX}%`;
     els.canvasCaptionBox.style.top = `${capY}%`;
-    if (els.canvasCaptionPosBadge) els.canvasCaptionPosBadge.textContent = `Top: ${capY}%`;
+    if (els.canvasCaptionPosBadge) els.canvasCaptionPosBadge.textContent = `X: ${capX}% · Y: ${capY}%`;
+    if (els.canvasCaptionXSlider) els.canvasCaptionXSlider.value = capX;
+    if (els.canvasCaptionXVal) els.canvasCaptionXVal.textContent = `${capX}%`;
     if (els.canvasCaptionYSlider) els.canvasCaptionYSlider.value = capY;
     if (els.canvasCaptionYVal) els.canvasCaptionYVal.textContent = `${capY}%`;
 
@@ -1072,9 +1175,15 @@
     // 3. CTA
     if (canvasState.cta && canvasState.cta.enabled) {
       if (els.canvasCtaBox) els.canvasCtaBox.hidden = false;
+      const ctaX = Math.round((canvasState.cta.preferred_x != null ? canvasState.cta.preferred_x : 0.5) * 100);
       const ctaY = Math.round(canvasState.cta.preferred_y * 100);
-      if (els.canvasCtaBox) els.canvasCtaBox.style.top = `${ctaY}%`;
-      if (els.canvasCtaPosBadge) els.canvasCtaPosBadge.textContent = `Top: ${ctaY}%`;
+      if (els.canvasCtaBox) {
+        els.canvasCtaBox.style.left = `${ctaX}%`;
+        els.canvasCtaBox.style.top = `${ctaY}%`;
+      }
+      if (els.canvasCtaPosBadge) els.canvasCtaPosBadge.textContent = `X: ${ctaX}% · Y: ${ctaY}%`;
+      if (els.canvasCtaXSlider) els.canvasCtaXSlider.value = ctaX;
+      if (els.canvasCtaXVal) els.canvasCtaXVal.textContent = `${ctaX}%`;
       if (els.canvasCtaYSlider) els.canvasCtaYSlider.value = ctaY;
       if (els.canvasCtaYVal) els.canvasCtaYVal.textContent = `${ctaY}%`;
       if (els.canvasCtaText) {
@@ -1193,8 +1302,11 @@
     }
 
     renderStylePresets();
-    updateCanvasElementsView();
     if (els.visualCanvasModal) els.visualCanvasModal.hidden = false;
+    updateCanvasElementsView();
+    setTimeout(() => {
+      updateCanvasElementsView();
+    }, 40);
   }
 
   async function applyCanvasToClip() {
@@ -2042,7 +2154,7 @@
         actions.appendChild(bReject);
       }
       const bLayout = document.createElement("button");
-      bLayout.className = "btn-preview";
+      bLayout.className = "btn-preview btn-canvas-layout";
       bLayout.style.background = "var(--teal-dim)";
       bLayout.style.color = "var(--teal)";
       bLayout.style.borderColor = "rgba(34, 211, 238, 0.4)";

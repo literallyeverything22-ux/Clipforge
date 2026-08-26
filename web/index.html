@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="/static/style.css?v=25">
+  <link rel="stylesheet" href="/static/style.css?v=20260827_03">
 </head>
 <body>
   <!-- SVG Icon Sprite -->
@@ -876,27 +876,67 @@
             </div>
           </div>
 
-          <!-- 3. Vertical Positioning Sliders -->
+          <!-- 3. Full 2D Positioning Controls (X & Y Freedom) -->
           <div class="inspector-section">
             <h4 class="inspector-title">
               <svg class="icon-inline" aria-hidden="true"><use href="#icon-layers"/></svg>
-              Fine Position (Y-Axis)
+              Position & Alignment (X & Y Freedom)
             </h4>
-            <div class="slider-row">
-              <label class="field-slider">
-                <div class="slider-label-row">
-                  <span>Hook Vertical Position</span>
-                  <span id="canvasHookYVal">8%</span>
+
+            <!-- Hook Position & Quick Snap Alignment -->
+            <div class="position-control-block">
+              <div class="control-block-header">
+                <span class="control-block-title">Hook Placement</span>
+                <div class="align-btn-group">
+                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignLeft" title="Snap Hook Left">Left</button>
+                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignCenter" title="Snap Hook Center">Center</button>
+                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignRight" title="Snap Hook Right">Right</button>
                 </div>
-                <input type="range" id="canvasHookYSlider" min="2" max="95" value="8" step="1">
-              </label>
-              <label class="field-slider">
-                <div class="slider-label-row">
-                  <span>Captions Vertical Position</span>
-                  <span id="canvasCaptionYVal">72%</span>
+              </div>
+              <div class="slider-row">
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Horizontal (X)</span>
+                    <span id="canvasHookXVal">50%</span>
+                  </div>
+                  <input type="range" id="canvasHookXSlider" min="5" max="95" value="50" step="1">
+                </label>
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Vertical (Y)</span>
+                    <span id="canvasHookYVal">8%</span>
+                  </div>
+                  <input type="range" id="canvasHookYSlider" min="2" max="95" value="8" step="1">
+                </label>
+              </div>
+            </div>
+
+            <!-- Captions Position & Quick Snap Alignment -->
+            <div class="position-control-block" style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px;">
+              <div class="control-block-header">
+                <span class="control-block-title">Subtitles Placement</span>
+                <div class="align-btn-group">
+                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignLeft" title="Snap Subtitles Left">Left</button>
+                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignCenter" title="Snap Subtitles Center">Center</button>
+                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignRight" title="Snap Subtitles Right">Right</button>
                 </div>
-                <input type="range" id="canvasCaptionYSlider" min="5" max="95" value="72" step="1">
-              </label>
+              </div>
+              <div class="slider-row">
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Horizontal (X)</span>
+                    <span id="canvasCaptionXVal">50%</span>
+                  </div>
+                  <input type="range" id="canvasCaptionXSlider" min="5" max="95" value="50" step="1">
+                </label>
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Vertical (Y)</span>
+                    <span id="canvasCaptionYVal">72%</span>
+                  </div>
+                  <input type="range" id="canvasCaptionYSlider" min="5" max="95" value="72" step="1">
+                </label>
+              </div>
             </div>
           </div>
 
@@ -910,13 +950,22 @@
             </div>
             <div id="canvasCtaOptions" hidden style="margin-top:8px;">
               <input type="text" id="canvasCtaTextInput" placeholder="@yourhandle · Follow for Part 2" class="field-input-compact">
-              <label class="field-slider" style="margin-top:6px;">
-                <div class="slider-label-row">
-                  <span>Vertical Position</span>
-                  <span id="canvasCtaYVal">92%</span>
-                </div>
-                <input type="range" id="canvasCtaYSlider" min="5" max="98" value="92" step="1">
-              </label>
+              <div class="slider-row" style="margin-top:6px;">
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Horizontal (X)</span>
+                    <span id="canvasCtaXVal">50%</span>
+                  </div>
+                  <input type="range" id="canvasCtaXSlider" min="5" max="95" value="50" step="1">
+                </label>
+                <label class="field-slider">
+                  <div class="slider-label-row">
+                    <span>Vertical (Y)</span>
+                    <span id="canvasCtaYVal">92%</span>
+                  </div>
+                  <input type="range" id="canvasCtaYSlider" min="5" max="98" value="92" step="1">
+                </label>
+              </div>
             </div>
           </div>
         </div>
@@ -1003,6 +1052,6 @@
   <!-- Toast Alerts -->
   <div class="toast" id="toast" hidden role="alert" aria-live="polite"></div>
 
-  <script src="/static/app.js?v=25"></script>
+  <script src="/static/app.js?v=20260827_03"></script>
 </body>
 </html>
