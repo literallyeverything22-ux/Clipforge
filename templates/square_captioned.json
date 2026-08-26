@@ -42,7 +42,7 @@
     }
   },
   "music": {
-    "enabled": true,
+    "enabled": false,
     "track": "",
     "volume": 0.12
   },

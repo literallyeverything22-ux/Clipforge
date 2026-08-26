@@ -44,10 +44,11 @@ graph LR
     D --> E[5. Style Lab & 9:16 Render]
 ```
 
-### 1. Create a Campaign Bay & Upload Video
+### 1. Create a Campaign Bay & Add Videos (Upload or Paste Link)
 - Open the Web UI at `http://localhost:8600`.
 - Create a new campaign bay or select an existing one.
-- Drag & drop your MP4/MOV video file directly into the upload dropzone.
+- **Option A (Paste Video URL)**: Paste any YouTube link, YouTube Short, TikTok, or web video URL into the **Import Video** box and click **Import**. ClipForge will download and convert it automatically.
+- **Option B (Local File)**: Drag & drop your MP4/MOV video file directly into the upload dropzone.
 - *(Optional)* Attach a creator brief (PDF, DOCX, TXT, MD) to steer AI topic selection and brand safety rules.
 
 ### 2. Transcribe & Clean Audio

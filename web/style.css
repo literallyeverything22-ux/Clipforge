@@ -1514,6 +1514,137 @@ input[type="range"] {
   margin-top: 10px;
 }
 
+/* Source Media Ingestion (URL + File Upload) */
+.source-ingest-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.url-import-card {
+  background: var(--surface-base);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px 14px;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.url-import-card:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 1px var(--teal-glow), 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.url-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.url-input-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF0033;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.url-icon-svg {
+  width: 22px;
+  height: 22px;
+}
+
+.url-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--sans, inherit);
+  font-size: 14px;
+  outline: none;
+  padding: 6px 0;
+  min-width: 0;
+}
+
+.url-input::placeholder {
+  color: var(--text-3);
+}
+
+.btn-import-url {
+  flex-shrink: 0;
+  padding: 8px 18px;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.url-progress {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.url-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.url-progress-title {
+  color: var(--text-2);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.url-progress-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.url-progress-speed {
+  color: var(--text-3);
+}
+
+.url-progress-pct {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.source-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 4px 0;
+}
+
+.source-divider::before,
+.source-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.source-divider span {
+  padding: 0 12px;
+}
+
 /* Upload Progress Bar */
 .upload-progress {
   display: flex;

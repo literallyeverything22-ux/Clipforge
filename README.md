@@ -35,6 +35,7 @@ flowchart LR
 
 ## ✨ Features
 
+- 🌐 **Direct YouTube & Web Video Import**: Paste any YouTube link, Short, or web video URL to download and convert it directly into ClipForge's local processing pipeline.
 - 🚀 **GPU-Accelerated Transcription**: Word-level timestamps powered by `faster-whisper` with automatic CUDA DLL preloading (compatible with RTX 30, 40, and 50-series GPUs).
 - 🧹 **Confidence-Based Transcript Cleaning**: Fixes phonetic mishearings and audio artifacts using Whisper's per-word probability scores.
 - 🎯 **Multi-Source Highlight Detection**:
@@ -101,7 +102,10 @@ Open your browser at **`http://localhost:8600`** to access the ClipForge Studio.
 ClipForge also features a complete CLI:
 
 ```powershell
-# Transcribe and analyze a video
+# Download video directly from YouTube / web URL
+python main.py download "https://www.youtube.com/watch?v=..."
+
+# Transcribe and analyze a video (or pass a URL directly!)
 python main.py analyze input/my_video.mp4
 
 # Run highlight selection via local Ollama

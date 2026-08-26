@@ -1,4 +1,4 @@
-﻿"""ClipForge â€” pipeline orchestrator.
+"""ClipForge â€” pipeline orchestrator.
 
 Stages: input â†’ transcribe â†’ context â†’ select highlights â†’ review â†’ cut â†’ auto-edit â†’ output.
 
@@ -37,11 +37,17 @@ from src import extract_frames, analyze_frames
 from src import progress
 from src import campaigns as camp_mod
 from src import style_explorer
+from src import downloader
 
 VIDEO_EXTS = (".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v")
 
 
 def _resolve_video(value):
+    if downloader.is_url(str(value)):
+        print(f"[input] Detected video URL: {value}. Downloading to {config.input_dir}...")
+        res = downloader.download_video(str(value), config.input_dir)
+        return Path(res["path"])
+
     p = Path(value)
     if p.is_absolute():
         if not p.exists():
@@ -649,12 +655,206 @@ def cmd_batch(args):
     for video in videos:
         print(f"\n=== processing {video.name} ===")
         candidates_path = _prepare(video, args, 0, 55)
+    variants = style_explorer.generate_variants(
+        video.stem, max_variants=args.variants, constraints=constraints)
+    print(f"[explore] {len(variants)} variant(s) generated")
+    progress.emit(25, "explore-variants", f"{len(variants)} variants")
+
+    probes = {
+        "default": edges[0],
+        "tight": edges[1] if len(edges) > 1 else edges[0],
+        "extended_lead": edges[-1],
+    }
+    hook_text = probe.get("hook") or None
+    n_variants = len(variants)
+    preview_files = {}
+    for i, (name, tpl, summary) in enumerate(variants):
+        edge_key = ("extended_lead" if i == 0 else
+                    "tight" if i == n_variants - 1 else "default")
+        pr = probes[edge_key]
+        progress.emit(25 + 55 * i / max(1, n_variants), "explore-render",
+                      f"Rendering preview {i + 1}/{n_variants}: {name}")
+        try:
+            out = style_explorer.render_variant(
+                i, tpl, {"path": pr["path"], "transcript": transcript_path,
+                         "start": pr["start"], "end": pr["end"]},
+                preview_dir, hook_text)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[explore] render failed for {name}: {exc}")
+            continue
+        preview_files[i] = out
+
+    progress.emit(80, "explore-judge", "Scoring previews with the vision LLM")
+    scored_records = []
+    for i, (name, tpl, summary) in enumerate(variants):
+        pv = preview_files.get(i)
+        if pv is None:
+            continue
+        frames = style_explorer.extract_frames(pv, preview_dir, prefix=f"v{i:02d}")
+        verdict = style_explorer.judge_variant(frames, summary, brief)
+        progress.emit(80 + 20 * (i + 1) / max(1, n_variants),
+                      "explore-judge", f"Judged {i + 1}/{n_variants}")
+        if verdict is None:
+            print(f"[explore] {name}: unscorable, excluded")
+            continue
+        scored_records.append({
+            "name": name,
+            "file": pv.name,
+            "edge": ("extended_lead" if i == 0 else
+                     "tight" if i == n_variants - 1 else "default"),
+            "summary": summary,
+            "frames": [p.name for p in frames],
+            "scores": verdict.get("scores", {}),
+            "total": verdict.get("total"),
+            "verdict": verdict.get("verdict", ""),
+            "template": tpl,
+        })
+
+    winner = None
+    if scored_records:
+        winner = max(scored_records, key=lambda r: float(r["total"]))
+
+    import datetime as _dt
+    report = {
+        "video_id": video.stem,
+        "video": str(video),
+        "brief": brief,
+        "brief_constraints": constraints,
+        "probe": {
+            "start": probe.get("start"), "end": probe.get("end"),
+            "score": probe.get("score"), "hook": hook_text,
+        },
+        "vision_model": config.vision_model,
+        "variants": [{k: v for k, v in r.items() if k != "template"}
+                     for r in scored_records],
+        "winner": winner["name"] if winner else None,
+        "timestamp": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
+    }
+    style_explorer.save_report(report)
+
+    if winner is None:
+        print("[explore] WARNING: no variant scored; falling back to the "
+              f"default template '{config.default_template}'")
+        progress.emit(100, "done", "Exploration finished (no winner scored)")
+        return
+
+    winner_path = style_explorer.winner_template_path(video.stem)
+    winner_tpl = winner["template"]
+    winner_tpl["name"] = f"{video.stem}_winner"
+    winner_path.write_text(json.dumps(winner_tpl, ensure_ascii=False, indent=2),
+                           encoding="utf-8")
+    style_explorer.save_report(dict(report, winner_template=winner_path.name))
+
+    print(f"[explore] {len(scored_records)}/{n_variants} previews scored, "
+          f"winner: {winner['name']} (total {float(winner['total']):.1f})")
+    print(f"[explore] verdict: {winner['verdict']}")
+    print(f"[explore] winner template -> {winner_path}")
+    progress.emit(100, "done",
+                  f"Winner: {winner['name']} ({float(winner['total']):.1f})")
+    progress.event("explore_done", {
+        "video_id": video.stem,
+        "winner": winner["name"],
+        "total": float(winner['total']),
+    })
+
+
+def cmd_analyze(args):
+    """transcribe → context → select. Produces candidates for review."""
+    if args.emit_progress:
+        progress.enable()
+    config.ensure_dirs()
+    video = _resolve_video(args.video)
+    _prepare(video, args, 0, 100)
+    progress.emit(100, "done", "Highlights ready for review")
+
+
+def cmd_export(args):
+    """cut + render approved clips (uses review decisions unless --auto)."""
+    if args.emit_progress:
+        progress.enable()
+    config.ensure_dirs()
+    video = _resolve_video(args.video)
+    instructions = (getattr(args, "instructions", "") or "").strip()
+    if not instructions:
+        instructions = _campaign_edit_instructions()
+    if instructions:
+        print(f"[export] edit instructions: {instructions}")
+    candidates_path = _candidates_path(video)
+    data, clips = _approved(candidates_path, auto=args.auto)
+    if not clips:
+        raise SystemExit("No approved clips to export. Approve clips in review first.")
+
+    progress.emit(0, "cut", f"Cutting {len(clips)} clips")
+    results = cut_clips.cut_clips(video, clips, progress=_scaled(0, 45, "cut"))
+
+    template_name = _template_for(video, args.template)
+    transcript_path = _transcript_path(video)
+    total = max(1, len(results))
+    outputs = []
+    for i, r in enumerate(results):
+        progress.emit(45 + 55 * i / total, "render", f"Rendering clip {i + 1}/{total}")
+        out = apply_template.apply_template(r["path"], transcript_path, r["start"], r["end"],
+                                            template_name=template_name,
+                                            hook_text=clips[i].get("hook") or None)
+        outputs.append(out)
+        print(f"[export] -> {out}")
+    _sync_exported(video, clips)
+    progress.emit(100, "done", f"Exported {len(results)} clips")
+    progress.event("export_done", {
+        "video_id": video.stem,
+        "clip_count": len(outputs),
+        "names": [Path(o).name for o in outputs],
+    })
+
+
+def cmd_pipeline(args):
+    """Full auto run: analyze + cut + render (review skipped)."""
+    if args.emit_progress:
+        progress.enable()
+    config.ensure_dirs()
+    video = _resolve_video(args.video)
+    candidates_path = _prepare(video, args, 0, 55)
+    if candidates_path is None:
+        print("[pipeline] email mode: waiting for the highlight reply; "
+              "approve the clips in the Approval page when they arrive.")
+        return
+
+    _, clips = _approved(candidates_path, auto=True)
+    if not clips:
+        raise SystemExit("No clips found above threshold. Lower --min-score and retry.")
+
+    progress.emit(55, "cut", f"Cutting {len(clips)} clips")
+    results = cut_clips.cut_clips(video, clips, progress=_scaled(55, 75, "cut"))
+
+    template_name = _template_for(video, args.template)
+    transcript_path = _transcript_path(video)
+    total = max(1, len(results))
+    for i, r in enumerate(results):
+        progress.emit(75 + 25 * i / total, "render", f"Rendering clip {i + 1}/{total}")
+        out = apply_template.apply_template(r["path"], transcript_path, r["start"], r["end"],
+                                            template_name=template_name,
+                                            hook_text=clips[i].get("hook") or None)
+        print(f"[pipeline] final -> {out}")
+
+    _sync_exported(video, clips)
+    progress.emit(100, "done", f"Done: {len(results)} clips exported")
+    print(f"[pipeline] done: {len(results)} clips exported to {config.output_dir}")
+
+
+def cmd_batch(args):
+    config.ensure_dirs()
+    videos = sorted([p for p in config.input_dir.iterdir()
+                      if p.suffix.lower() in (".mp4", ".mov", ".mkv", ".webm", ".avi")])
+    if not videos:
+        raise SystemExit(f"No videos found in {config.input_dir}")
+    for video in videos:
+        print(f"\n=== processing {video.name} ===")
+        candidates_path = _prepare(video, args, 0, 55)
         if candidates_path is None:
             print("[batch] email mode: waiting for the highlight reply; skipping clips")
             continue
         _, clips = _approved(candidates_path, auto=True)
         if not clips:
-            print("[batch] no clips above threshold; skipping")
             continue
         results = cut_clips.cut_clips(video, clips)
         template_name = _template_for(video, args.template)
@@ -762,12 +962,39 @@ def cmd_email_check(args):
               f"{config.highlight_reply_sender or 'the configured sender'})")
 
 
+def cmd_download(args):
+    if args.emit_progress:
+        progress.enable()
+    url = args.url.strip()
+    if not downloader.is_url(url):
+        print(f"[download] Error: Invalid URL '{url}'. Must start with http:// or https://", file=sys.stderr)
+        sys.exit(1)
+
+    out_dir = config.input_dir
+    print(f"[download] Fetching video from: {url}")
+    print(f"[download] Destination folder: {out_dir}")
+
+    def _on_prog(p):
+        if args.emit_progress:
+            progress.stage("download", percent=p.get("percent", 0),
+                           message=f"Downloading: {p.get('speed', '')} {p.get('eta', '')}")
+
+    res = downloader.download_video(url, out_dir, progress_callback=_on_prog)
+    print(f"[download] Completed: {res['filename']} ({res['size']/1048576:.1f} MB)")
+    if args.emit_progress:
+        progress.event("download_done", res)
+
+
 def main():
     parser = argparse.ArgumentParser(prog="clipforge", description="AI auto-clipper pipeline.")
     parser.add_argument("--emit-progress", action="store_true",
                         help="Emit @@PROGRESS@@ JSON lines on stdout for the web UI.")
     parser.add_argument("--campaign", help="Scope pipeline dirs to this campaign id.")
     sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("download", help="Download video from YouTube/web URL (via yt-dlp)")
+    p.add_argument("url", help="Direct URL of the video (YouTube, Vimeo, etc.)")
+    p.set_defaults(func=cmd_download)
 
     p = sub.add_parser("transcribe", help="Transcribe a video (Phase 1)")
     p.add_argument("video")
@@ -879,4 +1106,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

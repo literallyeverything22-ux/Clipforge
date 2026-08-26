@@ -52,6 +52,13 @@
     uploadProgress: $("#uploadProgress"),
     uploadFill: $("#uploadFill"),
     uploadPct: $("#uploadPct"),
+    urlInput: $("#urlInput"),
+    btnImportUrl: $("#btnImportUrl"),
+    urlProgress: $("#urlProgress"),
+    urlProgressTitle: $("#urlProgressTitle"),
+    urlProgressSpeed: $("#urlProgressSpeed"),
+    urlProgressPct: $("#urlProgressPct"),
+    urlProgressFill: $("#urlProgressFill"),
     minScore: $("#minScore"),
     maxClips: $("#maxClips"),
     reviewCount: $("#reviewCount"),
@@ -305,6 +312,10 @@
                           : "Exploration completed." },
     upload_done:      { icon: "upload", label: () => "Source Video Added",
                         body: (d) => d.name || "" },
+    download_started: { icon: "download", label: () => "Downloading Video",
+                        body: (d) => `Fetching from ${d.url || "web link"}...` },
+    download_error:   { icon: "trash", label: () => "Download Failed",
+                        body: (d) => d.error || "Could not download video." },
     campaign_created: { icon: "folder", label: () => "Campaign Bay Created",
                         body: (d) => d.name || d.id || "" },
   };
@@ -314,11 +325,11 @@
     if (!ui) return;
     const title = ui.label(d);
     const body = ui.body(d);
-    const level = kind === "run_error" ? "error" : (kind === "run_started" || kind === "run_cancelled" ? "info" : "ok");
+    const level = kind === "run_error" || kind === "download_error" ? "error" : (kind === "run_started" || kind === "download_started" || kind === "run_cancelled" ? "info" : "ok");
     toast(title, level);
     addNotification(kind, title, body, currentCampaignId, ui.icon);
     desktopNotify("ClipForge — " + title, body);
-    if (kind === "run_ok" || kind === "export_done" || kind === "explore_done") {
+    if (kind === "run_ok" || kind === "export_done" || kind === "explore_done" || kind === "upload_done") {
       refreshCampaignData().catch(() => {});
     }
   }
@@ -329,6 +340,11 @@
       notifyTranscriptSent(d.video_id, d.recipients, !!d.sent);
     } else if (ev.kind === "highlights_received") {
       notifyHighlightsReceived(d.video_id, d.clip_count || 0);
+    } else if (ev.kind === "download_progress") {
+      updateDownloadProgress(d);
+    } else if (ev.kind === "download_error") {
+      handleDownloadError(d);
+      notifyRunEvent(ev.kind, d);
     } else if (EVENT_UI[ev.kind]) {
       notifyRunEvent(ev.kind, d);
     }
@@ -2211,6 +2227,120 @@
       } catch (e) {
         toast("Output folder: " + dir);
         if (navigator.clipboard) navigator.clipboard.writeText(dir).catch(() => {});
+      }
+    });
+  }
+
+  let activeDownloadTaskId = null;
+
+  function updateDownloadProgress(d) {
+    if (!els.urlProgress) return;
+    els.urlProgress.hidden = false;
+    if (d.title && els.urlProgressTitle) {
+      els.urlProgressTitle.textContent = d.title;
+    }
+    if (els.urlProgressSpeed) {
+      els.urlProgressSpeed.textContent = d.speed ? (d.speed + (d.eta ? " · ETA " + d.eta : "")) : "";
+    }
+    const pct = Math.round(d.percent || 0);
+    if (els.urlProgressPct) els.urlProgressPct.textContent = pct + "%";
+    if (els.urlProgressFill) els.urlProgressFill.style.width = pct + "%";
+  }
+
+  function handleDownloadError(d) {
+    if (els.btnImportUrl) els.btnImportUrl.disabled = false;
+    toast("Download error: " + (d.error || "Failed to download video"), "error");
+    if (els.urlProgress) {
+      setTimeout(() => { els.urlProgress.hidden = true; }, 3000);
+    }
+    activeDownloadTaskId = null;
+  }
+
+  async function importVideoFromUrl() {
+    if (!els.urlInput) return;
+    const url = els.urlInput.value.trim();
+    if (!url) {
+      toast("Please enter a video URL (YouTube, Shorts, etc.)", "error");
+      els.urlInput.focus();
+      return;
+    }
+    if (!/^https?:\/\//i.test(url)) {
+      toast("URL must start with http:// or https://", "error");
+      els.urlInput.focus();
+      return;
+    }
+
+    if (els.btnImportUrl) els.btnImportUrl.disabled = true;
+    if (els.urlProgress) {
+      els.urlProgress.hidden = false;
+      if (els.urlProgressTitle) els.urlProgressTitle.textContent = "Connecting to video source...";
+      if (els.urlProgressSpeed) els.urlProgressSpeed.textContent = "";
+      if (els.urlProgressPct) els.urlProgressPct.textContent = "0%";
+      if (els.urlProgressFill) els.urlProgressFill.style.width = "0%";
+    }
+
+    try {
+      const res = await apiPost("/api/import-url", {
+        url: url,
+        campaign_id: currentCampaignId || null,
+      });
+
+      if (res.error) {
+        throw new Error(res.error);
+      }
+
+      activeDownloadTaskId = res.task_id;
+      toast("Started downloading video...", "info");
+
+      const pollInterval = setInterval(async () => {
+        if (!activeDownloadTaskId) {
+          clearInterval(pollInterval);
+          return;
+        }
+        try {
+          const st = await apiGet("/api/import-url/" + activeDownloadTaskId);
+          if (st) {
+            updateDownloadProgress(st);
+            if (st.status === "finished") {
+              clearInterval(pollInterval);
+              activeDownloadTaskId = null;
+              if (els.urlProgressPct) els.urlProgressPct.textContent = "100%";
+              if (els.urlProgressFill) els.urlProgressFill.style.width = "100%";
+              if (els.urlProgressTitle) els.urlProgressTitle.textContent = "Done: " + (st.title || st.filename);
+              if (els.btnImportUrl) els.btnImportUrl.disabled = false;
+              els.urlInput.value = "";
+              await loadState();
+              await refreshCampaignData();
+              toast("Imported: " + (st.title || st.filename), "ok");
+              setTimeout(() => { if (els.urlProgress) els.urlProgress.hidden = true; }, 2000);
+            } else if (st.status === "error") {
+              clearInterval(pollInterval);
+              handleDownloadError(st);
+            }
+          }
+        } catch (e) {
+          /* ignore poll errors */
+        }
+      }, 1000);
+
+    } catch (e) {
+      if (els.btnImportUrl) els.btnImportUrl.disabled = false;
+      toast("Import failed: " + e.message, "error");
+      if (els.urlProgress) {
+        setTimeout(() => { els.urlProgress.hidden = true; }, 2500);
+      }
+    }
+  }
+
+  if (els.btnImportUrl) {
+    els.btnImportUrl.addEventListener("click", importVideoFromUrl);
+  }
+
+  if (els.urlInput) {
+    els.urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        importVideoFromUrl();
       }
     });
   }

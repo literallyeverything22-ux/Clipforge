@@ -66,6 +66,14 @@
     <symbol id="icon-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>
     </symbol>
+    <symbol id="icon-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </symbol>
+    <symbol id="icon-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
+      <polygon points="10 15 15 12 10 9 10 15" fill="currentColor"/>
+    </symbol>
   </svg>
 
   <div class="app">
@@ -325,19 +333,51 @@
               </label>
             </div>
 
-            <!-- Drag & Drop Video Upload Zone -->
-            <label class="dropzone source-dropzone" id="uploadBtn" for="fileInput">
-              <div class="drop-icon-circle">
-                <svg class="drop-icon-svg" aria-hidden="true"><use href="#icon-upload"/></svg>
+            <!-- Source Ingestion: URL Import + File Dropzone -->
+            <div class="source-ingest-grid">
+              <!-- YouTube & Web URL Import Card -->
+              <div class="url-import-card">
+                <div class="url-input-wrap">
+                  <span class="url-input-icon" title="YouTube / Video Link">
+                    <svg class="url-icon-svg" aria-hidden="true"><use href="#icon-youtube"/></svg>
+                  </span>
+                  <input type="url" id="urlInput" class="url-input" placeholder="Paste YouTube, Shorts, TikTok, or video URL (https://...)" autocomplete="off" spellcheck="false">
+                  <button type="button" class="btn btn-primary btn-import-url" id="btnImportUrl">
+                    <svg class="btn-icon" aria-hidden="true"><use href="#icon-download"/></svg>
+                    <span>Import</span>
+                  </button>
+                </div>
+                
+                <div class="url-progress" id="urlProgress" hidden>
+                  <div class="url-progress-header">
+                    <span class="url-progress-title" id="urlProgressTitle">Downloading video...</span>
+                    <div class="url-progress-meta">
+                      <span class="url-progress-speed" id="urlProgressSpeed"></span>
+                      <span class="url-progress-pct" id="urlProgressPct">0%</span>
+                    </div>
+                  </div>
+                  <div class="upload-track"><div class="upload-fill" id="urlProgressFill"></div></div>
+                </div>
               </div>
-              <span class="drop-title" id="uploadDropTitle">Drop raw video here to begin</span>
-              <span class="drop-sub">Supported formats: MP4, MOV, MKV, WebM, AVI</span>
-            </label>
-            <input type="file" id="fileInput" accept="video/*" hidden>
 
-            <div class="upload-progress" id="uploadProgress" hidden>
-              <div class="upload-track"><div class="upload-fill" id="uploadFill"></div></div>
-              <span class="upload-pct" id="uploadPct">0%</span>
+              <div class="source-divider">
+                <span>OR DROP FILE</span>
+              </div>
+
+              <!-- Drag & Drop Video Upload Zone -->
+              <label class="dropzone source-dropzone" id="uploadBtn" for="fileInput">
+                <div class="drop-icon-circle">
+                  <svg class="drop-icon-svg" aria-hidden="true"><use href="#icon-upload"/></svg>
+                </div>
+                <span class="drop-title" id="uploadDropTitle">Drop raw video here to begin</span>
+                <span class="drop-sub">Supported formats: MP4, MOV, MKV, WebM, AVI</span>
+              </label>
+              <input type="file" id="fileInput" accept="video/*" hidden>
+
+              <div class="upload-progress" id="uploadProgress" hidden>
+                <div class="upload-track"><div class="upload-fill" id="uploadFill"></div></div>
+                <span class="upload-pct" id="uploadPct">0%</span>
+              </div>
             </div>
 
             <div class="source-board" id="sourceBoard"></div>

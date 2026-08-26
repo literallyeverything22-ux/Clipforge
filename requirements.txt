@@ -18,6 +18,9 @@ opencv-python-headless>=4.8
 # Clip-boundary silence trim
 silero-vad>=5.1
 
+# Web & YouTube video downloading
+yt-dlp>=2024.0.0
+
 # NVIDIA GPU acceleration for faster-whisper on Windows (CUDA 12)
 nvidia-cublas-cu12
 nvidia-cudnn-cu12

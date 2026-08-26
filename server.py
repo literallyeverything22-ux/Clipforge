@@ -34,6 +34,7 @@ from src.config import config  # noqa: E402
 from src import campaigns as camp_mod  # noqa: E402
 from src import email_highlights  # noqa: E402
 from src import notify as notify_mod  # noqa: E402
+from src import downloader  # noqa: E402
 
 WEB_DIR = ROOT / "web"
 VIDEO_EXTS = {".mp4", ".mov", ".mkv", ".webm", ".avi", ".m4v"}
@@ -41,6 +42,9 @@ MAX_LOGS = 4000
 
 RUNS = {}          # run_id -> dict(status, logs, percent, stage, message, command, exit_code)
 RUNS_LOCK = threading.Lock()
+
+DOWNLOADS = {}     # task_id -> dict(status, percent, speed, eta, title, size, filename, video_id, error)
+DOWNLOADS_LOCK = threading.Lock()
 
 # --------------------------------------------------------------------------- #
 # event bus — feeds /api/events (notifications) and the UI notification centre
@@ -888,6 +892,113 @@ async def api_upload(request):
     return JSONResponse({"name": dest.name, "id": dest.stem, "size": size})
 
 
+async def api_import_url(request):
+    """Start background video download from YouTube or web URL via yt-dlp."""
+    try:
+        data = await request.json()
+    except Exception:
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    url = (data.get("url") or "").strip()
+    if not url or not downloader.is_url(url):
+        return JSONResponse({"error": "A valid video URL (http:// or https://) is required."}, status_code=400)
+
+    campaign_id = data.get("campaign_id")
+    folder = _input_dir(campaign_id)
+    folder.mkdir(parents=True, exist_ok=True)
+
+    task_id = uuid.uuid4().hex[:10]
+    task_info = {
+        "task_id": task_id,
+        "url": url,
+        "campaign_id": campaign_id,
+        "status": "starting",
+        "percent": 0.0,
+        "speed": "",
+        "eta": "",
+        "title": "Fetching video info...",
+        "filename": "",
+        "video_id": "",
+        "size": 0,
+        "error": None,
+        "created_at": time.time(),
+    }
+
+    with DOWNLOADS_LOCK:
+        DOWNLOADS[task_id] = task_info
+
+    def _worker():
+        def _on_progress(p_dict):
+            with DOWNLOADS_LOCK:
+                if task_id in DOWNLOADS:
+                    DOWNLOADS[task_id].update(p_dict)
+            publish_event("download_progress", {
+                "task_id": task_id,
+                "campaign_id": campaign_id,
+                **p_dict,
+            })
+
+        try:
+            publish_event("download_started", {"task_id": task_id, "url": url, "campaign_id": campaign_id})
+            res = downloader.download_video(url, folder, progress_callback=_on_progress)
+            
+            with DOWNLOADS_LOCK:
+                if task_id in DOWNLOADS:
+                    DOWNLOADS[task_id].update({
+                        "status": "finished",
+                        "percent": 100.0,
+                        "filename": res["filename"],
+                        "video_id": res["video_id"],
+                        "size": res["size"],
+                        "title": res["title"],
+                        "path": res["path"],
+                    })
+
+            camp = _camp(campaign_id)
+            if camp:
+                camp.touch()
+
+            # Emit standard upload_done event so the UI immediately refreshes its video list
+            publish_event("upload_done", {
+                "name": res["filename"],
+                "size": res["size"],
+                "video_id": res["video_id"],
+                "campaign_id": campaign_id,
+                "source": "url",
+                "title": res["title"],
+            })
+            print(f"[import-url] Download complete: {res['filename']} ({res['size']/1048576:.1f} MB)", flush=True)
+
+        except Exception as exc:
+            err_msg = str(exc)
+            print(f"[import-url] Download failed for {url}: {err_msg}", flush=True)
+            with DOWNLOADS_LOCK:
+                if task_id in DOWNLOADS:
+                    DOWNLOADS[task_id].update({
+                        "status": "error",
+                        "error": err_msg,
+                    })
+            publish_event("download_error", {
+                "task_id": task_id,
+                "url": url,
+                "error": err_msg,
+                "campaign_id": campaign_id,
+            })
+
+    threading.Thread(target=_worker, name=f"yt-download-{task_id}", daemon=True).start()
+    return JSONResponse({"task_id": task_id, "status": "starting", "url": url})
+
+
+async def api_import_url_status(request):
+    """Check progress/status of a video URL download task."""
+    task_id = request.path_params.get("task_id", "").strip()
+    with DOWNLOADS_LOCK:
+        task = DOWNLOADS.get(task_id)
+    if not task:
+        return JSONResponse({"error": "Download task not found."}, status_code=404)
+    return JSONResponse(task)
+
+
 async def api_media(request):
     rel = request.query_params.get("path", "")
     p = _safe_resolve(rel)
@@ -1401,6 +1512,8 @@ routes = [
     Route("/api/music/upload", api_music_upload, methods=["POST"]),
     Route("/api/broll", api_broll, methods=["GET"]),
     Route("/api/upload", api_upload, methods=["POST"]),
+    Route("/api/import-url", api_import_url, methods=["POST"]),
+    Route("/api/import-url/{task_id}", api_import_url_status, methods=["GET"]),
     Route("/api/media", api_media, methods=["GET"]),
     Route("/api/preview", api_preview, methods=["POST"]),
     Route("/api/frames", api_frames_list, methods=["GET"]),
