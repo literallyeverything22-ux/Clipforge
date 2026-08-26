@@ -87,7 +87,15 @@ Templates are stored as simple JSON files in the `templates/` folder:
 | `square_captioned.json` | 9:16 | Letterbox/square video format with custom colored header and caption bands. |
 | `abu_lahya.json` | 9:16 | Distinctive branding layout with speaker tracking and bottom caption styling. |
 
-To edit fonts, font sizes, colors, or positioning, edit the JSON file in `templates/` or use the **Settings / Style Lab** in the web UI.
+## 🎨 Visual Canvas & CapCut-Style Layout Studio
+
+You can visually position and style your hook and captions directly over video frames:
+
+1. **Open Studio**: Click **"🎨 Layout & Style"** on any candidate clip card in the Review tab, or **"Open Visual Canvas Studio"** in Settings.
+2. **Drag Text Boxes**: Grab the Hook Title, Subtitles, or Extra Watermark boxes directly on the 9:16 vertical canvas and slide them to your preferred vertical anchor.
+3. **⚡ Single Line Dynamic Auto-Fit**: Text automatically scales its font size dynamically so that your entire hook and subtitles stay on **one clean line** within the safe zone without breaking words or covering the speaker's face.
+4. **1-Click Creator Presets**: Switch instantly between styles like *Hormozi Punchy*, *Clean Minimalist*, *Viral Neon*, *Solid Box Badge*, *TikTok Cyber*, or *Abu Lahya Signature*.
+5. **Apply**: Click **"Apply to this Clip"** for fine-tuned control or **"Apply to All Clips (Campaign Default)"** to update every clip in the campaign at once.
 
 ---
 
