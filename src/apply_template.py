@@ -286,18 +286,17 @@ def _build_ass(lines, template, resx, resy, clip_duration, hook_text=None,
             el.style.font = font
             el.style.font_size = size
             el.style.outline_width = outline
-            if caps.get("max_lines"):
-                el.style.max_lines = int(caps["max_lines"])
-            if caps.get("max_words") and not caps.get("max_lines"):
-                el.style.max_lines = int(caps["max_words"])
+            el.style.max_lines = int(caps.get("max_lines", 1))
         elif el.type is tl.TextType.HOOK:
             el.style.font, _ = _parse_font(hook.get("font", "Bebas Neue"))
             el.style.font_size = int(hook.get("size", 96))
             el.style.alignment = hook.get("position", "top")
+            el.style.max_lines = int(hook.get("max_lines", 1))
         elif el.type is tl.TextType.CTA:
             el.style.font, _ = _parse_font(cta.get("font", "Poppins-Bold"))
             el.style.font_size = int(cta.get("size", 48))
             el.style.alignment = cta.get("position", "bottom")
+            el.style.max_lines = int(cta.get("max_lines", 1))
 
     layouts = tl.layout_frame(elements, tl.CANVAS_W, tl.CANVAS_H, safe,
                               subject=subject)
@@ -579,10 +578,28 @@ def _broll_graph(filters, cues, ass_filter, resx, resy, template):
     return ";".join(parts), prev
 
 
+def _merge_layout_override(template: dict, override: dict) -> dict:
+    if not override or not isinstance(override, dict):
+        return template
+    tpl = json.loads(json.dumps(template))
+    for section in ("hook", "captions", "cta"):
+        if section in override and isinstance(override[section], dict):
+            if section not in tpl:
+                tpl[section] = {}
+            for k, v in override[section].items():
+                if v is not None:
+                    tpl[section][k] = v
+    if "safe_top" in override and override["safe_top"] is not None:
+        tpl["safe_top"] = override["safe_top"]
+    if "safe_bottom" in override and override["safe_bottom"] is not None:
+        tpl["safe_bottom"] = override["safe_bottom"]
+    return tpl
+
+
 def apply_template(raw_clip_path, transcript_path, clip_start, clip_end,
                    template_name=None, output_dir=None, hook_text=None,
                    broll_cues=None, template=None, out_name=None, preview=None,
-                   debug=None):
+                   debug=None, layout_override=None):
     debug = _LAYOUT_DEBUG if debug is None else bool(debug)
     raw_clip_path = Path(raw_clip_path)
     transcript_path = Path(transcript_path)
@@ -593,16 +610,17 @@ def apply_template(raw_clip_path, transcript_path, clip_start, clip_end,
 
     template = template if isinstance(template, dict) \
         else load_template(template_name or config.default_template)
+    if layout_override:
+        template = _merge_layout_override(template, layout_override)
     if preview and isinstance(preview, dict) and preview.get("resolution"):
         template = dict(template)
         template["output"] = dict(template.get("output", {}))
         template["output"]["resolution"] = str(preview["resolution"])
-    tname = template["name"]
+    tname = template.get("name", "custom")
 
-    if template.get("intro", {}).get("enabled") or template.get("outro", {}).get("enabled") \
-            or template.get("watermark", {}).get("enabled"):
+    if template.get("intro", {}).get("enabled") or template.get("outro", {}).get("enabled"):
         raise NotImplementedError(
-            f"Template '{tname}' enables intro/outro/watermark, which are out of scope for v1.")
+            f"Template '{tname}' enables intro/outro, which are out of scope for v1.")
 
     out = template["output"]
     resx, resy = (int(x) for x in out["resolution"].split("x"))

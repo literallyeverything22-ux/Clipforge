@@ -668,6 +668,12 @@ async def api_save_candidates(request):
                 item[key] = c[key]
         if isinstance(c.get("broll"), list):
             item["broll"] = c["broll"]
+        if isinstance(c.get("layout"), dict):
+            item["layout"] = c["layout"]
+        if isinstance(c.get("template_override"), dict):
+            item["template_override"] = c["template_override"]
+        if isinstance(c.get("cta"), dict):
+            item["cta"] = c["cta"]
         cleaned.append(item)
     cur["clips"] = cleaned
     p.write_text(json.dumps(cur, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1048,6 +1054,127 @@ async def api_preview(request):
     return JSONResponse({
         "url": f"/api/media?path={dest.relative_to(ROOT).as_posix()}",
     })
+
+
+async def api_snapshot(request):
+    """Extract a fast 9:16 frame snapshot from video at given timestamp for the visual canvas."""
+    import anyio
+
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    video = data.get("video")
+    if not video:
+        return JSONResponse({"error": "need video name or id"}, status_code=400)
+
+    try:
+        timestamp = float(data.get("timestamp", 1.0))
+    except (TypeError, ValueError):
+        timestamp = 1.0
+    if timestamp < 0:
+        timestamp = 0.0
+
+    campaign_id = data.get("campaign_id")
+    src = Path(_resolve_video_arg(video, campaign_id))
+    if not src.exists():
+        return JSONResponse({"error": f"source video not found: {src}"}, status_code=404)
+
+    preview_dir = config.previews_dir / "snapshots"
+    preview_dir.mkdir(parents=True, exist_ok=True)
+    out_file = preview_dir / f"snap_{src.stem}_{int(timestamp * 100):06d}.jpg"
+
+    def do_snap():
+        if out_file.exists() and out_file.stat().st_size > 1000:
+            return
+        w, h = 1920, 1080
+        try:
+            from src.apply_template import _probe_video
+            w, h = _probe_video(src)
+        except Exception:  # noqa: BLE001
+            pass
+
+        r = 9 / 16
+        src_r = w / max(1, h)
+        if abs(r - src_r) >= 1e-3:
+            if r < src_r:
+                cw = round(h * r)
+                cw -= cw % 2
+                crop = f"crop={cw}:{h}:{(w - cw) // 2}:0,scale=540:960"
+            else:
+                ch = round(w / r)
+                ch -= ch % 2
+                crop = f"crop={w}:{ch}:0:{(h - ch) // 2},scale=540:960"
+        else:
+            crop = "scale=540:960"
+
+        cmd = [
+            "ffmpeg", "-y", "-ss", f"{timestamp:.2f}",
+            "-i", str(src),
+            "-vf", crop,
+            "-vframes", "1",
+            "-q:v", "2",
+            str(out_file)
+        ]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode != 0 or not out_file.exists():
+            cmd_fallback = [
+                "ffmpeg", "-y", "-ss", f"{timestamp:.2f}",
+                "-i", str(src),
+                "-vframes", "1",
+                "-q:v", "2",
+                str(out_file)
+            ]
+            subprocess.run(cmd_fallback, capture_output=True, text=True)
+
+    try:
+        await anyio.to_thread.run_sync(do_snap)
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"error": f"snapshot extraction failed: {exc}"}, status_code=500)
+
+    if not out_file.exists():
+        return JSONResponse({"error": "could not extract video frame"}, status_code=500)
+
+    return JSONResponse({
+        "url": f"/api/media?path={out_file.relative_to(ROOT).as_posix()}",
+        "timestamp": timestamp,
+    })
+
+
+async def api_campaign_template_save(request):
+    """Save or update custom template / layout for a campaign."""
+    campaign_id = request.path_params["campaign_id"]
+    camp = _camp(campaign_id)
+    if camp is None:
+        return JSONResponse({"error": "campaign not found"}, status_code=404)
+
+    try:
+        data = await request.json()
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "invalid JSON body"}, status_code=400)
+
+    template_data = data.get("template") or data
+    if not isinstance(template_data, dict):
+        return JSONResponse({"error": "need template object"}, status_code=400)
+
+    # Base template to merge onto
+    base_tpl = {}
+    if camp.has_template():
+        base_tpl = _read_json(camp.template_path) or {}
+    if not base_tpl:
+        base_name = camp.settings().get("default_template") or config.default_template
+        base_tpl = _read_json(config.root / "templates" / f"{base_name}.json") or {}
+
+    from src.apply_template import _merge_layout_override
+    merged = _merge_layout_override(base_tpl, template_data)
+    if "name" not in merged or not merged["name"]:
+        merged["name"] = f"{camp.meta.get('name', 'Campaign')} Look"
+
+    camp.template_path.parent.mkdir(parents=True, exist_ok=True)
+    camp.template_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2), encoding="utf-8")
+    camp.touch()
+    return JSONResponse({"ok": True, "template": merged})
 
 
 async def api_frames_list(request):
@@ -1516,6 +1643,7 @@ routes = [
     Route("/api/import-url/{task_id}", api_import_url_status, methods=["GET"]),
     Route("/api/media", api_media, methods=["GET"]),
     Route("/api/preview", api_preview, methods=["POST"]),
+    Route("/api/snapshot", api_snapshot, methods=["POST"]),
     Route("/api/frames", api_frames_list, methods=["GET"]),
     Route("/api/frames/{stem}/style", api_style_report, methods=["GET"]),
     Route("/api/frames/{stem}/media", api_frames_media, methods=["GET"]),
@@ -1529,6 +1657,7 @@ routes = [
     Route("/api/campaigns/{campaign_id}", api_campaign_get, methods=["GET"]),
     Route("/api/campaigns/{campaign_id}", api_campaign_patch, methods=["PATCH"]),
     Route("/api/campaigns/{campaign_id}", api_campaign_delete, methods=["DELETE"]),
+    Route("/api/campaigns/{campaign_id}/template", api_campaign_template_save, methods=["POST", "PATCH"]),
     Route("/api/campaigns/{campaign_id}/rules", api_campaign_rules_upload, methods=["POST"]),
     Route("/api/campaigns/{campaign_id}/rules", api_campaign_rules_patch, methods=["PATCH"]),
     Route("/api/campaigns/{campaign_id}/rules/file", api_campaign_rules_file, methods=["GET"]),

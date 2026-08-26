@@ -116,8 +116,8 @@ class TextStyle:
     shadow_offset: int = 4
     alignment: str = "bottom_center"  # preferred
     max_width: Optional[int] = None
-    max_lines: int = 3
-    min_font_size: int = 48
+    max_lines: int = 1
+    min_font_size: int = 40
     max_font_size: int = 130
     line_height_mult: float = 1.08
     letter_spacing: int = 0
@@ -394,6 +394,26 @@ def fit_text(text: str, style: TextStyle, max_width: int, max_lines: int,
         if fits:
             return last
         size -= step
+
+    # If max_lines == 1 and text didn't fit above min_size without wrapping,
+    # dynamically calculate the proportional font size so it strictly fits on 1 single line.
+    if max_lines == 1 and text:
+        w_single, _, _ = measure_line(text, style.font, min_size, style.letter_spacing)
+        if w_single > max_width and w_single > 0:
+            scale = max_width / float(w_single)
+            scaled_size = max(16, int(min_size * scale * 0.95))
+            lines = [text]
+            w, h, lh = measure_block(lines, style.font, scaled_size,
+                                     style.line_height_mult, style.letter_spacing)
+            return {"lines": lines, "font_size": scaled_size, "line_height": lh,
+                    "width": w, "height": h}
+        elif w_single <= max_width:
+            lines = [text]
+            w, h, lh = measure_block(lines, style.font, min_size,
+                                     style.line_height_mult, style.letter_spacing)
+            return {"lines": lines, "font_size": min_size, "line_height": lh,
+                    "width": w, "height": h}
+
     return last
 
 
@@ -466,7 +486,7 @@ def _candidate_anchors(element: TextElement, canvas_w: int, canvas_h: int,
         # step downward from top safe margin
         top0 = safe.top
         if py is not None:
-            cands.append((al, px, int(py), 1.0))
+            cands.append((al, px, int(py), 5.0))
         for i, off in enumerate(range(0, 360, 40)):
             y = top0 + off + lh // 2 if al == 8 else top0 + off
             cands.append((al, cx, y, 1.0 - 0.02 * i))
@@ -475,7 +495,7 @@ def _candidate_anchors(element: TextElement, canvas_w: int, canvas_h: int,
         # step upward from the bottom safe margin
         bot0 = canvas_h - safe.bottom - 20
         if py is not None:
-            cands.append((al, px, int(py), 1.0))
+            cands.append((al, px, int(py), 5.0))
         for i, off in enumerate(range(0, 360, 40)):
             y = bot0 - off - h + lh if al != 2 else bot0 - off
             cands.append((al, cx, y, 1.0 - 0.02 * i))
@@ -487,9 +507,8 @@ def _candidate_anchors(element: TextElement, canvas_w: int, canvas_h: int,
             cands.append((al, cx, y, 1.0 - 0.02 * i))
     elif t == TextType.CTA:
         al = alignment_for(style.alignment or "bottom_center")
-        # reserved strip just above the very bottom safe line. Step upward
-        # through several candidates so the CTA can escape a large caption
-        # region that already occupies the bottom band.
+        if py is not None:
+            cands.append((al, px, int(py), 5.0))
         bot0 = canvas_h - safe.bottom - 40
         for i, off in enumerate(range(0, 520, 60)):
             y = bot0 - off
@@ -708,8 +727,8 @@ def style_from_template_block(block: dict, default_font: str = "Poppins-Bold") -
         shadow_offset=int(block.get("shadow_offset", 4)),
         alignment=block.get("position", block.get("alignment", "bottom_center")),
         max_width=int(max_w) if max_w else None,
-        max_lines=int(block.get("max_lines", block.get("max_words", 3))),
-        min_font_size=int(block.get("min_font_size", 48)),
+        max_lines=int(block.get("max_lines", 1)),
+        min_font_size=int(block.get("min_font_size", 32)),
         max_font_size=int(block.get("max_font_size", 130)),
         line_height_mult=float(block.get("line_height_mult", 1.08)),
         letter_spacing=int(block.get("letter_spacing", 0)),

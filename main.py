@@ -300,10 +300,11 @@ def cmd_render(args):
             start, end = m["start"], m["end"]
         else:
             start, end = cut_clips.padded_range(clip["start"], clip["end"], data.get("duration"))
-        progress.emit(100 * (i - 1) / total, "render", f"Rendering clip {i}/{total}")
+        layout_override = clip.get("layout") or clip.get("template_override")
         out = apply_template.apply_template(raw, transcript_path, start, end,
                                             template_name=template_name,
-                                            hook_text=clip.get("hook") or None)
+                                            hook_text=clip.get("hook") or None,
+                                            layout_override=layout_override)
         print(f"[render] -> {out}")
         progress.emit(100 * i / total, "render", f"Rendered clip {i}/{total}")
     progress.emit(100, "done", f"Rendered {total} clips")
@@ -793,9 +794,11 @@ def cmd_export(args):
     outputs = []
     for i, r in enumerate(results):
         progress.emit(45 + 55 * i / total, "render", f"Rendering clip {i + 1}/{total}")
+        layout_override = clips[i].get("layout") or clips[i].get("template_override")
         out = apply_template.apply_template(r["path"], transcript_path, r["start"], r["end"],
                                             template_name=template_name,
-                                            hook_text=clips[i].get("hook") or None)
+                                            hook_text=clips[i].get("hook") or None,
+                                            layout_override=layout_override)
         outputs.append(out)
         print(f"[export] -> {out}")
     _sync_exported(video, clips)
@@ -831,9 +834,11 @@ def cmd_pipeline(args):
     total = max(1, len(results))
     for i, r in enumerate(results):
         progress.emit(75 + 25 * i / total, "render", f"Rendering clip {i + 1}/{total}")
+        layout_override = clips[i].get("layout") or clips[i].get("template_override")
         out = apply_template.apply_template(r["path"], transcript_path, r["start"], r["end"],
                                             template_name=template_name,
-                                            hook_text=clips[i].get("hook") or None)
+                                            hook_text=clips[i].get("hook") or None,
+                                            layout_override=layout_override)
         print(f"[pipeline] final -> {out}")
 
     _sync_exported(video, clips)
@@ -860,10 +865,12 @@ def cmd_batch(args):
         template_name = _template_for(video, args.template)
         transcript_path = _transcript_path(video)
         for i, r in enumerate(results):
+            layout_override = clips[i].get("layout") or clips[i].get("template_override")
             out = apply_template.apply_template(r["path"], transcript_path,
                                                 r["start"], r["end"],
                                                 template_name=template_name,
-                                                hook_text=clips[i].get("hook") or None)
+                                                hook_text=clips[i].get("hook") or None,
+                                                layout_override=layout_override)
             print(f"[batch] final -> {out}")
 
 

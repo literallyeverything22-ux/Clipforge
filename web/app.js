@@ -127,11 +127,56 @@
     exportConfigHint: $("#exportConfigHint"),
     exportConfigCancel: $("#exportConfigCancel"),
     exportConfigStart: $("#exportConfigStart"),
-    exportConfigClose: $("#exportConfigClose"),
     settingsExportSelect: $("#settingsExportSelect"),
     btnSettingsExport: $("#btnSettingsExport"),
     settingsExportHint: $("#settingsExportHint"),
     telegramStatus: $("#telegramStatus"),
+    btnOpenCampaignCanvas: $("#btnOpenCampaignCanvas"),
+    visualCanvasModal: $("#visualCanvasModal"),
+    canvasClipTitle: $("#canvasClipTitle"),
+    canvasSafeToggle: $("#canvasSafeToggle"),
+    canvasClose: $("#canvasClose"),
+    canvasContainer: $("#canvasContainer"),
+    canvasBgImg: $("#canvasBgImg"),
+    canvasBgFallback: $("#canvasBgFallback"),
+    canvasSafeGuides: $("#canvasSafeGuides"),
+    canvasHookBox: $("#canvasHookBox"),
+    canvasHookText: $("#canvasHookText"),
+    canvasHookPosBadge: $("#canvasHookPosBadge"),
+    canvasCaptionBox: $("#canvasCaptionBox"),
+    canvasCaptionText: $("#canvasCaptionText"),
+    canvasCaptionPosBadge: $("#canvasCaptionPosBadge"),
+    canvasCtaBox: $("#canvasCtaBox"),
+    canvasCtaText: $("#canvasCtaText"),
+    canvasCtaPosBadge: $("#canvasCtaPosBadge"),
+    canvasRefreshFrame: $("#canvasRefreshFrame"),
+    stylePresetsGrid: $("#stylePresetsGrid"),
+    canvasFontSelect: $("#canvasFontSelect"),
+    canvasTextColor: $("#canvasTextColor"),
+    canvasOutlineColor: $("#canvasOutlineColor"),
+    canvasHighlightColor: $("#canvasHighlightColor"),
+    canvasHookSizeSlider: $("#canvasHookSizeSlider"),
+    canvasHookSizeVal: $("#canvasHookSizeVal"),
+    canvasCaptionSizeSlider: $("#canvasCaptionSizeSlider"),
+    canvasCaptionSizeVal: $("#canvasCaptionSizeVal"),
+    canvasOutlineWidthSlider: $("#canvasOutlineWidthSlider"),
+    canvasOutlineWidthVal: $("#canvasOutlineWidthVal"),
+    canvasBoxBgToggle: $("#canvasBoxBgToggle"),
+    canvasBoxBgColor: $("#canvasBoxBgColor"),
+    canvasHookYSlider: $("#canvasHookYSlider"),
+    canvasHookYVal: $("#canvasHookYVal"),
+    canvasCaptionYSlider: $("#canvasCaptionYSlider"),
+    canvasCaptionYVal: $("#canvasCaptionYVal"),
+    canvasCtaToggle: $("#canvasCtaToggle"),
+    canvasCtaOptions: $("#canvasCtaOptions"),
+    canvasCtaTextInput: $("#canvasCtaTextInput"),
+    canvasCtaYSlider: $("#canvasCtaYSlider"),
+    canvasCtaYVal: $("#canvasCtaYVal"),
+    canvasResetBtn: $("#canvasResetBtn"),
+    canvasApplyCampaignBtn: $("#canvasApplyCampaignBtn"),
+    canvasApplyClipBtn: $("#canvasApplyClipBtn"),
+    canvasSingleLineToggle: $("#canvasSingleLineToggle"),
+    canvasHookTextInput: $("#canvasHookTextInput"),
   };
 
   const LABELS = {
@@ -375,6 +420,710 @@
     els.transcriptModal.hidden = true;
     els.transcriptBody.textContent = "";
     transcriptModalVideoId = null;
+  }
+
+  // --- Visual Canvas & Style Studio Controller ---------------------------- //
+  const STYLE_PRESETS = [
+    {
+      id: "hormozi",
+      name: "Hormozi Punchy",
+      font: "Anton",
+      hookSize: 76,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 6,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 68,
+      captionColor: "#FFF35C",
+      captionOutline: "#000000",
+      captionOutlineW: 6,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#E50914",
+      bgBadge: "background:#09090b;color:#FFF35C;border:1px solid #E50914;",
+      badgeText: "HORMOZI",
+    },
+    {
+      id: "clean",
+      name: "Clean Minimalist",
+      font: "Poppins-Bold",
+      hookSize: 68,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 3,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 62,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 3,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#38BDF8",
+      bgBadge: "background:#18181b;color:#FFFFFF;border:1px solid rgba(255,255,255,0.2);",
+      badgeText: "MINIMAL",
+    },
+    {
+      id: "neon",
+      name: "Viral Neon",
+      font: "Kanit",
+      hookSize: 74,
+      hookColor: "#2DE1C2",
+      hookOutline: "#000000",
+      hookOutlineW: 5,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 66,
+      captionColor: "#2DE1C2",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#F43F5E",
+      bgBadge: "background:#052e2b;color:#2DE1C2;border:1px solid #2DE1C2;",
+      badgeText: "NEON",
+    },
+    {
+      id: "badge",
+      name: "Solid Box Badge",
+      font: "Archivo Black",
+      hookSize: 66,
+      hookColor: "#000000",
+      hookOutline: "#FFFFFF",
+      hookOutlineW: 2,
+      hookBox: true,
+      hookBoxColor: "#FFFFFF",
+      captionSize: 58,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 2,
+      captionBox: true,
+      captionBoxColor: "#000000",
+      highlightColor: "#F59E0B",
+      bgBadge: "background:#FFFFFF;color:#000000;font-weight:900;",
+      badgeText: "BADGE",
+    },
+    {
+      id: "cyber",
+      name: "TikTok Cyber",
+      font: "Bebas Neue",
+      hookSize: 80,
+      hookColor: "#000000",
+      hookOutline: "#FFFFFF",
+      hookOutlineW: 5,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 70,
+      captionColor: "#00E5FF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#FF0055",
+      bgBadge: "background:#083344;color:#00E5FF;border:1px solid #FF0055;",
+      badgeText: "CYBER",
+    },
+    {
+      id: "abu_lahya",
+      name: "Abu Lahya Look",
+      font: "Bebas Neue",
+      hookSize: 80,
+      hookColor: "#000000",
+      hookOutline: "#FFFFFF",
+      hookOutlineW: 5,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 64,
+      captionColor: "#000000",
+      captionOutline: "#FFFFFF",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#E50914",
+      bgBadge: "background:#000000;color:#FFFFFF;border:1.5px solid #FFFFFF;",
+      badgeText: "OUTLINE",
+    },
+  ];
+
+  let currentCanvasClip = null;
+  let currentCanvasVideoId = null;
+  let activePresetId = "hormozi";
+  let canvasState = {
+    hook: {
+      preferred_y: 0.08,
+      font: "Anton",
+      size: 76,
+      color: "#FFFFFF",
+      outline_color: "#000000",
+      outline_width: 6,
+      box_enabled: false,
+      background_color: "#000000",
+    },
+    captions: {
+      preferred_y: 0.72,
+      font: "Anton",
+      size: 68,
+      color: "#FFF35C",
+      outline_color: "#000000",
+      outline_width: 6,
+      box_enabled: false,
+      background_color: "#000000",
+      highlight_color: "#E50914",
+    },
+    cta: {
+      enabled: false,
+      text: "@mychannel · Part 1",
+      preferred_y: 0.92,
+      font: "Poppins-Bold",
+      size: 38,
+      color: "#FFFFFF",
+    }
+  };
+
+  let activeDragTarget = null;
+  let dragStartY = 0;
+  let dragInitialYPct = 0;
+
+  function initCanvasInteractions() {
+    function onPointerDown(e, targetType) {
+      activeDragTarget = targetType;
+      dragStartY = e.clientY || (e.touches && e.touches[0].clientY);
+      const box = targetType === "hook" ? els.canvasHookBox : (targetType === "caption" ? els.canvasCaptionBox : els.canvasCtaBox);
+      if (box) box.classList.add("is-dragging");
+      const key = targetType === "caption" ? "captions" : targetType;
+      dragInitialYPct = canvasState[key] ? canvasState[key].preferred_y : 0.5;
+      document.addEventListener("mousemove", onPointerMove);
+      document.addEventListener("mouseup", onPointerUp);
+      document.addEventListener("touchmove", onPointerMove, { passive: false });
+      document.addEventListener("touchend", onPointerUp);
+      e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+      if (!activeDragTarget || !els.canvasContainer) return;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      const rect = els.canvasContainer.getBoundingClientRect();
+      const deltaY = clientY - dragStartY;
+      const deltaPct = deltaY / (rect.height || 533);
+      let newY = Math.max(0.02, Math.min(0.98, dragInitialYPct + deltaPct));
+      newY = Math.round(newY * 100) / 100;
+      const key = activeDragTarget === "caption" ? "captions" : activeDragTarget;
+      if (canvasState[key]) {
+        canvasState[key].preferred_y = newY;
+      }
+      updateCanvasElementsView();
+      if (e.cancelable) e.preventDefault();
+    }
+
+    function onPointerUp() {
+      if (!activeDragTarget) return;
+      const box = activeDragTarget === "hook" ? els.canvasHookBox : (activeDragTarget === "caption" ? els.canvasCaptionBox : els.canvasCtaBox);
+      if (box) box.classList.remove("is-dragging");
+      activeDragTarget = null;
+      document.removeEventListener("mousemove", onPointerMove);
+      document.removeEventListener("mouseup", onPointerUp);
+      document.removeEventListener("touchmove", onPointerMove);
+      document.removeEventListener("touchend", onPointerUp);
+    }
+
+    if (els.canvasHookBox) {
+      els.canvasHookBox.addEventListener("mousedown", (e) => onPointerDown(e, "hook"));
+      els.canvasHookBox.addEventListener("touchstart", (e) => onPointerDown(e, "hook"), { passive: false });
+    }
+    if (els.canvasCaptionBox) {
+      els.canvasCaptionBox.addEventListener("mousedown", (e) => onPointerDown(e, "caption"));
+      els.canvasCaptionBox.addEventListener("touchstart", (e) => onPointerDown(e, "caption"), { passive: false });
+    }
+    if (els.canvasCtaBox) {
+      els.canvasCtaBox.addEventListener("mousedown", (e) => onPointerDown(e, "cta"));
+      els.canvasCtaBox.addEventListener("touchstart", (e) => onPointerDown(e, "cta"), { passive: false });
+    }
+
+    // Safe zone toggle
+    if (els.canvasSafeToggle) {
+      els.canvasSafeToggle.addEventListener("change", () => {
+        if (els.canvasSafeGuides) {
+          els.canvasSafeGuides.classList.toggle("is-hidden", !els.canvasSafeToggle.checked);
+        }
+      });
+    }
+
+    // Sliders & inputs
+    if (els.canvasHookYSlider) {
+      els.canvasHookYSlider.addEventListener("input", () => {
+        canvasState.hook.preferred_y = Number(els.canvasHookYSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCaptionYSlider) {
+      els.canvasCaptionYSlider.addEventListener("input", () => {
+        canvasState.captions.preferred_y = Number(els.canvasCaptionYSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCtaYSlider) {
+      els.canvasCtaYSlider.addEventListener("input", () => {
+        canvasState.cta.preferred_y = Number(els.canvasCtaYSlider.value) / 100;
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasFontSelect) {
+      els.canvasFontSelect.addEventListener("change", () => {
+        canvasState.hook.font = els.canvasFontSelect.value;
+        canvasState.captions.font = els.canvasFontSelect.value;
+        canvasState.cta.font = els.canvasFontSelect.value;
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasTextColor) {
+      els.canvasTextColor.addEventListener("input", () => {
+        canvasState.captions.color = els.canvasTextColor.value;
+        canvasState.hook.color = els.canvasTextColor.value;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasOutlineColor) {
+      els.canvasOutlineColor.addEventListener("input", () => {
+        canvasState.captions.outline_color = els.canvasOutlineColor.value;
+        canvasState.hook.outline_color = els.canvasOutlineColor.value;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasHighlightColor) {
+      els.canvasHighlightColor.addEventListener("input", () => {
+        canvasState.captions.highlight_color = els.canvasHighlightColor.value;
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasHookSizeSlider) {
+      els.canvasHookSizeSlider.addEventListener("input", () => {
+        canvasState.hook.size = Number(els.canvasHookSizeSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCaptionSizeSlider) {
+      els.canvasCaptionSizeSlider.addEventListener("input", () => {
+        canvasState.captions.size = Number(els.canvasCaptionSizeSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasOutlineWidthSlider) {
+      els.canvasOutlineWidthSlider.addEventListener("input", () => {
+        canvasState.captions.outline_width = Number(els.canvasOutlineWidthSlider.value);
+        canvasState.hook.outline_width = Number(els.canvasOutlineWidthSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasBoxBgToggle) {
+      els.canvasBoxBgToggle.addEventListener("change", () => {
+        canvasState.captions.box_enabled = els.canvasBoxBgToggle.checked;
+        canvasState.hook.box_enabled = els.canvasBoxBgToggle.checked;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasBoxBgColor) {
+      els.canvasBoxBgColor.addEventListener("input", () => {
+        canvasState.captions.background_color = els.canvasBoxBgColor.value;
+        canvasState.hook.background_color = els.canvasBoxBgColor.value;
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasCtaToggle) {
+      els.canvasCtaToggle.addEventListener("change", () => {
+        canvasState.cta.enabled = els.canvasCtaToggle.checked;
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCtaTextInput) {
+      els.canvasCtaTextInput.addEventListener("input", () => {
+        canvasState.cta.text = els.canvasCtaTextInput.value;
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasSingleLineToggle) {
+      els.canvasSingleLineToggle.addEventListener("change", () => {
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasHookTextInput) {
+      els.canvasHookTextInput.addEventListener("input", () => {
+        if (els.canvasHookText) {
+          els.canvasHookText.textContent = els.canvasHookTextInput.value || "HOOK TITLE";
+        }
+        if (currentCanvasClip) {
+          currentCanvasClip.hook = els.canvasHookTextInput.value;
+          dirty = true;
+          updateReviewHint();
+        }
+        updateCanvasElementsView();
+      });
+    }
+
+    if (els.canvasRefreshFrame) {
+      els.canvasRefreshFrame.addEventListener("click", () => {
+        const time = currentCanvasClip ? (currentCanvasClip.start + currentCanvasClip.end) / 2 : 2.5;
+        fetchFrameSnapshot(currentCanvasVideoId, time);
+      });
+    }
+
+    if (els.canvasClose) {
+      els.canvasClose.addEventListener("click", () => {
+        if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+      });
+    }
+
+    if (els.canvasResetBtn) {
+      els.canvasResetBtn.addEventListener("click", () => {
+        applyPresetStyle(STYLE_PRESETS[0]);
+        canvasState.hook.preferred_y = 0.08;
+        canvasState.captions.preferred_y = 0.72;
+        canvasState.cta.preferred_y = 0.92;
+        updateCanvasElementsView();
+        toast("Reset layout positions to default.", "ok");
+      });
+    }
+
+    if (els.canvasApplyClipBtn) {
+      els.canvasApplyClipBtn.addEventListener("click", applyCanvasToClip);
+    }
+    if (els.canvasApplyCampaignBtn) {
+      els.canvasApplyCampaignBtn.addEventListener("click", applyCanvasToCampaign);
+    }
+
+    if (els.btnOpenCampaignCanvas) {
+      els.btnOpenCampaignCanvas.addEventListener("click", () => {
+        openVisualCanvasModal(null, null);
+      });
+    }
+  }
+
+  function renderStylePresets() {
+    if (!els.stylePresetsGrid) return;
+    els.stylePresetsGrid.innerHTML = "";
+    STYLE_PRESETS.forEach((preset) => {
+      const card = document.createElement("div");
+      card.className = "style-preset-card" + (preset.id === activePresetId ? " active" : "");
+      card.innerHTML = `
+        <div class="preset-preview-badge" style="${preset.bgBadge}">
+          ${preset.badgeText}
+        </div>
+        <span class="preset-name">${preset.name}</span>
+      `;
+      card.addEventListener("click", () => applyPresetStyle(preset));
+      els.stylePresetsGrid.appendChild(card);
+    });
+  }
+
+  function applyPresetStyle(preset) {
+    activePresetId = preset.id;
+    canvasState.hook.font = preset.font;
+    canvasState.hook.size = preset.hookSize;
+    canvasState.hook.color = preset.hookColor;
+    canvasState.hook.outline_color = preset.hookOutline;
+    canvasState.hook.outline_width = preset.hookOutlineW;
+    canvasState.hook.box_enabled = preset.hookBox;
+    canvasState.hook.background_color = preset.hookBoxColor;
+
+    canvasState.captions.font = preset.font;
+    canvasState.captions.size = preset.captionSize;
+    canvasState.captions.color = preset.captionColor;
+    canvasState.captions.outline_color = preset.captionOutline;
+    canvasState.captions.outline_width = preset.captionOutlineW;
+    canvasState.captions.box_enabled = preset.captionBox;
+    canvasState.captions.background_color = preset.captionBoxColor;
+    canvasState.captions.highlight_color = preset.highlightColor;
+
+    renderStylePresets();
+    updateCanvasElementsView();
+  }
+
+  function fitSingleLine(textEl, targetSizePx, maxWidthRatio = 0.86, minSizePx = 10) {
+    if (!textEl || !els.canvasContainer) return targetSizePx;
+    const isSingleLine = els.canvasSingleLineToggle ? els.canvasSingleLineToggle.checked : true;
+    if (!isSingleLine) {
+      textEl.style.whiteSpace = "normal";
+      textEl.style.wordBreak = "normal";
+      textEl.style.fontSize = `${targetSizePx}px`;
+      return targetSizePx;
+    }
+
+    const containerW = els.canvasContainer.clientWidth || 320;
+    const maxAllowedW = Math.floor(containerW * maxWidthRatio);
+
+    textEl.style.whiteSpace = "nowrap";
+    textEl.style.wordBreak = "keep-all";
+    textEl.style.fontSize = `${targetSizePx}px`;
+
+    let w = textEl.scrollWidth || textEl.offsetWidth;
+    let effectiveSize = targetSizePx;
+    if (w > maxAllowedW && w > 0) {
+      const scale = maxAllowedW / w;
+      effectiveSize = Math.max(minSizePx, Math.floor(targetSizePx * scale));
+      textEl.style.fontSize = `${effectiveSize}px`;
+
+      // Refinement loop to avoid single-pixel overflow
+      w = textEl.scrollWidth || textEl.offsetWidth;
+      while (w > maxAllowedW && effectiveSize > minSizePx) {
+        effectiveSize -= 1;
+        textEl.style.fontSize = `${effectiveSize}px`;
+        w = textEl.scrollWidth || textEl.offsetWidth;
+      }
+    }
+    return effectiveSize;
+  }
+
+  function updateCanvasElementsView() {
+    if (!els.canvasHookBox) return;
+    const containerW = (els.canvasContainer && els.canvasContainer.clientWidth) || 320;
+    const scaleFactor = containerW / 1080; // normalized to 1080 canonical ASS canvas
+
+    // 1. Hook
+    const hookY = Math.round(canvasState.hook.preferred_y * 100);
+    els.canvasHookBox.style.top = `${hookY}%`;
+    if (els.canvasHookPosBadge) els.canvasHookPosBadge.textContent = `Top: ${hookY}%`;
+    if (els.canvasHookYSlider) els.canvasHookYSlider.value = hookY;
+    if (els.canvasHookYVal) els.canvasHookYVal.textContent = `${hookY}%`;
+
+    if (els.canvasHookText) {
+      if (els.canvasHookTextInput && els.canvasHookTextInput.value) {
+        els.canvasHookText.textContent = els.canvasHookTextInput.value;
+      }
+      els.canvasHookText.style.fontFamily = `"${canvasState.hook.font}", sans-serif`;
+      els.canvasHookText.style.color = canvasState.hook.color;
+
+      const targetHookPx = Math.max(12, Math.round(canvasState.hook.size * scaleFactor * 1.15));
+      const effectiveHookPx = fitSingleLine(els.canvasHookText, targetHookPx, 0.88, 10);
+
+      if (els.canvasHookSizeVal) {
+        const autoFitActive = effectiveHookPx < targetHookPx;
+        els.canvasHookSizeVal.textContent = autoFitActive 
+          ? `${canvasState.hook.size}px (Auto: ${Math.round(canvasState.hook.size * (effectiveHookPx / targetHookPx))}px)` 
+          : `${canvasState.hook.size}px`;
+      }
+
+      if (canvasState.hook.box_enabled) {
+        els.canvasHookText.style.background = canvasState.hook.background_color || "#FFFFFF";
+        els.canvasHookText.style.padding = "3px 8px";
+        els.canvasHookText.style.borderRadius = "5px";
+        els.canvasHookText.style.webkitTextStroke = "none";
+        els.canvasHookText.style.textShadow = "none";
+      } else {
+        els.canvasHookText.style.background = "transparent";
+        els.canvasHookText.style.padding = "0";
+        const w = Math.max(1, Math.round(canvasState.hook.outline_width * 0.4));
+        els.canvasHookText.style.webkitTextStroke = `${w}px ${canvasState.hook.outline_color}`;
+        els.canvasHookText.style.textShadow = "0 2px 8px rgba(0,0,0,0.85)";
+      }
+    }
+
+    // 2. Caption
+    const capY = Math.round(canvasState.captions.preferred_y * 100);
+    els.canvasCaptionBox.style.top = `${capY}%`;
+    if (els.canvasCaptionPosBadge) els.canvasCaptionPosBadge.textContent = `Top: ${capY}%`;
+    if (els.canvasCaptionYSlider) els.canvasCaptionYSlider.value = capY;
+    if (els.canvasCaptionYVal) els.canvasCaptionYVal.textContent = `${capY}%`;
+
+    if (els.canvasCaptionText) {
+      els.canvasCaptionText.style.fontFamily = `"${canvasState.captions.font}", sans-serif`;
+      els.canvasCaptionText.style.color = canvasState.captions.color;
+
+      const targetCapPx = Math.max(12, Math.round(canvasState.captions.size * scaleFactor * 1.15));
+      const effectiveCapPx = fitSingleLine(els.canvasCaptionText, targetCapPx, 0.88, 10);
+
+      if (els.canvasCaptionSizeVal) {
+        const autoFitActive = effectiveCapPx < targetCapPx;
+        els.canvasCaptionSizeVal.textContent = autoFitActive 
+          ? `${canvasState.captions.size}px (Auto: ${Math.round(canvasState.captions.size * (effectiveCapPx / targetCapPx))}px)` 
+          : `${canvasState.captions.size}px`;
+      }
+
+      const hl = els.canvasCaptionText.querySelector(".hl-word");
+      if (hl) hl.style.color = canvasState.captions.highlight_color || "#FFF35C";
+
+      if (canvasState.captions.box_enabled) {
+        els.canvasCaptionText.style.background = canvasState.captions.background_color || "#000000";
+        els.canvasCaptionText.style.padding = "3px 8px";
+        els.canvasCaptionText.style.borderRadius = "5px";
+        els.canvasCaptionText.style.webkitTextStroke = "none";
+        els.canvasCaptionText.style.textShadow = "none";
+      } else {
+        els.canvasCaptionText.style.background = "transparent";
+        els.canvasCaptionText.style.padding = "0";
+        const w = Math.max(1, Math.round(canvasState.captions.outline_width * 0.4));
+        els.canvasCaptionText.style.webkitTextStroke = `${w}px ${canvasState.captions.outline_color}`;
+        els.canvasCaptionText.style.textShadow = "0 2px 8px rgba(0,0,0,0.85)";
+      }
+    }
+
+    // 3. CTA
+    if (canvasState.cta && canvasState.cta.enabled) {
+      if (els.canvasCtaBox) els.canvasCtaBox.hidden = false;
+      const ctaY = Math.round(canvasState.cta.preferred_y * 100);
+      if (els.canvasCtaBox) els.canvasCtaBox.style.top = `${ctaY}%`;
+      if (els.canvasCtaPosBadge) els.canvasCtaPosBadge.textContent = `Top: ${ctaY}%`;
+      if (els.canvasCtaYSlider) els.canvasCtaYSlider.value = ctaY;
+      if (els.canvasCtaYVal) els.canvasCtaYVal.textContent = `${ctaY}%`;
+      if (els.canvasCtaText) {
+        els.canvasCtaText.textContent = canvasState.cta.text || "@mychannel · Part 1";
+        els.canvasCtaText.style.fontFamily = `"${canvasState.cta.font}", sans-serif`;
+        els.canvasCtaText.style.color = canvasState.cta.color || "#FFFFFF";
+        const targetCtaPx = Math.max(10, Math.round((canvasState.cta.size || 38) * scaleFactor * 1.15));
+        fitSingleLine(els.canvasCtaText, targetCtaPx, 0.88, 9);
+      }
+    } else {
+      if (els.canvasCtaBox) els.canvasCtaBox.hidden = true;
+    }
+
+    // Form inputs sync
+    if (els.canvasFontSelect) els.canvasFontSelect.value = canvasState.captions.font || "Poppins-Bold";
+    if (els.canvasTextColor) els.canvasTextColor.value = canvasState.captions.color || "#FFFFFF";
+    if (els.canvasOutlineColor) els.canvasOutlineColor.value = canvasState.captions.outline_color || "#000000";
+    if (els.canvasHighlightColor) els.canvasHighlightColor.value = canvasState.captions.highlight_color || "#FFF35C";
+    if (els.canvasHookSizeSlider) {
+      els.canvasHookSizeSlider.value = canvasState.hook.size || 72;
+    }
+    if (els.canvasCaptionSizeSlider) {
+      els.canvasCaptionSizeSlider.value = canvasState.captions.size || 64;
+    }
+    if (els.canvasOutlineWidthSlider) {
+      els.canvasOutlineWidthSlider.value = canvasState.captions.outline_width || 5;
+      els.canvasOutlineWidthVal.textContent = `${canvasState.captions.outline_width || 5}px`;
+    }
+    if (els.canvasBoxBgToggle) els.canvasBoxBgToggle.checked = !!canvasState.captions.box_enabled;
+    if (els.canvasBoxBgColor) els.canvasBoxBgColor.value = canvasState.captions.background_color || "#000000";
+    if (els.canvasCtaToggle) els.canvasCtaToggle.checked = !!(canvasState.cta && canvasState.cta.enabled);
+    if (els.canvasCtaOptions) els.canvasCtaOptions.hidden = !(canvasState.cta && canvasState.cta.enabled);
+    if (els.canvasCtaTextInput && canvasState.cta) els.canvasCtaTextInput.value = canvasState.cta.text || "";
+  }
+
+  async function fetchFrameSnapshot(videoId, timestamp) {
+    if (!videoId) {
+      if (els.canvasBgFallback) els.canvasBgFallback.hidden = false;
+      if (els.canvasBgImg) els.canvasBgImg.hidden = true;
+      return;
+    }
+    if (els.canvasBgFallback) els.canvasBgFallback.hidden = false;
+    if (els.canvasBgImg) els.canvasBgImg.hidden = true;
+    try {
+      const res = await apiPost("/api/snapshot", {
+        video: videoId,
+        timestamp: timestamp || 1.0,
+        campaign_id: currentCampaignId,
+      });
+      if (res.url && els.canvasBgImg) {
+        els.canvasBgImg.src = res.url;
+        els.canvasBgImg.onload = () => {
+          els.canvasBgImg.hidden = false;
+          if (els.canvasBgFallback) els.canvasBgFallback.hidden = true;
+        };
+      }
+    } catch (e) {
+      console.warn("Snapshot extraction failed:", e);
+      if (els.canvasBgFallback) els.canvasBgFallback.hidden = false;
+    }
+  }
+
+  function openVisualCanvasModal(clip, videoId) {
+    currentCanvasClip = clip;
+    const firstGroup = candidateGroups.find((g) => g.clips && g.clips.length) || candidateGroups[0];
+    currentCanvasVideoId = videoId || (firstGroup && firstGroup.source_id);
+
+    if (clip) {
+      const idx = allClips().indexOf(clip);
+      if (els.canvasClipTitle) {
+        els.canvasClipTitle.textContent = `Clip #${idx >= 0 ? idx + 1 : "1"} (${durationFmt(clip.start, clip.end)})`;
+      }
+      const hookTitle = clip.hook || "THE MOST ENGAGING HOOK TITLE";
+      if (els.canvasHookText) {
+        els.canvasHookText.textContent = hookTitle;
+      }
+      if (els.canvasHookTextInput) {
+        els.canvasHookTextInput.value = hookTitle;
+      }
+      if (els.canvasCaptionText) {
+        const rawSnippet = clip.snippet || "decided that you're supposed to feel good";
+        const words = rawSnippet.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
+        const chunk = words.slice(0, 3);
+        if (chunk.length >= 2) {
+          const lead = escapeHtml(chunk.slice(0, -1).join(" "));
+          const last = escapeHtml(chunk[chunk.length - 1]);
+          els.canvasCaptionText.innerHTML = `${lead} <span class="hl-word">${last}</span>`;
+        } else {
+          els.canvasCaptionText.innerHTML = `${escapeHtml(chunk.join(" ") || "subtitles live here")}`;
+        }
+      }
+
+      if (clip.layout) {
+        canvasState = JSON.parse(JSON.stringify(clip.layout));
+      } else {
+        applyPresetStyle(STYLE_PRESETS[0]);
+      }
+      fetchFrameSnapshot(currentCanvasVideoId, (clip.start + clip.end) / 2);
+    } else {
+      if (els.canvasClipTitle) els.canvasClipTitle.textContent = "Campaign Default Layout";
+      const defaultHook = "ENGAGING TOP HOOK HEADLINE";
+      if (els.canvasHookText) els.canvasHookText.textContent = defaultHook;
+      if (els.canvasHookTextInput) els.canvasHookTextInput.value = defaultHook;
+      if (els.canvasCaptionText) els.canvasCaptionText.innerHTML = "Subtitles stay <span class=\"hl-word\">in this line</span>";
+      applyPresetStyle(STYLE_PRESETS[0]);
+      fetchFrameSnapshot(currentCanvasVideoId, 2.0);
+    }
+
+    renderStylePresets();
+    updateCanvasElementsView();
+    if (els.visualCanvasModal) els.visualCanvasModal.hidden = false;
+  }
+
+  async function applyCanvasToClip() {
+    if (!currentCanvasClip) {
+      return applyCanvasToCampaign();
+    }
+    if (els.canvasHookTextInput && els.canvasHookTextInput.value.trim()) {
+      currentCanvasClip.hook = els.canvasHookTextInput.value.trim();
+    }
+    currentCanvasClip.layout = JSON.parse(JSON.stringify(canvasState));
+    dirty = true;
+    updateReviewHint();
+    if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+    toast("Single-line layout & style applied to this clip.", "ok");
+    renderReview();
+    if (els.btnSaveReview) els.btnSaveReview.click();
+  }
+
+  async function applyCanvasToCampaign() {
+    try {
+      allClips().forEach((c) => {
+        c.layout = JSON.parse(JSON.stringify(canvasState));
+      });
+      dirty = true;
+      updateReviewHint();
+
+      if (currentCampaignId) {
+        await apiPost(`/api/campaigns/${encodeURIComponent(currentCampaignId)}/template`, {
+          template: {
+            hook: canvasState.hook,
+            captions: canvasState.captions,
+            cta: canvasState.cta,
+          }
+        });
+      }
+
+      if (els.btnSaveReview) await saveReviewDecisions();
+
+      if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+      toast("Layout & styling applied to ALL clips in campaign!", "ok");
+      renderReview();
+    } catch (e) {
+      toast("Could not save campaign layout: " + e.message, "error");
+    }
   }
 
   async function apiGet(url) {
@@ -1177,6 +1926,16 @@
         actions.appendChild(bApprove);
         actions.appendChild(bReject);
       }
+      const bLayout = document.createElement("button");
+      bLayout.className = "btn-preview";
+      bLayout.style.background = "var(--teal-dim)";
+      bLayout.style.color = "var(--teal)";
+      bLayout.style.borderColor = "rgba(34, 211, 238, 0.4)";
+      bLayout.innerHTML = `${svgIcon("sparkles")} Layout & Style`;
+      bLayout.title = "Customize Hook & Captions Positioning on Visual Canvas";
+      bLayout.addEventListener("click", () => openVisualCanvasModal(clip, group.source_id));
+      actions.appendChild(bLayout);
+
       const bPreview = document.createElement("button");
       bPreview.className = "btn-preview";
       bPreview.innerHTML = `${svgIcon("play")} Preview`;
@@ -2473,6 +3232,7 @@
   document.addEventListener("keydown", (ev) => {
     if (ev.key === "Escape" && els.transcriptModal && !els.transcriptModal.hidden) closeTranscriptModal();
     if (ev.key === "Escape" && els.exportConfigModal && !els.exportConfigModal.hidden) closeExportConfig();
+    if (ev.key === "Escape" && els.visualCanvasModal && !els.visualCanvasModal.hidden) els.visualCanvasModal.hidden = true;
   });
 
   if (els.rulesInput) {
@@ -2552,6 +3312,7 @@
       }
       toast("Backend server offline. Run server.py to start.", "error");
     }
+    initCanvasInteractions();
     renderPage();
     ensureNotifyPermission();
     renderNotifications();
