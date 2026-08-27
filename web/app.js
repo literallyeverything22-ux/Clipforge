@@ -266,6 +266,28 @@
     canvasResetBtn: $("#canvasResetBtn"),
     canvasApplyCampaignBtn: $("#canvasApplyCampaignBtn"),
     canvasApplyClipBtn: $("#canvasApplyClipBtn"),
+    canvasAspectSelect: $("#canvasAspectSelect"),
+    canvasMoreBtn: $("#canvasMoreBtn"),
+    canvasMoreMenu: $("#canvasMoreMenu"),
+    canvasSafeFixBtn: $("#canvasSafeFixBtn"),
+    quickStartPrimaryGrid: $("#quickStartPrimaryGrid"),
+    quickStartViewAllBtn: $("#quickStartViewAllBtn"),
+    targetToggleCaptions: $("#targetToggleCaptions"),
+    targetToggleHook: $("#targetToggleHook"),
+    position3x3Grid: $("#position3x3Grid"),
+    posBtnTop: $("#posBtnTop"),
+    posBtnCenter: $("#posBtnCenter"),
+    posBtnBottom: $("#posBtnBottom"),
+    btnAdvancedTypo: $("#btnAdvancedTypo"),
+    drawerAdvancedTypo: $("#drawerAdvancedTypo"),
+    chevronAdvancedTypo: $("#chevronAdvancedTypo"),
+    btnAdvancedPos: $("#btnAdvancedPos"),
+    drawerAdvancedPos: $("#drawerAdvancedPos"),
+    chevronAdvancedPos: $("#chevronAdvancedPos"),
+    canvasHookVisibleToggle: $("#canvasHookVisibleToggle"),
+    canvasHookStyleSelect: $("#canvasHookStyleSelect"),
+    canvasHookPosSelect: $("#canvasHookPosSelect"),
+    canvasCapAnimationSelect: $("#canvasCapAnimationSelect"),
   };
 
   const LABELS = {
@@ -1025,15 +1047,59 @@
     }
   }
 
+  let currentPositionTarget = "captions";
+
+  const POS_GRID_COORDS = {
+    "top-left": { x: 0.18, y: 0.12 },
+    "top-center": { x: 0.50, y: 0.12 },
+    "top-right": { x: 0.82, y: 0.12 },
+    "mid-left": { x: 0.18, y: 0.50 },
+    "mid-center": { x: 0.50, y: 0.50 },
+    "mid-right": { x: 0.82, y: 0.50 },
+    "bottom-left": { x: 0.18, y: 0.78 },
+    "bottom-center": { x: 0.50, y: 0.78 },
+    "bottom-right": { x: 0.82, y: 0.78 },
+  };
+
+  function updatePositionGridState() {
+    if (!els.position3x3Grid) return;
+    const target = currentPositionTarget || "captions";
+    if (!canvasState[target]) return;
+    const curX = canvasState[target].preferred_x != null ? canvasState[target].preferred_x : 0.5;
+    const curY = canvasState[target].preferred_y != null ? canvasState[target].preferred_y : (target === "hook" ? 0.12 : 0.78);
+
+    let closestKey = "bottom-center";
+    let minDistance = 99999;
+    for (const [k, coord] of Object.entries(POS_GRID_COORDS)) {
+      const dist = Math.hypot(coord.x - curX, coord.y - curY);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestKey = k;
+      }
+    }
+    els.position3x3Grid.querySelectorAll(".pos-cell").forEach((c) => {
+      c.classList.toggle("active", c.dataset.pos === closestKey);
+    });
+
+    if (els.posBtnTop) els.posBtnTop.classList.toggle("active", curY <= 0.25);
+    if (els.posBtnCenter) els.posBtnCenter.classList.toggle("active", curY > 0.25 && curY < 0.65);
+    if (els.posBtnBottom) els.posBtnBottom.classList.toggle("active", curY >= 0.65);
+  }
+
   function selectCanvasLayer(targetLayer) {
     activeSelectedLayer = targetLayer;
     const isHook = targetLayer === "hook";
-    const isCap = targetLayer === "captions";
+    const isCap = targetLayer === "captions" || targetLayer === "caption";
     const isCta = targetLayer === "cta";
 
     if (els.canvasHookBox) els.canvasHookBox.classList.toggle("is-selected", isHook);
     if (els.canvasCaptionBox) els.canvasCaptionBox.classList.toggle("is-selected", isCap);
     if (els.canvasCtaBox) els.canvasCtaBox.classList.toggle("is-selected", isCta);
+
+    if (els.targetToggleCaptions) els.targetToggleCaptions.classList.toggle("active", isCap);
+    if (els.targetToggleHook) els.targetToggleHook.classList.toggle("active", isHook);
+    currentPositionTarget = isHook ? "hook" : "captions";
+    updatePositionGridState();
 
     if (els.layerItemHook) els.layerItemHook.classList.toggle("is-selected", isHook);
     if (els.layerItemCaption) els.layerItemCaption.classList.toggle("is-selected", isCap);
@@ -1092,9 +1158,9 @@
     const capX = canvasState.captions.preferred_x != null ? canvasState.captions.preferred_x : 0.5;
     const capY = canvasState.captions.preferred_y != null ? canvasState.captions.preferred_y : 0.78;
 
-    const hookOut = (hookX < 0.10 || hookX > 0.82 || hookY < 0.11 || hookY > 0.80);
-    const capOut = (capX < 0.10 || capX > 0.82 || capY < 0.11 || capY > 0.80);
-    const isWarn = (hookOut || capOut) && (els.canvasSafeToggle ? els.canvasSafeToggle.checked : true);
+    const hookOut = (hookX < 0.12 || hookX > 0.84 || hookY < 0.10 || hookY > 0.82);
+    const capOut = (capX < 0.12 || capX > 0.84 || capY < 0.10 || capY > 0.82);
+    const isWarn = hookOut || capOut;
 
     els.canvasSafeWarning.hidden = !isWarn;
   }
@@ -1769,15 +1835,215 @@
       });
     }
 
-    // Aspect Ratio Buttons
-    const ratioBtns = document.querySelectorAll(".aspect-ratio-grid .ratio-card");
-    ratioBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        ratioBtns.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        toast(`Canvas set to ${btn.dataset.ratio || "9:16"}`, "ok");
+    // Aspect Ratio Dropdown
+    if (els.canvasAspectSelect) {
+      els.canvasAspectSelect.addEventListener("change", () => {
+        const r = els.canvasAspectSelect.value;
+        if (els.canvasContainer) {
+          if (r === "9:16") {
+            els.canvasContainer.style.aspectRatio = "9 / 16";
+          } else if (r === "1:1") {
+            els.canvasContainer.style.aspectRatio = "1 / 1";
+          } else if (r === "16:9") {
+            els.canvasContainer.style.aspectRatio = "16 / 9";
+          }
+        }
+        updateCanvasElementsView();
+        toast(`Canvas set to ${r}`, "ok");
       });
-    });
+    }
+
+    // Secondary ⋯ Action Dropdown Menu
+    if (els.canvasMoreBtn && els.canvasMoreMenu) {
+      els.canvasMoreBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        els.canvasMoreMenu.hidden = !els.canvasMoreMenu.hidden;
+      });
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest("#canvasMoreDropdownWrap") && els.canvasMoreMenu) {
+          els.canvasMoreMenu.hidden = true;
+        }
+      });
+    }
+
+    // Platform Safe Zone Auto-Fix Button
+    if (els.canvasSafeFixBtn) {
+      els.canvasSafeFixBtn.addEventListener("click", () => {
+        let changed = false;
+        ["hook", "captions"].forEach((k) => {
+          if (!canvasState[k]) return;
+          if (canvasState[k].preferred_x < 0.15) { canvasState[k].preferred_x = 0.20; changed = true; }
+          if (canvasState[k].preferred_x > 0.82) { canvasState[k].preferred_x = 0.75; changed = true; }
+          if (canvasState[k].preferred_y < 0.11) { canvasState[k].preferred_y = 0.14; changed = true; }
+          if (canvasState[k].preferred_y > 0.80) { canvasState[k].preferred_y = 0.76; changed = true; }
+        });
+        if (changed) {
+          updateCanvasElementsView();
+          pushCanvasHistory("Auto Fix Safe Zone");
+          toast("Repositioned inside platform safe area", "ok");
+        }
+        if (els.canvasSafeWarning) els.canvasSafeWarning.hidden = true;
+      });
+    }
+
+    if (els.canvasSafeToggle) {
+      els.canvasSafeToggle.addEventListener("change", () => {
+        if (els.canvasSafeGuides) {
+          els.canvasSafeGuides.classList.toggle("is-hidden", !els.canvasSafeToggle.checked);
+        }
+        checkSafeZoneBounds();
+      });
+    }
+
+    // Accordion Group Click Handling (Only 1 open at a time)
+    const accGroup = document.getElementById("canvasAccordionGroup");
+    if (accGroup) {
+      accGroup.addEventListener("click", (e) => {
+        const header = e.target.closest(".accordion-header");
+        if (!header) return;
+        const targetId = header.dataset.target;
+        const item = document.getElementById(targetId);
+        if (!item) return;
+        const wasOpen = item.classList.contains("is-open");
+        accGroup.querySelectorAll(".accordion-item").forEach((i) => i.classList.remove("is-open"));
+        if (!wasOpen) {
+          item.classList.add("is-open");
+          if (targetId === "accItemPosition") {
+            updatePositionGridState();
+          }
+        }
+      });
+    }
+
+    // Sub-drawers for advanced typography and position
+    if (els.btnAdvancedTypo && els.drawerAdvancedTypo) {
+      els.btnAdvancedTypo.addEventListener("click", () => {
+        const isHidden = !els.drawerAdvancedTypo.hidden;
+        els.drawerAdvancedTypo.hidden = isHidden;
+        if (els.chevronAdvancedTypo) {
+          els.chevronAdvancedTypo.classList.toggle("is-open", !isHidden);
+        }
+      });
+    }
+
+    if (els.btnAdvancedPos && els.drawerAdvancedPos) {
+      els.btnAdvancedPos.addEventListener("click", () => {
+        const isHidden = !els.drawerAdvancedPos.hidden;
+        els.drawerAdvancedPos.hidden = isHidden;
+        if (els.chevronAdvancedPos) {
+          els.chevronAdvancedPos.classList.toggle("is-open", !isHidden);
+        }
+      });
+    }
+
+    // 3x3 Position Grid & Target Layer Selector
+    if (els.targetToggleCaptions) {
+      els.targetToggleCaptions.addEventListener("click", () => {
+        selectCanvasLayer("captions");
+      });
+    }
+    if (els.targetToggleHook) {
+      els.targetToggleHook.addEventListener("click", () => {
+        selectCanvasLayer("hook");
+      });
+    }
+
+    if (els.position3x3Grid) {
+      els.position3x3Grid.addEventListener("click", (e) => {
+        const cell = e.target.closest(".pos-cell");
+        if (!cell) return;
+        const pos = cell.dataset.pos;
+        if (!pos || !POS_GRID_COORDS[pos]) return;
+        const target = currentPositionTarget || "captions";
+        if (!canvasState[target]) return;
+        canvasState[target].preferred_x = POS_GRID_COORDS[pos].x;
+        canvasState[target].preferred_y = POS_GRID_COORDS[pos].y;
+        updateCanvasElementsView();
+        updatePositionGridState();
+        pushCanvasHistory(`Position ${target} to ${pos}`);
+      });
+    }
+
+    if (els.posBtnTop) {
+      els.posBtnTop.addEventListener("click", () => {
+        const target = currentPositionTarget || "captions";
+        if (canvasState[target]) {
+          canvasState[target].preferred_y = 0.12;
+          updateCanvasElementsView();
+          updatePositionGridState();
+          pushCanvasHistory(`Position ${target} Top`);
+        }
+      });
+    }
+    if (els.posBtnCenter) {
+      els.posBtnCenter.addEventListener("click", () => {
+        const target = currentPositionTarget || "captions";
+        if (canvasState[target]) {
+          canvasState[target].preferred_y = 0.50;
+          updateCanvasElementsView();
+          updatePositionGridState();
+          pushCanvasHistory(`Position ${target} Center`);
+        }
+      });
+    }
+    if (els.posBtnBottom) {
+      els.posBtnBottom.addEventListener("click", () => {
+        const target = currentPositionTarget || "captions";
+        if (canvasState[target]) {
+          canvasState[target].preferred_y = 0.78;
+          updateCanvasElementsView();
+          updatePositionGridState();
+          pushCanvasHistory(`Position ${target} Bottom`);
+        }
+      });
+    }
+
+    // Hook Section Controls
+    if (els.canvasHookVisibleToggle) {
+      els.canvasHookVisibleToggle.addEventListener("change", () => {
+        if (els.canvasHookBox) {
+          els.canvasHookBox.hidden = !els.canvasHookVisibleToggle.checked;
+        }
+        pushCanvasHistory("Toggle Hook Visibility");
+      });
+    }
+
+    if (els.canvasHookStyleSelect) {
+      els.canvasHookStyleSelect.addEventListener("change", () => {
+        const st = els.canvasHookStyleSelect.value;
+        if (st === "pill") {
+          canvasState.hook.box_enabled = true;
+          canvasState.hook.background_color = "#000000";
+        } else if (st === "banner") {
+          canvasState.hook.box_enabled = true;
+          canvasState.hook.background_color = "#f59e0b";
+        } else {
+          canvasState.hook.box_enabled = false;
+        }
+        updateCanvasElementsView();
+        pushCanvasHistory("Hook Style: " + st);
+      });
+    }
+
+    if (els.canvasHookPosSelect) {
+      els.canvasHookPosSelect.addEventListener("change", () => {
+        const p = els.canvasHookPosSelect.value;
+        if (p === "top") canvasState.hook.preferred_y = 0.12;
+        else if (p === "middle") canvasState.hook.preferred_y = 0.50;
+        else if (p === "bottom") canvasState.hook.preferred_y = 0.75;
+        updateCanvasElementsView();
+        pushCanvasHistory("Hook Pos: " + p);
+      });
+    }
+
+    // Captions Animation Select
+    if (els.canvasCapAnimationSelect) {
+      els.canvasCapAnimationSelect.addEventListener("change", () => {
+        canvasState.captions.animation = els.canvasCapAnimationSelect.value;
+        pushCanvasHistory("Caption Animation: " + els.canvasCapAnimationSelect.value);
+        toast(`Animation set to ${els.canvasCapAnimationSelect.value.replace("_", " ")}`, "ok");
+      });
+    }
 
     // Close / Back Buttons
     if (els.canvasClose) {
@@ -1791,6 +2057,11 @@
     }
 
     // Preset View All
+    if (els.quickStartViewAllBtn) {
+      els.quickStartViewAllBtn.addEventListener("click", () => {
+        openQuickStartModal(activePresetFilter);
+      });
+    }
     if (els.presetsViewAllBtn) {
       els.presetsViewAllBtn.addEventListener("click", () => {
         openQuickStartModal(activePresetFilter);
@@ -1968,13 +2239,33 @@
     return box;
   }
 
+  const PRIMARY_PRESET_IDS = [
+    "creator_default",
+    "clean_cut",
+    "karaoke",
+    "beast_mode",
+    "podcast_pro",
+    "minimal"
+  ];
+
   function renderStylePresets(filterCategory = activePresetFilter) {
-    if (!els.stylePresetsGrid) return;
-    els.stylePresetsGrid.innerHTML = "";
-    const list = STYLE_PRESETS.filter((p) => {
-      if (!filterCategory || filterCategory === "all") return true;
-      return p.category === filterCategory;
-    });
+    const target = els.quickStartPrimaryGrid || els.stylePresetsGrid;
+    if (!target) return;
+    target.innerHTML = "";
+
+    // Show 6 primary presets or filter list
+    let list;
+    if (els.quickStartPrimaryGrid) {
+      list = PRIMARY_PRESET_IDS.map((id) => STYLE_PRESETS.find((p) => p.id === id)).filter(Boolean);
+      if (!list.length || list.length < 6) {
+        list = STYLE_PRESETS.slice(0, 6);
+      }
+    } else {
+      list = STYLE_PRESETS.filter((p) => {
+        if (!filterCategory || filterCategory === "all") return true;
+        return p.category === filterCategory;
+      });
+    }
 
     list.forEach((preset) => {
       const card = document.createElement("div");
@@ -1988,13 +2279,13 @@
       const prevBox = createPresetAnimatedPreview(preset);
       card.appendChild(prevBox);
 
-      const desc = document.createElement("div");
-      desc.className = "preset-card-desc";
-      desc.textContent = preset.description || "";
-      card.appendChild(desc);
-
-      card.addEventListener("click", () => applyPresetStyle(preset));
-      els.stylePresetsGrid.appendChild(card);
+      card.addEventListener("click", () => {
+        applyPresetStyle(preset);
+        target.querySelectorAll(".style-preset-card").forEach((c) => c.classList.remove("active"));
+        card.classList.add("active");
+        toast(`Applied ${preset.name}`, "ok");
+      });
+      target.appendChild(card);
     });
   }
 
@@ -2278,8 +2569,25 @@
     if (els.canvasBoxBgToggle) els.canvasBoxBgToggle.checked = !!canvasState.hook.box_enabled;
     if (els.canvasBoxBgColor) els.canvasBoxBgColor.value = canvasState.hook.background_color || "#000000";
 
+    if (els.canvasHookPosSelect) {
+      const y = canvasState.hook.preferred_y != null ? canvasState.hook.preferred_y : 0.12;
+      if (y <= 0.25) els.canvasHookPosSelect.value = "top";
+      else if (y <= 0.65) els.canvasHookPosSelect.value = "middle";
+      else els.canvasHookPosSelect.value = "bottom";
+    }
+    if (els.canvasHookStyleSelect) {
+      if (canvasState.hook.box_enabled && canvasState.hook.background_color === "#f59e0b") {
+        els.canvasHookStyleSelect.value = "banner";
+      } else if (canvasState.hook.box_enabled) {
+        els.canvasHookStyleSelect.value = "pill";
+      } else {
+        els.canvasHookStyleSelect.value = "clean";
+      }
+    }
+
     // Captions Form Inputs Sync
-    if (els.canvasCapFontSelect) els.canvasCapFontSelect.value = canvasState.captions.font || "Anton";
+    if (els.canvasCapFontSelect) els.canvasCapFontSelect.value = canvasState.captions.font || "Montserrat";
+    if (els.canvasCapAnimationSelect) els.canvasCapAnimationSelect.value = canvasState.captions.animation || "word_pop";
     if (els.canvasCapWeightSelect) els.canvasCapWeightSelect.value = canvasState.captions.weight || "Bold";
     if (els.canvasCapTextColor) els.canvasCapTextColor.value = canvasState.captions.color || "#FFFFFF";
     if (els.canvasCapHighlightColor) els.canvasCapHighlightColor.value = canvasState.captions.highlight_color || "#FFF35C";
@@ -2442,14 +2750,18 @@
 
     canvasHistory = [];
     canvasHistoryIndex = -1;
+    if (els.canvasSafeToggle) els.canvasSafeToggle.checked = false;
+    if (els.canvasSafeGuides) els.canvasSafeGuides.classList.add("is-hidden");
+    document.querySelectorAll(".accordion-item").forEach((i) => i.classList.remove("is-open"));
+
     pushCanvasHistory("Initial Open");
     renderStylePresets();
-    selectCanvasLayer("hook");
+    selectCanvasLayer("captions");
     if (els.visualCanvasModal) els.visualCanvasModal.hidden = false;
     updateCanvasElementsView();
     setTimeout(() => {
       updateCanvasElementsView();
-    }, 40);
+    }, 50);
   }
 
   async function applyCanvasToClip() {

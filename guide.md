@@ -101,43 +101,43 @@ ClipForge now comes equipped with **15 authentic short-form presets** with speec
 
 ---
 
-## 🎨 Visual Canvas & Style Studio (Professional Video-Text Editor)
+## 🎨 Minimal Quick Start Style Studio (Clean, Preview-First Workspace)
 
-ClipForge features a full-screen, professional video-text studio modeled after CapCut and Premiere:
+ClipForge features a streamlined, creator-focused Visual Style Studio modeled after modern clipping products (Klap, OpusClip):
 
-1. **Center Stage & Direct Canvas Interaction**:
-   - **Click & Select**: Click either the Hook Headline or Subtitles directly on the 9:16 video frame to select it.
-   - **Drag Anywhere**: Grab and move text overlays anywhere on the video frame. Positions are stored as normalized coordinates (`0.0` to `1.0`), ensuring identical placement in preview and rendered video.
-   - **Corner Drag Resizing**: Click and drag any of the 4 corner handles on the selection bounding box to interactively scale font size up or down.
-   - **Floating Micro-Toolbar**: Appears right above or below the selected layer for lightning-fast tweaks:
-     - `Aa`: Toggle uppercase / titlecase.
-     - `−` / `+`: Step font size by 4px.
-     - Center / Align: Cycle Left, Center, and Right alignment.
-     - More: Instantly focus the Right Inspector panel.
-   - **Interactive Safe-Zone Detection**: Toggle `Safe Zones` to reveal TikTok/Reels platform chrome boundaries. If any text element drifts into unsafe margins, an instant warning badge alerts you.
-   - **Zoom Dock**: Easily zoom in (`+`), zoom out (`−`), or reset (`Fit` / `100%`) without disrupting coordinate calculations.
+**Choose a preset → Preview it on an enlarged video canvas → Make optional tweaks → Apply → Done.**
 
-2. **Video Timeline & Filmstrip Scrubbing**:
-   - Scrub through your clip using the bottom timeline slider or click any of the 7 snapshot frames in the filmstrip row.
-   - See how your text looks over different video scenes, face angles, and background lighting.
+1. **Large Dominating Video Preview (Left / Center Stage)**:
+   - **Enlarged Snapshot Size**: The 9:16 video snapshot is significantly enlarged (~40-50% bigger) so subtitle typography, word-pop highlights, and facial framing are crisp and easily readable without squinting.
+   - **Compact Header Controls**:
+     - `Preview`: Quick aspect ratio dropdown (`9:16 Recommended`, `1:1`, `16:9`).
+     - `Safe zone ○`: Subtle platform guide overlay (OFF by default for an uncluttered view).
+     - `Single line`: Auto-fits text to guarantee words never overflow safe screen margins.
+   - **1-Click Auto-Fix**: If text ever drifts outside safe platform bounds, a subtle warning pill appears with **`[ Fix automatically ]`** to instantly snap text safely back inside margins.
+   - **Direct Manipulation**: Click, drag, and resize text overlays right on the video frame using 4 corner bounding handles.
+   - **Lightweight Timeline & Filmstrip**: Play/pause, scrub with the timeline slider, or click keyframe filmstrip thumbnails to preview different video scenes.
 
-3. **Left Panel (Layers & Quick Actions)**:
-   - **Clip Info Card**: Shows current clip thumbnail, duration, speaker, and title.
-   - **Aspect Ratio Selector**: Switch between `9:16` (Vertical), `1:1` (Square), and `16:9` (Landscape).
-   - **Layers List**: Quickly select `Hook Headline` or `Subtitles` and toggle layer visibility with the eye icon.
-   - **Quick Actions**:
-     - `Duplicate Style`: Instantly copies typography and colors from Hook to Subtitles or vice-versa without changing text words.
-     - `Copy to All Clips`: Applies current layout and style to every clip in the campaign.
-     - `Reset Canvas`: Restores factory positions and default preset.
-     - `Refresh Frame`: Re-extracts the current video frame via FFmpeg.
+2. **Quick Start Presets (Primary Right Panel)**:
+   - Displays the top **6 core presets** with live animated word-pop previews:
+     1. `Creator Default`
+     2. `Clean Cut`
+     3. `Karaoke`
+     4. `Beast Mode`
+     5. `Podcast Pro`
+     6. `Minimal`
+   - Click any card to apply the preset instantly to the video preview.
+   - Click **`View all 15 presets →`** to open the full modal library with category filters and detailed recommendations.
 
-4. **Right Contextual Inspector**:
-   - **Quick Start Presets Bar**: 1-click styling with category filter pills (`All`, `Clean`, `Dynamic`, `Pro`, `Emotional`, `Creator`).
-   - **Live Animated Preview Cards**: Each card displays a dynamic animated simulation of `"THE FUTURE IS HERE"` with the preset's actual font, outline stroke, and active-word pop!
-   - **View All Presets Modal**: Click **View All (15)** to browse the full library in a spacious 3-column modal with "Best for" tags and 1-click apply.
-   - **Contextual Typography & Color**: Dynamically switches between Hook Headline controls and Subtitles controls based on what layer is active. Includes live character counter (`/60`), Font, Weight, Size, Color pickers, Outline width, Letter-spacing, and Line-height.
-   - **Single-Line Dynamic Auto-Fit**: Guarantees hook headlines and subtitles never wrap onto multiple lines or overflow platform margins by dynamically calculating safe font sizes.
-   - **Position & Alignment**: Left, Center, and Right alignment pills plus precision X and Y percentage sliders.
+3. **Customize Accordions (Clean & Tucked Away)**:
+   - Kept compact with only one section open at a time:
+     - **Captions ›**: Font, size slider, text/highlight/outline colors, animation style (`Word Pop`, `Smooth Fade`, `Bounce`), plus collapsible `Advanced typography`.
+     - **Position ›**: Quick **3×3 visual position grid** (`↖`, `↑`, `↗`, `←`, `•`, `→`, `↙`, `↓`, `↘`), alignment shortcuts, plus collapsible precision X/Y sliders.
+     - **Hook ›**: On/off toggle switch, hook headline text with live character counter, style preset (`Pill`, `Banner`, `Clean`), position, and auto-fade duration.
+     - **More ›**: Social handle / watermark, channel branding, and CTAs.
+
+4. **Streamlined Action Bar**:
+   - Two clear main actions: **`[ Apply to this clip ]`** and **`[ Apply to all clips ]`**.
+   - Secondary actions (`Reset style`, `Duplicate style`, `Copy to all clips`, `Refresh frame`) are neatly organized in the top **`⋯`** menu.
 
 5. **Keyboard Shortcuts**:
    - `Escape`: Deselect current layer or close the studio workspace.
