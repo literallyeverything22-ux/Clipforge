@@ -1,0 +1,67 @@
+{
+  "id": "soft_landing",
+  "name": "Soft Landing",
+  "order": 14,
+  "description": "Friendly, calm, and soothing aesthetic with pastel highlights.",
+  "category": "emotional",
+  "recommended": false,
+  "bestFor": "Lifestyle, advice, wellness, health, calm storytelling",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Poppins-Bold",
+    "fontWeight": 700,
+    "fontSize": 60,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 5,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#FBCFE8",
+    "stroke": {
+      "enabled": true,
+      "width": 3,
+      "color": "#1E293B"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 3
+    },
+    "highlightMode": "active_word",
+    "animation": "smooth_fade",
+    "animationScale": 1.05,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Poppins-Bold",
+    "fontSize": 72,
+    "textColor": "#1E293B",
+    "backgroundColor": "#FBCFE8",
+    "boxEnabled": true,
+    "cornerRadius": 14,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.15
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

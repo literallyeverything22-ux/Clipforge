@@ -1,0 +1,67 @@
+{
+  "id": "karaoke",
+  "name": "Karaoke",
+  "order": 3,
+  "description": "Large word-by-word captions with vibrant active-word glow and pop.",
+  "category": "dynamic",
+  "recommended": true,
+  "bestFor": "Podcasts, high-energy interviews, motivational clips",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Montserrat",
+    "fontWeight": 900,
+    "fontSize": 72,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#00E676",
+    "stroke": {
+      "enabled": true,
+      "width": 5,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 10,
+      "offsetY": 4
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.14,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bebas Neue",
+    "fontSize": 82,
+    "textColor": "#00E676",
+    "outlineColor": "#000000",
+    "outlineWidth": 6,
+    "boxEnabled": false,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.12
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

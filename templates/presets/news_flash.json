@@ -1,0 +1,67 @@
+{
+  "id": "news_flash",
+  "name": "News Flash",
+  "order": 12,
+  "description": "Fast information delivery with high-contrast numbers and statistics highlighted in red.",
+  "category": "professional",
+  "recommended": false,
+  "bestFor": "News, facts, market updates, current events, stat breakdowns",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Archivo Black",
+    "fontWeight": 900,
+    "fontSize": 66,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#EF4444",
+    "stroke": {
+      "enabled": true,
+      "width": 5,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 4
+    },
+    "highlightMode": "keyword_emphasis",
+    "animation": "word_pop",
+    "animationScale": 1.1,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Archivo Black",
+    "fontSize": 80,
+    "textColor": "#FFFFFF",
+    "backgroundColor": "#EF4444",
+    "boxEnabled": true,
+    "cornerRadius": 10,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.12
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

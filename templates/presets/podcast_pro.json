@@ -1,0 +1,67 @@
+{
+  "id": "podcast_pro",
+  "name": "Podcast Pro",
+  "order": 4,
+  "description": "Studio podcast aesthetic with warm highlights, designed for conversational flow.",
+  "category": "professional",
+  "recommended": false,
+  "bestFor": "Two-person and single-person podcasts, deep discussions",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Kanit",
+    "fontWeight": 700,
+    "fontSize": 68,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#F59E0B",
+    "stroke": {
+      "enabled": true,
+      "width": 5,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 4
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.1,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bebas Neue",
+    "fontSize": 78,
+    "textColor": "#FFFFFF",
+    "backgroundColor": "#1E293B",
+    "boxEnabled": true,
+    "cornerRadius": 12,
+    "durationMs": 2000
+  },
+  "speaker": {
+    "layout": "auto",
+    "autoReframe": true,
+    "headroom": 0.14
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

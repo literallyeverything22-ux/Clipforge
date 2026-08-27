@@ -1,0 +1,67 @@
+{
+  "id": "clean_cut",
+  "name": "Clean Cut",
+  "order": 2,
+  "description": "Modern social-media native look with crisp contrast on any background.",
+  "category": "clean",
+  "recommended": true,
+  "bestFor": "General-purpose clips, interviews, talking heads",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Poppins-Bold",
+    "fontWeight": 800,
+    "fontSize": 66,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#22D3EE",
+    "stroke": {
+      "enabled": true,
+      "width": 4,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 6,
+      "offsetY": 3
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.08,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bebas Neue",
+    "fontSize": 76,
+    "textColor": "#FFFFFF",
+    "outlineColor": "#000000",
+    "outlineWidth": 5,
+    "boxEnabled": false,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.12
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

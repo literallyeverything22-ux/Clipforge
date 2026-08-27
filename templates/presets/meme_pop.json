@@ -1,0 +1,67 @@
+{
+  "id": "meme_pop",
+  "name": "Meme Pop",
+  "order": 15,
+  "description": "Playful, comic-style lettering with bounce animations for high-energy comedy.",
+  "category": "dynamic",
+  "recommended": false,
+  "bestFor": "Comedy clips, gaming, funny reactions, informal humor",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Bangers",
+    "fontWeight": 900,
+    "fontSize": 76,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 3,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1250
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#FACC15",
+    "stroke": {
+      "enabled": true,
+      "width": 6,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 10,
+      "offsetY": 5
+    },
+    "highlightMode": "active_word",
+    "animation": "bounce",
+    "animationScale": 1.15,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bangers",
+    "fontSize": 84,
+    "textColor": "#FACC15",
+    "outlineColor": "#000000",
+    "outlineWidth": 6,
+    "boxEnabled": false,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.1
+  },
+  "emoji": {
+    "enabled": true
+  },
+  "cta": {
+    "enabled": false
+  }
+}

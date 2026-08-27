@@ -189,6 +189,11 @@
     filmstripNext: $("#filmstripNext"),
     stylePresetsGrid: $("#stylePresetsGrid"),
     presetsViewAllBtn: $("#presetsViewAllBtn"),
+    presetFilterPills: $("#presetFilterPills"),
+    quickStartModal: $("#quickStartModal"),
+    quickStartCloseBtn: $("#quickStartCloseBtn"),
+    modalPresetFilterPills: $("#modalPresetFilterPills"),
+    quickStartModalGrid: $("#quickStartModalGrid"),
     inspectorContextSection: $("#inspectorContextSection"),
     inspectorTargetBadge: $("#inspectorTargetBadge"),
     inspectorHookBlock: $("#inspectorHookBlock"),
@@ -509,113 +514,419 @@
   // --- Visual Canvas & Style Studio Controller ---------------------------- //
 
 
-  const STYLE_PRESETS = [
+  const QUICK_START_PRESETS = [
     {
-      id: "hormozi",
-      name: "Hormozi",
-      font: "Anton",
+      id: "creator_default",
+      name: "Creator Default",
+      category: "clean",
+      recommended: true,
+      description: "Balanced viral short-form look for any video.",
+      bestFor: "All short-form clips · Podcasts",
+      font: "Montserrat",
       weight: "Extra Bold",
+      hookFont: "Bebas Neue",
+      hookSize: 80,
+      hookColor: "#000000",
+      hookOutline: "#000000",
+      hookOutlineW: 0,
+      hookBox: true,
+      hookBoxColor: "#FFFFFF",
+      captionSize: 70,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#38BDF8",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.10,
+      previewBg: "#0b1220"
+    },
+    {
+      id: "clean_cut",
+      name: "Clean Cut",
+      category: "clean",
+      recommended: true,
+      description: "Modern social-media native look with crisp contrast.",
+      bestFor: "General-purpose clips · Interviews",
+      font: "Poppins-Bold",
+      weight: "Bold",
+      hookFont: "Bebas Neue",
       hookSize: 76,
       hookColor: "#FFFFFF",
       hookOutline: "#000000",
-      hookOutlineW: 8,
+      hookOutlineW: 5,
       hookBox: false,
       hookBoxColor: "#000000",
-      captionSize: 65,
+      captionSize: 66,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 4,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#22D3EE",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.08,
+      previewBg: "#0c1524"
+    },
+    {
+      id: "karaoke",
+      name: "Karaoke",
+      category: "dynamic",
+      recommended: true,
+      description: "Large word-by-word captions with active-word pop.",
+      bestFor: "Podcasts · High-energy clips",
+      font: "Montserrat",
+      weight: "Extra Bold",
+      hookFont: "Bebas Neue",
+      hookSize: 82,
+      hookColor: "#00E676",
+      hookOutline: "#000000",
+      hookOutlineW: 6,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 72,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#00E676",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.14,
+      previewBg: "#071a12"
+    },
+    {
+      id: "podcast_pro",
+      name: "Podcast Pro",
+      category: "professional",
+      description: "Studio podcast look designed for conversational flow.",
+      bestFor: "Interviews · Solo & Two-person podcasts",
+      font: "Kanit",
+      weight: "Bold",
+      hookFont: "Bebas Neue",
+      hookSize: 78,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 0,
+      hookBox: true,
+      hookBoxColor: "#1E293B",
+      captionSize: 68,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#F59E0B",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.10,
+      previewBg: "#17120a"
+    },
+    {
+      id: "beast_mode",
+      name: "Beast Mode",
+      category: "dynamic",
+      description: "Aggressive heavyweight typography for viral hook clips.",
+      bestFor: "Motivation · Fitness · Opinions",
+      font: "Archivo Black",
+      weight: "Extra Bold",
+      hookFont: "Anton",
+      hookSize: 84,
+      hookColor: "#FFE600",
+      hookOutline: "#000000",
+      hookOutlineW: 6,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 74,
       captionColor: "#FFFFFF",
       captionOutline: "#000000",
       captionOutlineW: 6,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#FFF35C",
-      bgBadge: "background:#0f172a;color:#FFF35C;border:1.5px solid #FFF35C;",
-      badgeText: "Aa",
+      highlightColor: "#FFE600",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.15,
+      previewBg: "#1a1600"
+    },
+    {
+      id: "grow",
+      name: "Grow",
+      category: "creator",
+      description: "Modern creator aesthetic with bold green highlights.",
+      bestFor: "Finance · Entrepreneurship · Growth",
+      font: "Barlow Condensed",
+      weight: "Bold",
+      hookFont: "Bebas Neue",
+      hookSize: 80,
+      hookColor: "#10B981",
+      hookOutline: "#000000",
+      hookOutlineW: 5,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 74,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#10B981",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.10,
+      previewBg: "#061710"
     },
     {
       id: "minimal",
       name: "Minimal",
+      category: "clean",
+      description: "Clean, restrained typography without loud effects.",
+      bestFor: "Education · Tech · Calm interviews",
       font: "Poppins-Bold",
       weight: "Bold",
+      hookFont: "Poppins-Bold",
       hookSize: 68,
       hookColor: "#FFFFFF",
       hookOutline: "#000000",
-      hookOutlineW: 2,
+      hookOutlineW: 1,
       hookBox: false,
       hookBoxColor: "#000000",
-      captionSize: 58,
+      captionSize: 56,
       captionColor: "#F8FAFC",
       captionOutline: "#000000",
-      captionOutlineW: 2,
+      captionOutlineW: 1,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#FFFFFF",
-      bgBadge: "background:#1e293b;color:#f8fafc;border:1px solid #475569;",
-      badgeText: "Aa",
+      highlightColor: "#F8FAFC",
+      highlightMode: "none",
+      animation: "smooth_fade",
+      animationScale: 1.0,
+      previewBg: "#11151c"
     },
     {
-      id: "neon",
-      name: "Neon",
-      font: "Kanit",
-      weight: "Extra Bold",
-      hookSize: 76,
-      hookColor: "#FFFFFF",
-      hookOutline: "#FF0055",
-      hookOutlineW: 7,
-      hookBox: false,
-      hookBoxColor: "#000000",
-      captionSize: 65,
-      captionColor: "#FFFFFF",
-      captionOutline: "#FF0055",
-      captionOutlineW: 6,
-      captionBox: false,
-      captionBoxColor: "#000000",
-      highlightColor: "#00E5FF",
-      bgBadge: "background:#2e081c;color:#FF0055;border:1.5px solid #FF0055;",
-      badgeText: "Aa",
-    },
-    {
-      id: "cyber",
-      name: "Cyber",
-      font: "Archivo Black",
-      weight: "Extra Bold",
-      hookSize: 74,
-      hookColor: "#00E5FF",
-      hookOutline: "#000000",
-      hookOutlineW: 7,
-      hookBox: false,
-      hookBoxColor: "#000000",
-      captionSize: 64,
-      captionColor: "#00E5FF",
-      captionOutline: "#000000",
-      captionOutlineW: 6,
-      captionBox: false,
-      captionBoxColor: "#000000",
-      highlightColor: "#FF0055",
-      bgBadge: "background:#083344;color:#00E5FF;border:1.5px solid #00E5FF;",
-      badgeText: "Aa",
-    },
-    {
-      id: "outline",
-      name: "Outline",
-      font: "Bebas Neue",
+      id: "storyteller",
+      name: "Storyteller",
+      category: "emotional",
+      description: "Cinematic and emotional, with dramatic key phrase emphasis.",
+      bestFor: "Personal memoirs · Storytelling · Drama",
+      font: "Saira Condensed",
       weight: "Bold",
-      hookSize: 80,
-      hookColor: "#FFFFFF",
+      hookFont: "Saira Condensed",
+      hookSize: 82,
+      hookColor: "#F43F5E",
       hookOutline: "#000000",
-      hookOutlineW: 8,
+      hookOutlineW: 5,
       hookBox: false,
       hookBoxColor: "#000000",
       captionSize: 68,
       captionColor: "#FFFFFF",
       captionOutline: "#000000",
+      captionOutlineW: 4,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#F43F5E",
+      highlightMode: "keyword_emphasis",
+      animation: "smooth_fade",
+      animationScale: 1.05,
+      previewBg: "#1c0911"
+    },
+    {
+      id: "hype",
+      name: "Hype",
+      category: "dynamic",
+      description: "Maximum energy with huge bold typography & hot pink pops.",
+      bestFor: "Gaming · Sports · Live reactions",
+      font: "Anton",
+      weight: "Extra Bold",
+      hookFont: "Anton",
+      hookSize: 86,
+      hookColor: "#FF0055",
+      hookOutline: "#000000",
+      hookOutlineW: 6,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 80,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
       captionOutlineW: 7,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#E50914",
-      bgBadge: "background:#000000;color:#FFFFFF;border:1.5px solid #FFFFFF;",
-      badgeText: "Aa",
+      highlightColor: "#FF0055",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.16,
+      previewBg: "#1f040e"
     },
+    {
+      id: "deep_diver",
+      name: "Deep Diver",
+      category: "professional",
+      description: "Editorial & documentary style with technical concepts in cyan.",
+      bestFor: "Science · History · In-depth breakdowns",
+      font: "Lato-Bold",
+      weight: "Bold",
+      hookFont: "Barlow Condensed",
+      hookSize: 78,
+      hookColor: "#38BDF8",
+      hookOutline: "#000000",
+      hookOutlineW: 4,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 58,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 3,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#38BDF8",
+      highlightMode: "keyword_emphasis",
+      animation: "smooth_fade",
+      animationScale: 1.04,
+      previewBg: "#06131c"
+    },
+    {
+      id: "cinematic",
+      name: "Cinematic",
+      category: "emotional",
+      description: "Wide visual breathing room and movie-grade typography.",
+      bestFor: "Documentary · Filmmaking · Aesthetic clips",
+      font: "Lato-Bold",
+      weight: "Bold",
+      hookFont: "Bebas Neue",
+      hookSize: 76,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 3,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 54,
+      captionColor: "#F8FAFC",
+      captionOutline: "#0F172A",
+      captionOutlineW: 2,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#E2E8F0",
+      highlightMode: "none",
+      animation: "smooth_fade",
+      animationScale: 1.0,
+      previewBg: "#0f131a"
+    },
+    {
+      id: "news_flash",
+      name: "News Flash",
+      category: "professional",
+      description: "Fast information delivery with high-contrast fact highlights.",
+      bestFor: "News · Stats · Facts · Current events",
+      font: "Archivo Black",
+      weight: "Extra Bold",
+      hookFont: "Archivo Black",
+      hookSize: 80,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 0,
+      hookBox: true,
+      hookBoxColor: "#EF4444",
+      captionSize: 66,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 5,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#EF4444",
+      highlightMode: "keyword_emphasis",
+      animation: "word_pop",
+      animationScale: 1.10,
+      previewBg: "#1c0707"
+    },
+    {
+      id: "baby_steps",
+      name: "Baby Steps",
+      category: "creator",
+      description: "Warm, approachable typography designed for beginner tutorials.",
+      bestFor: "Beginner education · Coaching · How-to guides",
+      font: "Poppins-Bold",
+      weight: "Bold",
+      hookFont: "Poppins-Bold",
+      hookSize: 74,
+      hookColor: "#000000",
+      hookOutline: "#000000",
+      hookOutlineW: 0,
+      hookBox: true,
+      hookBoxColor: "#FBBF24",
+      captionSize: 64,
+      captionColor: "#FFFFFF",
+      captionOutline: "#0F172A",
+      captionOutlineW: 4,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#FBBF24",
+      highlightMode: "active_word",
+      animation: "word_pop",
+      animationScale: 1.08,
+      previewBg: "#1a1403"
+    },
+    {
+      id: "soft_landing",
+      name: "Soft Landing",
+      category: "emotional",
+      description: "Friendly, calm, and soothing aesthetic with pastel highlights.",
+      bestFor: "Lifestyle · Wellness · Calm storytelling",
+      font: "Poppins-Bold",
+      weight: "Bold",
+      hookFont: "Poppins-Bold",
+      hookSize: 72,
+      hookColor: "#1E293B",
+      hookOutline: "#000000",
+      hookOutlineW: 0,
+      hookBox: true,
+      hookBoxColor: "#FBCFE8",
+      captionSize: 60,
+      captionColor: "#FFFFFF",
+      captionOutline: "#1E293B",
+      captionOutlineW: 3,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#FBCFE8",
+      highlightMode: "active_word",
+      animation: "smooth_fade",
+      animationScale: 1.05,
+      previewBg: "#1c0a15"
+    },
+    {
+      id: "meme_pop",
+      name: "Meme Pop",
+      category: "dynamic",
+      description: "Playful comic-style lettering with bounce animation for comedy.",
+      bestFor: "Funny clips · Reactions · Casual humor",
+      font: "Bangers",
+      weight: "Extra Bold",
+      hookFont: "Bangers",
+      hookSize: 84,
+      hookColor: "#FACC15",
+      hookOutline: "#000000",
+      hookOutlineW: 6,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 76,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 6,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#FACC15",
+      highlightMode: "active_word",
+      animation: "bounce",
+      animationScale: 1.15,
+      previewBg: "#1c1803"
+    }
   ];
+
+  let STYLE_PRESETS = QUICK_START_PRESETS;
+  let activePresetFilter = "all";
 
   let currentCanvasClip = null;
   let currentCanvasVideoId = null;
@@ -1482,7 +1793,39 @@
     // Preset View All
     if (els.presetsViewAllBtn) {
       els.presetsViewAllBtn.addEventListener("click", () => {
-        toast("Select from Hormozi, Minimal, Neon, Cyber, or Outline presets.", "ok");
+        openQuickStartModal(activePresetFilter);
+      });
+    }
+
+    if (els.quickStartCloseBtn) {
+      els.quickStartCloseBtn.addEventListener("click", closeQuickStartModal);
+    }
+
+    if (els.quickStartModal) {
+      els.quickStartModal.addEventListener("click", (e) => {
+        if (e.target === els.quickStartModal) closeQuickStartModal();
+      });
+    }
+
+    if (els.presetFilterPills) {
+      els.presetFilterPills.addEventListener("click", (e) => {
+        const pill = e.target.closest(".preset-pill");
+        if (!pill) return;
+        els.presetFilterPills.querySelectorAll(".preset-pill").forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+        activePresetFilter = pill.dataset.cat || "all";
+        renderStylePresets(activePresetFilter);
+      });
+    }
+
+    if (els.modalPresetFilterPills) {
+      els.modalPresetFilterPills.addEventListener("click", (e) => {
+        const pill = e.target.closest(".preset-pill");
+        if (!pill) return;
+        els.modalPresetFilterPills.querySelectorAll(".preset-pill").forEach((p) => p.classList.remove("active"));
+        pill.classList.add("active");
+        const cat = pill.dataset.cat || "all";
+        renderQuickStartModal(cat);
       });
     }
 
@@ -1601,47 +1944,142 @@
     if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
   }
 
-  function renderStylePresets() {
+  function createPresetAnimatedPreview(preset) {
+    const box = document.createElement("div");
+    box.className = "preset-animated-preview";
+    box.style.background = preset.previewBg || "#0a0e17";
+    box.style.fontFamily = `"${preset.font}", sans-serif`;
+
+    const strokeW = Math.max(1, Math.round((preset.captionOutlineW || 4) * 0.35));
+    const strokeCol = preset.captionOutline || "#000000";
+    const textColor = preset.captionColor || "#FFFFFF";
+    const hlColor = preset.highlightColor || "#38BDF8";
+
+    box.innerHTML = `
+      <div class="prev-line" style="color: ${textColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">
+        <span class="prev-word">THE</span>
+        <span class="prev-word">FUTURE</span>
+      </div>
+      <div class="prev-line" style="color: ${textColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">
+        <span class="prev-word active-pop" style="color: ${hlColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">IS</span>
+        <span class="prev-word">HERE</span>
+      </div>
+    `;
+    return box;
+  }
+
+  function renderStylePresets(filterCategory = activePresetFilter) {
     if (!els.stylePresetsGrid) return;
     els.stylePresetsGrid.innerHTML = "";
-    STYLE_PRESETS.forEach((preset) => {
+    const list = STYLE_PRESETS.filter((p) => {
+      if (!filterCategory || filterCategory === "all") return true;
+      return p.category === filterCategory;
+    });
+
+    list.forEach((preset) => {
       const card = document.createElement("div");
       card.className = "style-preset-card" + (preset.id === activePresetId ? " active" : "");
       card.innerHTML = `
-        <div class="preset-preview-badge" style="${preset.bgBadge}">
-          ${preset.badgeText}
+        <div class="preset-card-head">
+          <span class="preset-card-title" title="${preset.name}">${preset.name}</span>
+          <span class="preset-cat-badge">${preset.category || "style"}</span>
         </div>
-        <span class="preset-name">${preset.name}</span>
       `;
+      const prevBox = createPresetAnimatedPreview(preset);
+      card.appendChild(prevBox);
+
+      const desc = document.createElement("div");
+      desc.className = "preset-card-desc";
+      desc.textContent = preset.description || "";
+      card.appendChild(desc);
+
       card.addEventListener("click", () => applyPresetStyle(preset));
       els.stylePresetsGrid.appendChild(card);
+    });
+  }
+
+  function openQuickStartModal(filterCategory = "all") {
+    if (!els.quickStartModal) return;
+    renderQuickStartModal(filterCategory);
+    els.quickStartModal.hidden = false;
+  }
+
+  function closeQuickStartModal() {
+    if (els.quickStartModal) els.quickStartModal.hidden = true;
+  }
+
+  function renderQuickStartModal(filterCategory = "all") {
+    if (!els.quickStartModalGrid) return;
+    els.quickStartModalGrid.innerHTML = "";
+
+    const list = STYLE_PRESETS.filter((p) => {
+      if (!filterCategory || filterCategory === "all") return true;
+      return p.category === filterCategory;
+    });
+
+    list.forEach((preset) => {
+      const card = document.createElement("div");
+      card.className = "modal-preset-card" + (preset.id === activePresetId ? " active" : "");
+      card.innerHTML = `
+        <div class="modal-preset-name">
+          <span>${preset.name}</span>
+          <span class="preset-cat-badge">${preset.category}</span>
+        </div>
+      `;
+      const prevBox = createPresetAnimatedPreview(preset);
+      prevBox.style.height = "72px";
+      prevBox.style.fontSize = "16px";
+      card.appendChild(prevBox);
+
+      const meta = document.createElement("div");
+      meta.className = "modal-preset-meta";
+      meta.innerHTML = `
+        <div class="modal-preset-desc">${preset.description}</div>
+        <div class="modal-preset-best">
+          <svg class="icon icon-tiny" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+          <span>Best: ${preset.bestFor || "Short-form clips"}</span>
+        </div>
+        <button type="button" class="btn btn-tiny ${preset.id === activePresetId ? "btn-primary" : "btn-ghost"} modal-preset-btn">
+          ${preset.id === activePresetId ? "Active Preset" : "Apply Preset"}
+        </button>
+      `;
+      card.appendChild(meta);
+
+      card.addEventListener("click", () => {
+        applyPresetStyle(preset);
+        closeQuickStartModal();
+        toast(`Applied preset: ${preset.name}`, "ok");
+      });
+      els.quickStartModalGrid.appendChild(card);
     });
   }
 
   function applyPresetStyle(preset) {
     activePresetId = preset.id;
     // Update Hook
-    canvasState.hook.font = preset.font;
+    canvasState.hook.font = preset.hookFont || preset.font;
     canvasState.hook.weight = preset.weight || "Extra Bold";
-    canvasState.hook.size = preset.hookSize;
-    canvasState.hook.color = preset.hookColor;
-    canvasState.hook.outline_color = preset.hookOutline;
-    canvasState.hook.outline_width = preset.hookOutlineW;
-    canvasState.hook.box_enabled = preset.hookBox;
-    canvasState.hook.background_color = preset.hookBoxColor;
+    canvasState.hook.size = preset.hookSize || 78;
+    canvasState.hook.color = preset.hookColor || "#FFFFFF";
+    canvasState.hook.outline_color = preset.hookOutline || "#000000";
+    canvasState.hook.outline_width = preset.hookOutlineW != null ? preset.hookOutlineW : 4;
+    canvasState.hook.box_enabled = Boolean(preset.hookBox);
+    canvasState.hook.background_color = preset.hookBoxColor || "#000000";
 
     // Update Captions
     canvasState.captions.font = preset.font;
     canvasState.captions.weight = preset.weight || "Bold";
-    canvasState.captions.size = preset.captionSize;
-    canvasState.captions.color = preset.captionColor;
-    canvasState.captions.outline_color = preset.captionOutline;
-    canvasState.captions.outline_width = preset.captionOutlineW;
-    canvasState.captions.box_enabled = preset.captionBox;
-    canvasState.captions.background_color = preset.captionBoxColor;
-    canvasState.captions.highlight_color = preset.highlightColor;
+    canvasState.captions.size = preset.captionSize || 66;
+    canvasState.captions.color = preset.captionColor || "#FFFFFF";
+    canvasState.captions.outline_color = preset.captionOutline || "#000000";
+    canvasState.captions.outline_width = preset.captionOutlineW != null ? preset.captionOutlineW : 5;
+    canvasState.captions.box_enabled = Boolean(preset.captionBox);
+    canvasState.captions.background_color = preset.captionBoxColor || "#000000";
+    canvasState.captions.highlight_color = preset.highlightColor || "#38BDF8";
+    canvasState.captions.animation = preset.animation || "word_pop";
+    canvasState.captions.animation_scale = preset.animationScale || 1.10;
 
-    renderStylePresets();
+    renderStylePresets(activePresetFilter);
     updateCanvasElementsView();
     pushCanvasHistory(`Apply Preset ${preset.name}`);
   }
@@ -2021,11 +2459,13 @@
     if (els.canvasHookTextInput && els.canvasHookTextInput.value.trim()) {
       currentCanvasClip.hook = els.canvasHookTextInput.value.trim();
     }
+    currentCanvasClip.template = activePresetId;
+    currentCanvasClip.preset = activePresetId;
     currentCanvasClip.layout = JSON.parse(JSON.stringify(canvasState));
     dirty = true;
     updateReviewHint();
     closeVisualCanvasModal();
-    toast("Single-line layout & style applied to this clip.", "ok");
+    toast(`Preset ${activePresetId} and layout applied to this clip.`, "ok");
     renderReview();
     if (els.btnSaveReview) els.btnSaveReview.click();
   }
@@ -2033,6 +2473,8 @@
   async function applyCanvasToCampaign() {
     try {
       allClips().forEach((c) => {
+        c.template = activePresetId;
+        c.preset = activePresetId;
         c.layout = JSON.parse(JSON.stringify(canvasState));
       });
       dirty = true;
@@ -2041,6 +2483,7 @@
       if (currentCampaignId) {
         await apiPost(`/api/campaigns/${encodeURIComponent(currentCampaignId)}/template`, {
           template: {
+            name: activePresetId,
             hook: canvasState.hook,
             captions: canvasState.captions,
             cta: canvasState.cta,
@@ -3349,6 +3792,26 @@
       const textEl = els.modelChip.querySelector(".engine-text") || els.modelChip;
       textEl.textContent = state.config.llm_model + " · " + state.config.whisper_model;
     }
+    if (state && Array.isArray(state.presets) && state.presets.length > 0) {
+      const merged = QUICK_START_PRESETS.map((qp) => {
+        const bp = state.presets.find((p) => p.id === qp.id);
+        return bp ? Object.assign({}, qp, bp) : qp;
+      });
+      state.presets.forEach((bp) => {
+        if (!merged.some((m) => m.id === bp.id)) {
+          merged.push(Object.assign({
+            category: bp.category || "custom",
+            font: bp.font || "Montserrat",
+            weight: "Bold",
+            captionColor: "#FFFFFF",
+            captionOutline: "#000000",
+            highlightColor: "#38BDF8"
+          }, bp));
+        }
+      });
+      STYLE_PRESETS = merged;
+      renderStylePresets(activePresetFilter);
+    }
     renderStyleVideoSelect();
     renderTemplates();
     renderTelegramStatus();
@@ -3532,36 +3995,63 @@
   }
 
   function renderTemplates() {
-    if (!els.templateSelect) return;
-    const tpls = goldenTemplates();
+    const allTpls = (state && state.templates) || [];
+    const presetsList = STYLE_PRESETS || [];
     const settings = campaignSettings();
-    const prev = els.templateSelect.value || settings.default_template;
-    els.templateSelect.innerHTML = tpls.map((t) =>
-      `<option value="${escapeHtml(t.name)}">${escapeHtml(t.label || t.name)}</option>`).join("");
-    const names = tpls.map((t) => t.name);
-    if (prev && names.includes(prev)) {
-      els.templateSelect.value = prev;
-    } else if (state && state.config && names.includes(state.config.default_template)) {
-      els.templateSelect.value = state.config.default_template;
-    } else if (tpls.length) {
-      els.templateSelect.value = tpls[0].name;
+    const prev = (els.templateSelect && els.templateSelect.value) || settings.default_template;
+
+    function buildOptions() {
+      let html = `<optgroup label="⚡ Quick Start Presets (15)">`;
+      presetsList.forEach((p) => {
+        html += `<option value="${escapeHtml(p.id)}">⚡ ${escapeHtml(p.name)} (${escapeHtml(p.category)})</option>`;
+      });
+      html += `</optgroup>`;
+
+      if (allTpls.length > 0) {
+        html += `<optgroup label="Templates">`;
+        allTpls.forEach((t) => {
+          html += `<option value="${escapeHtml(t.name)}">${escapeHtml(t.label || t.name)}</option>`;
+        });
+        html += `</optgroup>`;
+      }
+      return html;
     }
+
+    if (els.templateSelect) {
+      els.templateSelect.innerHTML = buildOptions();
+      const validVals = [...presetsList.map((p) => p.id), ...allTpls.map((t) => t.name)];
+      if (prev && validVals.includes(prev)) {
+        els.templateSelect.value = prev;
+      } else if (state && state.config && validVals.includes(state.config.default_template)) {
+        els.templateSelect.value = state.config.default_template;
+      } else if (validVals.length) {
+        els.templateSelect.value = validVals[0];
+      }
+    }
+
+    if (els.exportConfigTemplate) {
+      const prevExp = els.exportConfigTemplate.value;
+      els.exportConfigTemplate.innerHTML = buildOptions();
+      if (prevExp) els.exportConfigTemplate.value = prevExp;
+    }
+
     if (els.goldenStyles) {
       els.goldenStyles.innerHTML = "";
-      tpls.forEach((t) => {
+      const quickBadges = presetsList.filter((p) => p.recommended).slice(0, 4);
+      quickBadges.forEach((t) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "golden-style" + (t.name === els.templateSelect.value ? " on" : "");
-        btn.innerHTML = `${svgIcon("layers")} <span>${escapeHtml(t.label || t.name)}</span>`;
+        btn.className = "golden-style" + (t.id === (els.templateSelect && els.templateSelect.value) ? " on" : "");
+        btn.innerHTML = `${svgIcon("sparkles")} <span>${escapeHtml(t.name)}</span>`;
         btn.addEventListener("click", () => {
-          els.templateSelect.value = t.name;
+          if (els.templateSelect) els.templateSelect.value = t.id;
           if (els.goldenStyles) {
             els.goldenStyles.querySelectorAll(".golden-style").forEach((el, i) => {
-              el.classList.toggle("on", tpls[i] && tpls[i].name === t.name);
+              el.classList.toggle("on", quickBadges[i] && quickBadges[i].id === t.id);
             });
           }
           updateTemplateDesc();
-          saveCampaignSettings({ default_template: t.name });
+          saveCampaignSettings({ default_template: t.id });
         });
         els.goldenStyles.appendChild(btn);
       });
@@ -3570,8 +4060,14 @@
   }
 
   function updateTemplateDesc() {
+    const val = els.templateSelect && els.templateSelect.value;
+    const p = (STYLE_PRESETS || []).find((x) => x.id === val);
+    if (p) {
+      if (els.templateDesc) els.templateDesc.textContent = `${p.description} (Best for: ${p.bestFor || "Short-form clips"})`;
+      return;
+    }
     const tpls = (state && state.templates) || [];
-    const t = tpls.find((x) => x.name === els.templateSelect.value);
+    const t = tpls.find((x) => x.name === val);
     if (els.templateDesc) els.templateDesc.textContent = t ? (t.description || "") : "";
   }
 

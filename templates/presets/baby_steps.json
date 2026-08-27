@@ -1,0 +1,67 @@
+{
+  "id": "baby_steps",
+  "name": "Baby Steps",
+  "order": 13,
+  "description": "Friendly, approachable, and warm typography designed for beginner learners.",
+  "category": "creator",
+  "recommended": false,
+  "bestFor": "Beginner tutorials, coaching, self-improvement, educational guides",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Poppins-Bold",
+    "fontWeight": 700,
+    "fontSize": 64,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#FBBF24",
+    "stroke": {
+      "enabled": true,
+      "width": 4,
+      "color": "#0F172A"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 4
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.08,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Poppins-Bold",
+    "fontSize": 74,
+    "textColor": "#000000",
+    "backgroundColor": "#FBBF24",
+    "boxEnabled": true,
+    "cornerRadius": 16,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.14
+  },
+  "emoji": {
+    "enabled": true
+  },
+  "cta": {
+    "enabled": false
+  }
+}

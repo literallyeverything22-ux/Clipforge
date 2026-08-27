@@ -1,0 +1,67 @@
+{
+  "id": "cinematic",
+  "name": "Cinematic",
+  "order": 11,
+  "description": "Wide visual breathing room, subtle shadows, and movie-grade typography.",
+  "category": "emotional",
+  "recommended": false,
+  "bestFor": "Documentary, filmmaking, visual essays, aesthetic interviews",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Lato-Bold",
+    "fontWeight": 700,
+    "fontSize": 54,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 5,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1300
+    },
+    "safeArea": true,
+    "textColor": "#F8FAFC",
+    "highlightColor": "#E2E8F0",
+    "stroke": {
+      "enabled": true,
+      "width": 2,
+      "color": "#0F172A"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 6,
+      "offsetY": 3
+    },
+    "highlightMode": "none",
+    "animation": "smooth_fade",
+    "animationScale": 1.0,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bebas Neue",
+    "fontSize": 76,
+    "textColor": "#FFFFFF",
+    "outlineColor": "#000000",
+    "outlineWidth": 3,
+    "boxEnabled": false,
+    "durationMs": 2000
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.16
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

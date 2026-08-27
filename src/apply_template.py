@@ -10,12 +10,14 @@ template schema but disabled in v1 (they raise a clear error if enabled).
 """
 import json
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
 
 from src.config import config
 from src import text_layout as tl
+from src.speech_grouper import group_words_into_speech_units
 
 TEMPLATE_DIR = config.root / "templates"
 FONT_DIR = config.root / "assets" / "fonts"
@@ -52,6 +54,12 @@ def effects_filters(template):
 
 
 def load_template(name):
+    # Check if name is a Quick Start preset first
+    from src import presets
+    p = presets.get_preset(name)
+    if p:
+        return presets.preset_to_clipforge_template(p)
+
     raw = Path(name)
     if raw.is_absolute() or (raw.suffix == ".json" and raw.exists()):
         path = raw
@@ -60,6 +68,10 @@ def load_template(name):
         if not path.suffix:
             path = path.with_suffix(".json")
     if not path.exists():
+        preset_fallback = TEMPLATE_DIR / "presets" / f"{Path(name).stem}.json"
+        if preset_fallback.exists():
+            p_data = json.loads(preset_fallback.read_text(encoding="utf-8-sig"))
+            return presets.preset_to_clipforge_template(p_data)
         raise FileNotFoundError(f"Template not found: {path}")
     return json.loads(path.read_text(encoding="utf-8-sig"))
 
@@ -230,12 +242,16 @@ def _template_safe_area(template, band_offset=0, band_height=None):
     return safe
 
 
-def _caption_line_strings(lines):
+def _caption_line_strings(items):
     """Flat list of plain caption line strings (for layout representative text)."""
     out = []
-    for line in lines:
-        out.append(" ".join(w["word"] for w in line))
-    return out
+    for item in items:
+        if isinstance(item, dict) and "lines" in item:
+            for ln in item["lines"]:
+                out.append(" ".join(w.get("word", "") for w in ln))
+        elif isinstance(item, list):
+            out.append(" ".join(w.get("word", "") for w in item))
+    return [s for s in out if s.strip()]
 
 
 def _build_ass(lines, template, resx, resy, clip_duration, hook_text=None,
@@ -398,6 +414,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         h_box_bg = hook.get("background_color") or hook.get("box_color") or "#FFFFFF"
         h_corner_radius = int(hook.get("corner_radius", 0)) if bool(hook.get("box_enabled")) else 0
         hook_text_esc = "\\N".join(_ass_escape(l) for l in r.lines) if r.lines else _ass_escape(hook_text)
+        hook_dur_ms = int(hook.get("duration_ms") or hook.get("durationMs") or 1800)
+        hook_end_sec = min(clip_duration, hook_dur_ms / 1000.0) if hook_dur_ms > 0 else clip_duration
+        hook_fade = r"{\fad(0,250)}" if hook_end_sec < clip_duration else ""
         if h_corner_radius > 0:
             pad_x = int(hook.get("padding_x") or 26)
             pad_y = int(hook.get("padding_y") or 10)
@@ -408,17 +427,17 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             path = _make_round_rect_path(bx, by, bw, bh, h_corner_radius)
             badge_color = _hex_to_bgr(h_box_bg)
             events.append(
-                f"Dialogue: 0,0:00:00.00,{_ass_time(clip_duration)},HookBadge,,0,0,0,,"
-                f"{{\\an7\\pos(0,0)\\c{badge_color}\\1a&H00&\\3a&HFF&\\4a&HFF&\\p1}}{path}{{\\p0}}"
+                f"Dialogue: 0,0:00:00.00,{_ass_time(hook_end_sec)},HookBadge,,0,0,0,,"
+                f"{hook_fade}{{\\an7\\pos(0,0)\\c{badge_color}\\1a&H00&\\3a&HFF&\\4a&HFF&\\p1}}{path}{{\\p0}}"
             )
             events.append(
-                f"Dialogue: 1,0:00:00.00,{_ass_time(clip_duration)},Hook,,0,0,0,,"
-                f"{{\\an{r.alignment}\\pos({r.anchor_x},{r.anchor_y})}}"
+                f"Dialogue: 1,0:00:00.00,{_ass_time(hook_end_sec)},Hook,,0,0,0,,"
+                f"{hook_fade}{{\\an{r.alignment}\\pos({r.anchor_x},{r.anchor_y})}}"
                 f"{hook_text_esc}")
         else:
             events.append(
-                f"Dialogue: 1,0:00:00.00,{_ass_time(clip_duration)},Hook,,0,0,0,,"
-                f"{{\\an{r.alignment}\\pos({r.anchor_x},{r.anchor_y})}}"
+                f"Dialogue: 1,0:00:00.00,{_ass_time(hook_end_sec)},Hook,,0,0,0,,"
+                f"{hook_fade}{{\\an{r.alignment}\\pos({r.anchor_x},{r.anchor_y})}}"
                 f"{hook_text_esc}")
     if cta_enabled and "cta_001" in by_id:
         r = by_id["cta_001"]
@@ -430,31 +449,113 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     if "caption_001" in by_id:
         cr = by_id["caption_001"]
         cap_pos = f"{{\\an{cr.alignment}\\pos({cr.anchor_x},{cr.anchor_y})}}"
-    for line in lines:
-        start = _ass_time(line[0]["start"])
-        end = _ass_time(line[-1]["end"])
-        if hl_enabled:
-            key_index = max(range(len(line)), key=lambda i: line[i]["end"] - line[i]["start"])
-            parts = []
-            for i, w in enumerate(line):
-                word = _ass_escape(w["word"])
-                if i == key_index:
-                    parts.append(f"{{\\c{hl_color}}}{word}{{\\c{primary}}}")
+
+    highlight_mode = caps.get("highlight_mode") or ("active_word" if hl_enabled else "none")
+    animation = caps.get("animation", "word_pop")
+    anim_scale = float(caps.get("animation_scale", 1.10))
+    scale_pct = int(round(anim_scale * 100))
+    fade_tag = r"{\fad(120,120)}" if animation == "smooth_fade" else ""
+
+    is_speech_units = bool(lines and isinstance(lines[0], dict) and "lines" in lines[0])
+
+    if is_speech_units:
+        for unit in lines:
+            u_start = unit["start"]
+            u_end = unit["end"]
+            u_lines = unit["lines"]
+            all_words = unit.get("all_words", [])
+            pos = cap_pos or ""
+
+            if highlight_mode == "active_word" and all_words:
+                for k, cur_word in enumerate(all_words):
+                    seg_start = u_start if k == 0 else cur_word["start"]
+                    seg_end = u_end if k == len(all_words) - 1 else all_words[k + 1]["start"]
+                    if seg_end <= seg_start:
+                        seg_end = seg_start + 0.08
+
+                    line_strs = []
+                    word_cursor = 0
+                    for ln in u_lines:
+                        rendered_words = []
+                        for w in ln:
+                            w_esc = _ass_escape(w.get("word", ""))
+                            if word_cursor == k:
+                                if animation in ("word_pop", "bounce") and scale_pct > 100:
+                                    rendered_words.append(
+                                        f"{{\\c{hl_color}\\fscx{scale_pct}\\fscy{scale_pct}}}{w_esc}{{\\c{primary}\\fscx100\\fscy100}}"
+                                    )
+                                else:
+                                    rendered_words.append(f"{{\\c{hl_color}}}{w_esc}{{\\c{primary}}}")
+                            else:
+                                rendered_words.append(w_esc)
+                            word_cursor += 1
+                        line_strs.append(" ".join(rendered_words))
+
+                    text = "\\N".join(line_strs)
+                    events.append(
+                        f"Dialogue: 0,{_ass_time(seg_start)},{_ass_time(seg_end)},Caption,,0,0,0,,{pos}{fade_tag}{text}"
+                    )
+
+            elif highlight_mode == "keyword_emphasis" and all_words:
+                has_special = [bool(re.search(r"(\d+|%|\$)", w.get("raw", w.get("word", "")))) for w in all_words]
+                if any(has_special):
+                    emph_indices = {i for i, b in enumerate(has_special) if b}
                 else:
-                    parts.append(word)
-            text = " ".join(parts)
-        elif grad_enabled:
-            n = len(line)
-            parts = []
-            for i, w in enumerate(line):
-                t = 0.5 if n == 1 else i / (n - 1)
-                color = _rgb_to_bgr(_lerp_rgb(grad_top_rgb, grad_bottom_rgb, t))
-                parts.append(f"{{\\c{color}}}{_ass_escape(w['word'])}")
-            text = " ".join(parts)
-        else:
-            text = " ".join(_ass_escape(w["word"]) for w in line)
-        pos = cap_pos or ""
-        events.append(f"Dialogue: 0,{start},{end},Caption,,0,0,0,,{pos}{text}")
+                    longest_idx = max(range(len(all_words)), key=lambda i: all_words[i]["end"] - all_words[i]["start"])
+                    emph_indices = {longest_idx}
+
+                line_strs = []
+                word_cursor = 0
+                for ln in u_lines:
+                    rendered_words = []
+                    for w in ln:
+                        w_esc = _ass_escape(w.get("word", ""))
+                        if word_cursor in emph_indices:
+                            rendered_words.append(f"{{\\c{hl_color}}}{w_esc}{{\\c{primary}}}")
+                        else:
+                            rendered_words.append(w_esc)
+                        word_cursor += 1
+                    line_strs.append(" ".join(rendered_words))
+
+                text = "\\N".join(line_strs)
+                events.append(
+                    f"Dialogue: 0,{_ass_time(u_start)},{_ass_time(u_end)},Caption,,0,0,0,,{pos}{fade_tag}{text}"
+                )
+
+            else:
+                line_strs = []
+                for ln in u_lines:
+                    line_strs.append(" ".join(_ass_escape(w.get("word", "")) for w in ln))
+                text = "\\N".join(line_strs)
+                events.append(
+                    f"Dialogue: 0,{_ass_time(u_start)},{_ass_time(u_end)},Caption,,0,0,0,,{pos}{fade_tag}{text}"
+                )
+    else:
+        for line in lines:
+            start = _ass_time(line[0]["start"])
+            end = _ass_time(line[-1]["end"])
+            if hl_enabled:
+                key_index = max(range(len(line)), key=lambda i: line[i]["end"] - line[i]["start"])
+                parts = []
+                for i, w in enumerate(line):
+                    word = _ass_escape(w["word"])
+                    if i == key_index:
+                        parts.append(f"{{\\c{hl_color}}}{word}{{\\c{primary}}}")
+                    else:
+                        parts.append(word)
+                text = " ".join(parts)
+            elif grad_enabled:
+                n = len(line)
+                parts = []
+                for i, w in enumerate(line):
+                    t = 0.5 if n == 1 else i / (n - 1)
+                    color = _rgb_to_bgr(_lerp_rgb(grad_top_rgb, grad_bottom_rgb, t))
+                    parts.append(f"{{\\c{color}}}{_ass_escape(w['word'])}")
+                text = " ".join(parts)
+            else:
+                text = " ".join(_ass_escape(w["word"]) for w in line)
+            pos = cap_pos or ""
+            events.append(f"Dialogue: 0,{start},{end},Caption,,0,0,0,,{pos}{text}")
 
     if debug:
         try:
@@ -645,7 +746,12 @@ def apply_template(raw_clip_path, transcript_path, clip_start, clip_end,
         tmp = Path(tmp)
         caps = template.get("captions", {})
         words = _clip_words(transcript, clip_start, clip_end) if caps.get("enabled") else []
-        lines = _group_lines(words, max_words=int(caps.get("max_words", 3))) if words else []
+        lines = group_words_into_speech_units(
+            words,
+            max_words_per_line=int(caps.get("max_words", 4)),
+            max_lines=int(caps.get("max_lines", 2)),
+            case_mode=caps.get("case", "uppercase")
+        ) if words else []
         hook_on = bool(template.get("hook", {}).get("enabled")) and bool(hook_text)
         ass_filter = None
         cta_on = bool(template.get("cta", {}).get("enabled")) and \

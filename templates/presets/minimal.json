@@ -1,0 +1,60 @@
+{
+  "id": "minimal",
+  "name": "Minimal",
+  "order": 7,
+  "description": "Clean, understated, and premium typography without distracting effects.",
+  "category": "clean",
+  "recommended": false,
+  "bestFor": "Education, tech walkthroughs, calm interviews, long-form thoughts",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Poppins-Bold",
+    "fontWeight": 600,
+    "fontSize": 56,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 5,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1300
+    },
+    "safeArea": true,
+    "textColor": "#F8FAFC",
+    "highlightColor": "#F8FAFC",
+    "stroke": {
+      "enabled": true,
+      "width": 1,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 4,
+      "offsetY": 2
+    },
+    "highlightMode": "none",
+    "animation": "smooth_fade",
+    "animationScale": 1.0,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": false,
+    "durationMs": 0
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.15
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

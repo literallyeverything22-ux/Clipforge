@@ -444,9 +444,12 @@ async def api_state(request):
     default_tpl = settings.get("default_template") if camp else None
     if not default_tpl:
         default_tpl = str(camp.template_path) if camp and camp.has_template() else config.default_template
+    from src import presets
     return JSONResponse({
         "videos": _list_videos(campaign_id),
         "templates": _list_templates(campaign_id),
+        "presets": presets.list_presets(),
+        "preset_categories": presets.CATEGORIES,
         "campaign_id": campaign_id,
         "config": {
             "llm_model": config.llm_model,
@@ -1241,6 +1244,24 @@ async def api_frames_media(request):
     return FileResponse(p)
 
 
+async def api_presets_list(request):
+    from src import presets
+    cat = request.query_params.get("category")
+    return JSONResponse({
+        "presets": presets.list_presets(category=cat),
+        "categories": presets.CATEGORIES
+    })
+
+
+async def api_preset_get(request):
+    from src import presets
+    pid = request.path_params["preset_id"]
+    p = presets.get_preset(pid)
+    if not p:
+        return JSONResponse({"error": "preset not found"}, status_code=404)
+    return JSONResponse(p)
+
+
 # --------------------------------------------------------------------------- #
 # campaigns
 # --------------------------------------------------------------------------- #
@@ -1674,6 +1695,8 @@ routes = [
     Route("/api/campaigns/{campaign_id}/exports", api_campaign_exports, methods=["GET"]),
     Route("/api/exploration/{video_id}", api_exploration_get, methods=["GET"]),
     Route("/api/exploration/{video_id}/save-to-campaign", api_exploration_save, methods=["POST"]),
+    Route("/api/presets", api_presets_list, methods=["GET"]),
+    Route("/api/presets/{preset_id}", api_preset_get, methods=["GET"]),
     Mount("/static", app=StaticFiles(directory=str(WEB_DIR)), name="static"),
 ]
 

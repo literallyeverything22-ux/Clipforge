@@ -1,0 +1,67 @@
+{
+  "id": "grow",
+  "name": "Grow",
+  "order": 6,
+  "description": "Modern creator & fintech aesthetic with bold green keyword highlights.",
+  "category": "creator",
+  "recommended": false,
+  "bestFor": "Entrepreneurship, finance, self-improvement, business",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Barlow Condensed",
+    "fontWeight": 800,
+    "fontSize": 74,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 4,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1260
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#10B981",
+    "stroke": {
+      "enabled": true,
+      "width": 5,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 4
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.1,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Bebas Neue",
+    "fontSize": 80,
+    "textColor": "#10B981",
+    "outlineColor": "#000000",
+    "outlineWidth": 5,
+    "boxEnabled": false,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.12
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "id": "storyteller",
+  "name": "Storyteller",
+  "order": 8,
+  "description": "Cinematic and emotional, with dramatic key phrase emphasis.",
+  "category": "emotional",
+  "recommended": false,
+  "bestFor": "Personal memoirs, storytelling, documentaries, emotional reveals",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Saira Condensed",
+    "fontWeight": 700,
+    "fontSize": 68,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 5,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1180
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#F43F5E",
+    "stroke": {
+      "enabled": true,
+      "width": 4,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 8,
+      "offsetY": 4
+    },
+    "highlightMode": "keyword_emphasis",
+    "animation": "smooth_fade",
+    "animationScale": 1.05,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Saira Condensed",
+    "fontSize": 82,
+    "textColor": "#F43F5E",
+    "outlineColor": "#000000",
+    "outlineWidth": 5,
+    "boxEnabled": false,
+    "durationMs": 2200
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.15
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

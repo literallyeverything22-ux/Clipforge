@@ -952,14 +952,23 @@
 
         <!-- RIGHT PANEL (340px): Contextual Inspector -->
         <aside class="canvas-panel-right">
-          <!-- 1. Style Presets -->
+          <!-- 1. Quick Start Presets -->
           <section class="inspector-card">
             <div class="studio-card-head">
-              <span class="section-label">1. STYLE PRESETS</span>
-              <button type="button" class="btn-text-action" id="presetsViewAllBtn">View All</button>
+              <span class="section-label">1. QUICK START PRESETS</span>
+              <button type="button" class="btn-text-action" id="presetsViewAllBtn">View All (15)</button>
+            </div>
+            <!-- Category Filter Tabs -->
+            <div class="preset-filter-pills" id="presetFilterPills">
+              <button type="button" class="preset-pill active" data-cat="all">All</button>
+              <button type="button" class="preset-pill" data-cat="clean">Clean</button>
+              <button type="button" class="preset-pill" data-cat="dynamic">Dynamic</button>
+              <button type="button" class="preset-pill" data-cat="professional">Pro</button>
+              <button type="button" class="preset-pill" data-cat="emotional">Emotional</button>
+              <button type="button" class="preset-pill" data-cat="creator">Creator</button>
             </div>
             <div class="style-presets-grid" id="stylePresetsGrid">
-              <!-- Dynamically populated preset badges -->
+              <!-- Dynamically populated preset cards with live animated previews -->
             </div>
           </section>
 
@@ -1340,6 +1349,39 @@
           <svg class="btn-icon" aria-hidden="true"><use href="#icon-play"/></svg>
           <span>Start Rendering</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Start Presets Modal (View All 15 with live animated previews) -->
+  <div class="modal-backdrop" id="quickStartModal" hidden>
+    <div class="modal-dialog modal-dialog-xl quick-start-modal-dialog">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title flex-center gap-sm">
+            <span>⚡ Quick Start Preset Library</span>
+            <span class="badge badge-accent">15 Templates</span>
+          </div>
+          <p class="modal-sub">One-click visual styles for Instagram Reels, YouTube Shorts, and TikTok.</p>
+        </div>
+        <button type="button" class="btn-icon-close" id="quickStartCloseBtn" aria-label="Close modal">
+          <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
+        </button>
+      </div>
+      <div class="quick-start-filter-bar">
+        <div class="preset-filter-pills" id="modalPresetFilterPills">
+          <button type="button" class="preset-pill active" data-cat="all">All Styles (15)</button>
+          <button type="button" class="preset-pill" data-cat="clean">Clean & Minimal</button>
+          <button type="button" class="preset-pill" data-cat="dynamic">Dynamic & Viral</button>
+          <button type="button" class="preset-pill" data-cat="professional">Professional & Podcast</button>
+          <button type="button" class="preset-pill" data-cat="emotional">Emotional & Cinematic</button>
+          <button type="button" class="preset-pill" data-cat="creator">Creator & Tutorial</button>
+        </div>
+      </div>
+      <div class="quick-start-modal-body">
+        <div class="quick-start-cards-grid" id="quickStartModalGrid">
+          <!-- Dynamically populated 15 animated preset cards -->
+        </div>
       </div>
     </div>
   </div>

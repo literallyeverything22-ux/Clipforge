@@ -1,0 +1,67 @@
+{
+  "id": "hype",
+  "name": "Hype",
+  "order": 9,
+  "description": "Maximum energy with huge bold typography and punchy hot pink pops.",
+  "category": "dynamic",
+  "recommended": false,
+  "bestFor": "Sports, gaming, high-energy entertainment, live reactions",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Anton",
+    "fontWeight": 900,
+    "fontSize": 80,
+    "case": "uppercase",
+    "maxLines": 2,
+    "maxWordsPerLine": 3,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1250
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#FF0055",
+    "stroke": {
+      "enabled": true,
+      "width": 7,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 12,
+      "offsetY": 6
+    },
+    "highlightMode": "active_word",
+    "animation": "word_pop",
+    "animationScale": 1.16,
+    "animationSpeed": "fast"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Anton",
+    "fontSize": 86,
+    "textColor": "#FF0055",
+    "outlineColor": "#000000",
+    "outlineWidth": 6,
+    "boxEnabled": false,
+    "durationMs": 1800
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.1
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}

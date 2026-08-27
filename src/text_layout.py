@@ -59,6 +59,9 @@ FONT_FILES = {
     "Lato-Bold": "Lato-Bold.ttf",
     "Poppins-Bold": "Poppins-Bold.ttf",
     "Poppins": "Poppins-Bold.ttf",
+    "Montserrat": "Montserrat-Bold.ttf",
+    "Montserrat-Bold": "Montserrat-Bold.ttf",
+    "Montserrat-ExtraBold": "Montserrat-ExtraBold.ttf",
     "Bebas Neue": "BebasNeue-Regular.ttf",
     "Arial": "Arial",
 }

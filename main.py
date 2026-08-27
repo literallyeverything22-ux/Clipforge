@@ -1038,7 +1038,7 @@ def main():
 
     p = sub.add_parser("render", help="Apply templates to raw clips (Phase 5)")
     p.add_argument("video"); p.add_argument("--candidates"); p.add_argument("--transcript")
-    p.add_argument("--template"); p.add_argument("--auto", action="store_true")
+    p.add_argument("--template"); p.add_argument("--preset", dest="template"); p.add_argument("--auto", action="store_true")
     p.set_defaults(func=cmd_render)
 
     p = sub.add_parser("frames", help="Extract frames for style analysis")
@@ -1074,14 +1074,14 @@ def main():
     p.set_defaults(func=cmd_analyze)
 
     p = sub.add_parser("export", help="cut + render approved clips")
-    p.add_argument("video"); p.add_argument("--template"); p.add_argument("--auto", action="store_true")
+    p.add_argument("video"); p.add_argument("--template"); p.add_argument("--preset", dest="template"); p.add_argument("--auto", action="store_true")
     p.add_argument("--instructions", help="edit instructions to log with this export")
     p.set_defaults(func=cmd_export)
 
     p = sub.add_parser("pipeline", help="Full auto pipeline (Phase 6)")
     p.add_argument("video"); p.add_argument("--skip-review", action="store_true")
     p.add_argument("--auto", action="store_true")
-    p.add_argument("--template"); p.add_argument("--max-clips", type=int)
+    p.add_argument("--template"); p.add_argument("--preset", dest="template"); p.add_argument("--max-clips", type=int)
     p.add_argument("--min-score", type=float)
     p.add_argument("--no-local-highlights", action="store_true",
                    help="skip local Ollama select; wait for AI highlights by email")

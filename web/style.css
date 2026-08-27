@@ -3975,54 +3975,266 @@ summary:focus-visible {
   letter-spacing: 0.5px;
 }
 
-/* 1. Presets Grid */
+/* 1. Quick Start Presets & Filter Pills */
+.preset-filter-pills {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+.preset-filter-pills::-webkit-scrollbar {
+  display: none;
+}
+.preset-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.preset-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+.preset-pill.active {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #041017;
+  font-weight: 700;
+}
+
 .style-presets-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .style-preset-card {
-  background: #151a24;
+  background: #131822;
   border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 8px 6px;
+  border-radius: 9px;
+  padding: 8px 7px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  gap: 6px;
   transition: all var(--transition-fast);
-  text-align: center;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
 }
 
 .style-preset-card:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  background: #1b212e;
+  border-color: rgba(34, 211, 238, 0.4);
+  background: #18202e;
+  transform: translateY(-1px);
 }
 
 .style-preset-card.active {
   border-color: var(--teal);
-  background: rgba(34, 211, 238, 0.08);
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
+  background: rgba(34, 211, 238, 0.09);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
 }
 
-.preset-preview-badge {
-  width: 100%;
-  height: 32px;
-  border-radius: 5px;
+.preset-card-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 800;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.preset-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.preset-cat-badge {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-.preset-name {
+/* Animated Preview Card Component */
+.preset-animated-preview {
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+  background: #090c12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4px 6px;
+  line-height: 1.15;
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.preset-animated-preview .prev-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.preset-animated-preview .prev-word {
+  display: inline-block;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.preset-animated-preview .prev-word.active-pop {
+  animation: activePopPulse 1.8s infinite ease-in-out;
+  display: inline-block;
+}
+
+@keyframes activePopPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  40% {
+    transform: scale(1.18);
+    filter: brightness(1.2) drop-shadow(0 0 5px currentColor);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+}
+
+.preset-card-desc {
+  font-size: 9.5px;
+  color: #94a3b8;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Quick Start Presets Modal */
+.quick-start-modal-dialog {
+  max-width: 960px;
+  width: 92vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #0e1219;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.quick-start-filter-bar {
+  padding: 12px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.quick-start-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.quick-start-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.modal-preset-card {
+  background: #141923;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.modal-preset-card:hover {
+  border-color: var(--teal);
+  background: #1a2130;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.modal-preset-card.active {
+  border-color: var(--teal);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
+}
+
+.modal-preset-card .preset-animated-preview {
+  height: 80px;
+  font-size: 15px;
+  border-radius: 8px;
+}
+
+.modal-preset-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-preset-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-preset-desc {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.modal-preset-best {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 10.5px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.modal-preset-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
   font-weight: 600;
-  color: #cbd5e1;
+  border-radius: 6px;
 }
 
 /* 2. Contextual Inspector Block */

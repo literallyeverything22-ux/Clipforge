@@ -77,15 +77,29 @@ You have three flexible ways to get highlight clips:
 
 ---
 
-## 🎨 Built-in Style Templates
+## ⚡ 15 Quick Start Presets & Dynamic Karaoke Animations
 
-Templates are stored as simple JSON files in the `templates/` folder:
+ClipForge now comes equipped with **15 authentic short-form presets** with speech-aware line breaking, active-word karaoke highlighting, word-pop scaling, and timed hook dismissal:
 
-| Template | Aspect Ratio | Description |
-|---|---|---|
-| `full_screen.json` | 9:16 | Full frame 1080x1920 with speaker tracking, high-contrast captions, top hook title, and clean subtitle animations. |
-| `square_captioned.json` | 9:16 | Letterbox/square video format with custom colored header and caption bands. |
-| `abu_lahya.json` | 9:16 | Distinctive branding layout with speaker tracking and bottom caption styling. |
+| # | Preset | Category | Best For | Typography & Animation |
+|---|---|---|---|---|
+| 1 | **Creator Default** | Clean | All viral clips, podcasts | Montserrat ExtraBold (70px), Cyan `#38BDF8` pop, White hook pill box |
+| 2 | **Clean Cut** | Clean | General clips, interviews | Poppins Bold (66px), Aqua `#22D3EE` pop, Crisp contrast |
+| 3 | **Karaoke** | Dynamic | High energy, podcasts | Montserrat ExtraBold (72px), Bright green `#00E676` pop (1.14x scale) |
+| 4 | **Podcast Pro** | Professional | Conversational podcasts | Kanit Bold (68px), Amber `#F59E0B` active word, Slate hook pill |
+| 5 | **Beast Mode** | Dynamic | Motivation, fitness | Archivo Black (74px), Electric Yellow `#FFE600` pop (1.15x scale) |
+| 6 | **Grow** | Creator | Finance, business, startups | Barlow Condensed Bold (74px), Emerald `#10B981` highlight pop |
+| 7 | **Minimal** | Clean | Tech, calm interviews | Poppins Bold (56px), Crisp white `#F8FAFC`, Smooth subtitle fade |
+| 8 | **Storyteller** | Emotional | Personal memoirs, drama | Saira Condensed Bold (68px), Dramatic Rose `#F43F5E` emphasis |
+| 9 | **Hype** | Dynamic | Gaming, sports, reactions | Anton ExtraBold (80px), Hot Pink `#FF0055` pop (1.16x scale) |
+| 10 | **Deep Diver** | Professional | Science, documentaries | Lato Bold (58px), Cyan `#38BDF8` technical keyword emphasis |
+| 11 | **Cinematic** | Emotional | Documentary, filmmaking | Lato Bold (54px), Subtle slate shadow, Wide breathing room |
+| 12 | **News Flash** | Professional | News, facts, stats | Archivo Black (66px), Red `#EF4444` keyword emphasis & top red banner |
+| 13 | **Baby Steps** | Creator | Beginner guides, coaching | Poppins Bold (64px), Warm Amber `#FBBF24` highlight pop |
+| 14 | **Soft Landing** | Emotional | Lifestyle, wellness | Poppins Bold (60px), Pastel Pink `#FBCFE8` highlight fade |
+| 15 | **Meme Pop** | Dynamic | Comedy, funny clips | Bangers ExtraBold (76px), Yellow `#FACC15` pop with bounce effect |
+
+---
 
 ## 🎨 Visual Canvas & Style Studio (Professional Video-Text Editor)
 
@@ -114,14 +128,15 @@ ClipForge features a full-screen, professional video-text studio modeled after C
    - **Quick Actions**:
      - `Duplicate Style`: Instantly copies typography and colors from Hook to Subtitles or vice-versa without changing text words.
      - `Copy to All Clips`: Applies current layout and style to every clip in the campaign.
-     - `Reset Canvas`: Restores factory positions and default Hormozi preset.
+     - `Reset Canvas`: Restores factory positions and default preset.
      - `Refresh Frame`: Re-extracts the current video frame via FFmpeg.
 
 4. **Right Contextual Inspector**:
-   - **Style Presets**: 1-click styling with visual `Aa` badges — *Hormozi*, *Minimal*, *Neon*, *Cyber*, and *Outline*.
+   - **Quick Start Presets Bar**: 1-click styling with category filter pills (`All`, `Clean`, `Dynamic`, `Pro`, `Emotional`, `Creator`).
+   - **Live Animated Preview Cards**: Each card displays a dynamic animated simulation of `"THE FUTURE IS HERE"` with the preset's actual font, outline stroke, and active-word pop!
+   - **View All Presets Modal**: Click **View All (15)** to browse the full library in a spacious 3-column modal with "Best for" tags and 1-click apply.
    - **Contextual Typography & Color**: Dynamically switches between Hook Headline controls and Subtitles controls based on what layer is active. Includes live character counter (`/60`), Font, Weight, Size, Color pickers, Outline width, Letter-spacing, and Line-height.
    - **Single-Line Dynamic Auto-Fit**: Guarantees hook headlines and subtitles never wrap onto multiple lines or overflow platform margins by dynamically calculating safe font sizes.
-   - **Advanced Drawer**: Collapsible accordions for background highlight boxes and custom styling.
    - **Position & Alignment**: Left, Center, and Right alignment pills plus precision X and Y percentage sliders.
 
 5. **Keyboard Shortcuts**:

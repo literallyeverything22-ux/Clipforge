@@ -1,0 +1,67 @@
+{
+  "id": "deep_diver",
+  "name": "Deep Diver",
+  "order": 10,
+  "description": "Editorial & documentary style with technical concepts highlighted in cyan.",
+  "category": "professional",
+  "recommended": false,
+  "bestFor": "Science, history, psychology, long-form educational breakdowns",
+  "canvas": {
+    "aspectRatio": "9:16",
+    "width": 1080,
+    "height": 1920
+  },
+  "captions": {
+    "enabled": true,
+    "fontFamily": "Lato-Bold",
+    "fontWeight": 700,
+    "fontSize": 58,
+    "case": "sentence",
+    "maxLines": 2,
+    "maxWordsPerLine": 5,
+    "alignment": "center",
+    "position": {
+      "x": 540,
+      "y": 1180
+    },
+    "safeArea": true,
+    "textColor": "#FFFFFF",
+    "highlightColor": "#38BDF8",
+    "stroke": {
+      "enabled": true,
+      "width": 3,
+      "color": "#000000"
+    },
+    "shadow": {
+      "enabled": true,
+      "blur": 6,
+      "offsetY": 3
+    },
+    "highlightMode": "keyword_emphasis",
+    "animation": "smooth_fade",
+    "animationScale": 1.04,
+    "animationSpeed": "medium"
+  },
+  "hook": {
+    "enabled": true,
+    "style": "top_banner",
+    "fontFamily": "Barlow Condensed",
+    "fontSize": 78,
+    "textColor": "#38BDF8",
+    "outlineColor": "#000000",
+    "outlineWidth": 4,
+    "boxEnabled": false,
+    "durationMs": 2000
+  },
+  "speaker": {
+    "layout": "single",
+    "autoReframe": true,
+    "headroom": 0.14
+  },
+  "emoji": {
+    "enabled": false
+  },
+  "cta": {
+    "enabled": false
+  }
+}
