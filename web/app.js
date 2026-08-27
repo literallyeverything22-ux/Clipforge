@@ -2057,24 +2057,35 @@
     }
 
     // Preset View All
-    if (els.quickStartViewAllBtn) {
-      els.quickStartViewAllBtn.addEventListener("click", () => {
-        openQuickStartModal(activePresetFilter);
+    const btnViewAll = els.quickStartViewAllBtn || document.getElementById("quickStartViewAllBtn");
+    if (btnViewAll) {
+      btnViewAll.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openQuickStartModal(activePresetFilter || "all");
       });
     }
     if (els.presetsViewAllBtn) {
-      els.presetsViewAllBtn.addEventListener("click", () => {
-        openQuickStartModal(activePresetFilter);
+      els.presetsViewAllBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openQuickStartModal(activePresetFilter || "all");
       });
     }
 
-    if (els.quickStartCloseBtn) {
-      els.quickStartCloseBtn.addEventListener("click", closeQuickStartModal);
+    const btnCloseQuickStart = els.quickStartCloseBtn || document.getElementById("quickStartCloseBtn");
+    if (btnCloseQuickStart) {
+      btnCloseQuickStart.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeQuickStartModal();
+      });
     }
 
-    if (els.quickStartModal) {
-      els.quickStartModal.addEventListener("click", (e) => {
-        if (e.target === els.quickStartModal) closeQuickStartModal();
+    const modalQuickStart = els.quickStartModal || document.getElementById("quickStartModal");
+    if (modalQuickStart) {
+      modalQuickStart.addEventListener("click", (e) => {
+        if (e.target === modalQuickStart) closeQuickStartModal();
       });
     }
 
@@ -2144,6 +2155,11 @@
 
       // Escape to deselect or close
       if (ev.key === "Escape") {
+        const qModal = els.quickStartModal || document.getElementById("quickStartModal");
+        if (qModal && !qModal.hidden) {
+          closeQuickStartModal();
+          return;
+        }
         if (activeSelectedLayer) {
           selectCanvasLayer(null);
         } else {
@@ -2218,21 +2234,21 @@
   function createPresetAnimatedPreview(preset) {
     const box = document.createElement("div");
     box.className = "preset-animated-preview";
-    box.style.background = preset.previewBg || "#0a0e17";
-    box.style.fontFamily = `"${preset.font}", sans-serif`;
-
-    const strokeW = Math.max(1, Math.round((preset.captionOutlineW || 4) * 0.35));
-    const strokeCol = preset.captionOutline || "#000000";
-    const textColor = preset.captionColor || "#FFFFFF";
     const hlColor = preset.highlightColor || "#38BDF8";
+    const rawFont = preset.font || "Montserrat";
+    const cleanFont = rawFont.replace(/-(Bold|ExtraBold|Black|Medium)/g, "");
+
+    // High-contrast dark studio background with subtle ambient radial accent glow matching the preset
+    box.style.background = `radial-gradient(ellipse at 50% 25%, ${hlColor}24 0%, #0d121c 85%)`;
+    box.style.fontFamily = `"${cleanFont}", "${rawFont}", "Outfit", sans-serif`;
 
     box.innerHTML = `
-      <div class="prev-line" style="color: ${textColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">
+      <div class="prev-line">
         <span class="prev-word">THE</span>
         <span class="prev-word">FUTURE</span>
       </div>
-      <div class="prev-line" style="color: ${textColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">
-        <span class="prev-word active-pop" style="color: ${hlColor}; -webkit-text-stroke: ${strokeW}px ${strokeCol};">IS</span>
+      <div class="prev-line">
+        <span class="prev-word active-pop" style="color: ${hlColor}; text-shadow: 0 0 10px ${hlColor}cc, 0 1px 3px rgba(0,0,0,0.95);">IS</span>
         <span class="prev-word">HERE</span>
       </div>
     `;
@@ -2290,13 +2306,15 @@
   }
 
   function openQuickStartModal(filterCategory = "all") {
-    if (!els.quickStartModal) return;
+    const modal = els.quickStartModal || document.getElementById("quickStartModal");
+    if (!modal) return;
     renderQuickStartModal(filterCategory);
-    els.quickStartModal.hidden = false;
+    modal.hidden = false;
   }
 
   function closeQuickStartModal() {
-    if (els.quickStartModal) els.quickStartModal.hidden = true;
+    const modal = els.quickStartModal || document.getElementById("quickStartModal");
+    if (modal) modal.hidden = true;
   }
 
   function renderQuickStartModal(filterCategory = "all") {

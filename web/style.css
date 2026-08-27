@@ -4156,13 +4156,11 @@ summary:focus-visible {
   max-height: 280px;
   overflow-y: auto;
   padding-right: 2px;
-}
-
-.style-preset-card {
-  background: #131822;
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 9px;
-  padding: 8px 7px;
+}.style-preset-card {
+  background: #111622;
+  border: 1.5px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  padding: 9px 8px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -4174,15 +4172,16 @@ summary:focus-visible {
 }
 
 .style-preset-card:hover {
-  border-color: rgba(34, 211, 238, 0.4);
-  background: #18202e;
+  border-color: rgba(56, 189, 248, 0.55);
+  background: #161e2d;
   transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
 .style-preset-card.active {
-  border-color: var(--teal);
-  background: rgba(34, 211, 238, 0.09);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.28);
 }
 
 .preset-card-head {
@@ -4190,51 +4189,61 @@ summary:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 4px;
+  min-height: 18px;
 }
 
 .preset-card-title {
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #f8fafc;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 105px;
+  letter-spacing: -0.2px;
 }
 
 .preset-cat-badge {
-  font-size: 8.5px;
+  font-size: 8px;
   text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 4.5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
   color: #94a3b8;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  flex-shrink: 0;
 }
 
 /* Animated Preview Card Component */
 .preset-animated-preview {
   width: 100%;
-  height: 48px;
-  border-radius: 6px;
-  background: #090c12;
+  height: 60px;
+  border-radius: 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 4px 6px;
-  line-height: 1.15;
+  padding: 5px 6px;
+  line-height: 1.25;
   user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
 }
 
 .preset-animated-preview .prev-line {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   white-space: nowrap;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95), 0 0 2px rgba(0, 0, 0, 0.85);
 }
 
 .preset-animated-preview .prev-word {
@@ -4243,6 +4252,7 @@ summary:focus-visible {
 }
 
 .preset-animated-preview .prev-word.active-pop {
+  font-weight: 900;
   animation: activePopPulse 1.8s infinite ease-in-out;
   display: inline-block;
 }
@@ -4250,21 +4260,21 @@ summary:focus-visible {
 @keyframes activePopPulse {
   0%, 100% {
     transform: scale(1);
-    filter: brightness(1);
+    filter: brightness(1.05);
   }
   40% {
-    transform: scale(1.18);
-    filter: brightness(1.2) drop-shadow(0 0 5px currentColor);
+    transform: scale(1.15);
+    filter: brightness(1.3) drop-shadow(0 0 6px currentColor);
   }
   60% {
-    transform: scale(1.12);
+    transform: scale(1.08);
   }
 }
 
 .preset-card-desc {
   font-size: 9.5px;
   color: #94a3b8;
-  line-height: 1.25;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -4272,6 +4282,17 @@ summary:focus-visible {
 }
 
 /* Quick Start Presets Modal */
+#quickStartModal {
+  z-index: 1500 !important;
+  background: rgba(4, 6, 10, 0.88) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+#quickStartModal[hidden] {
+  display: none !important;
+}
+
 .quick-start-modal-dialog {
   max-width: 960px;
   width: 92vw;
@@ -4589,31 +4610,36 @@ summary:focus-visible {
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 10px 14px;
+  background: rgba(56, 189, 248, 0.09);
+  border: 1.5px solid rgba(56, 189, 248, 0.32);
   border-radius: 8px;
-  color: #cbd5e1;
-  font-size: 11.5px;
-  font-weight: 600;
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  margin-top: 4px;
 }
 
 .btn-view-all-presets:hover {
-  background: rgba(34, 211, 238, 0.08);
-  border-color: var(--teal);
-  color: #fff;
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn-view-all-presets svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
   transition: transform var(--transition-fast);
 }
 
 .btn-view-all-presets:hover svg {
-  transform: translateX(2px);
+  transform: translateX(3px);
 }
 
 /* CUSTOMIZE SECTION (Compact Accordions) */
