@@ -42,8 +42,8 @@
     }
   },
   "music": {
-    "enabled": false,
-    "track": "",
+    "enabled": true,
+    "track": "No Copyright Nasheed without Music  Halal Music  Islamic Background Nasheed  Vocals Only.mp3",
     "volume": 0.12
   },
   "broll": {

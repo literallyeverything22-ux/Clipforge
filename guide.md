@@ -87,15 +87,49 @@ Templates are stored as simple JSON files in the `templates/` folder:
 | `square_captioned.json` | 9:16 | Letterbox/square video format with custom colored header and caption bands. |
 | `abu_lahya.json` | 9:16 | Distinctive branding layout with speaker tracking and bottom caption styling. |
 
-## 🎨 Visual Canvas & CapCut-Style Layout Studio
+## 🎨 Visual Canvas & Style Studio (Professional Video-Text Editor)
 
-You can visually position and style your hook and captions directly over video frames:
+ClipForge features a full-screen, professional video-text studio modeled after CapCut and Premiere:
 
-1. **Open Studio**: Click **"🎨 Layout & Style"** on any candidate clip card in the Review tab, or **"Open Visual Canvas Studio"** in Settings.
-2. **Drag Text Boxes**: Grab the Hook Title, Subtitles, or Extra Watermark boxes directly on the 9:16 vertical canvas and slide them to your preferred vertical anchor.
-3. **⚡ Single Line Dynamic Auto-Fit**: Text automatically scales its font size dynamically so that your entire hook and subtitles stay on **one clean line** within the safe zone without breaking words or covering the speaker's face.
-4. **1-Click Creator Presets**: Switch instantly between styles like *Hormozi Punchy*, *Clean Minimalist*, *Viral Neon*, *Solid Box Badge*, *TikTok Cyber*, or *Abu Lahya Signature*.
-5. **Apply**: Click **"Apply to this Clip"** for fine-tuned control or **"Apply to All Clips (Campaign Default)"** to update every clip in the campaign at once.
+1. **Center Stage & Direct Canvas Interaction**:
+   - **Click & Select**: Click either the Hook Headline or Subtitles directly on the 9:16 video frame to select it.
+   - **Drag Anywhere**: Grab and move text overlays anywhere on the video frame. Positions are stored as normalized coordinates (`0.0` to `1.0`), ensuring identical placement in preview and rendered video.
+   - **Corner Drag Resizing**: Click and drag any of the 4 corner handles on the selection bounding box to interactively scale font size up or down.
+   - **Floating Micro-Toolbar**: Appears right above or below the selected layer for lightning-fast tweaks:
+     - `Aa`: Toggle uppercase / titlecase.
+     - `−` / `+`: Step font size by 4px.
+     - Center / Align: Cycle Left, Center, and Right alignment.
+     - More: Instantly focus the Right Inspector panel.
+   - **Interactive Safe-Zone Detection**: Toggle `Safe Zones` to reveal TikTok/Reels platform chrome boundaries. If any text element drifts into unsafe margins, an instant warning badge alerts you.
+   - **Zoom Dock**: Easily zoom in (`+`), zoom out (`−`), or reset (`Fit` / `100%`) without disrupting coordinate calculations.
+
+2. **Video Timeline & Filmstrip Scrubbing**:
+   - Scrub through your clip using the bottom timeline slider or click any of the 7 snapshot frames in the filmstrip row.
+   - See how your text looks over different video scenes, face angles, and background lighting.
+
+3. **Left Panel (Layers & Quick Actions)**:
+   - **Clip Info Card**: Shows current clip thumbnail, duration, speaker, and title.
+   - **Aspect Ratio Selector**: Switch between `9:16` (Vertical), `1:1` (Square), and `16:9` (Landscape).
+   - **Layers List**: Quickly select `Hook Headline` or `Subtitles` and toggle layer visibility with the eye icon.
+   - **Quick Actions**:
+     - `Duplicate Style`: Instantly copies typography and colors from Hook to Subtitles or vice-versa without changing text words.
+     - `Copy to All Clips`: Applies current layout and style to every clip in the campaign.
+     - `Reset Canvas`: Restores factory positions and default Hormozi preset.
+     - `Refresh Frame`: Re-extracts the current video frame via FFmpeg.
+
+4. **Right Contextual Inspector**:
+   - **Style Presets**: 1-click styling with visual `Aa` badges — *Hormozi*, *Minimal*, *Neon*, *Cyber*, and *Outline*.
+   - **Contextual Typography & Color**: Dynamically switches between Hook Headline controls and Subtitles controls based on what layer is active. Includes live character counter (`/60`), Font, Weight, Size, Color pickers, Outline width, Letter-spacing, and Line-height.
+   - **Single-Line Dynamic Auto-Fit**: Guarantees hook headlines and subtitles never wrap onto multiple lines or overflow platform margins by dynamically calculating safe font sizes.
+   - **Advanced Drawer**: Collapsible accordions for background highlight boxes and custom styling.
+   - **Position & Alignment**: Left, Center, and Right alignment pills plus precision X and Y percentage sliders.
+
+5. **Keyboard Shortcuts**:
+   - `Escape`: Deselect current layer or close the studio workspace.
+   - `Arrow Keys`: Nudge active text by 1% in any direction (`Shift + Arrow` for 4% faster nudge).
+   - `Ctrl + Z`: Undo last change.
+   - `Ctrl + Y` (or `Ctrl + Shift + Z`): Redo last change.
+
 
 ---
 

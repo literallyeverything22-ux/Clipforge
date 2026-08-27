@@ -21,13 +21,22 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist ".venv\Scripts\python.exe" (
-    echo  [ERROR] Virtual environment ".venv" was not found.
-    echo          Recreate it with:  python -m venv .venv
-    echo          then:              .venv\Scripts\python.exe -m pip install -r requirements.txt
-    echo.
-    pause
-    exit /b 1
+set "PY_CMD="
+if exist ".venv\Scripts\python.exe" (
+    set "PY_CMD=.venv\Scripts\python.exe"
+) else (
+    where python >nul 2>nul
+    if not errorlevel 1 (
+        set "PY_CMD=python"
+    ) else (
+        echo  [ERROR] Python was not found on your PATH or in .venv.
+        echo          Install Python 3.10+ or recreate .venv:
+        echo          python -m venv .venv
+        echo          .venv\Scripts\pip install -r requirements.txt
+        echo.
+        pause
+        exit /b 1
+    )
 )
 
 set "PORT=8600"
@@ -65,7 +74,7 @@ echo.
 rem Open the browser after a short delay so the server is up first.
 start "" cmd /c "timeout /t 2 >nul & start http://localhost:%PORT%"
 
-".venv\Scripts\python.exe" server.py %PORT%
+"%PY_CMD%" server.py %PORT%
 
 echo.
 echo  Server stopped.

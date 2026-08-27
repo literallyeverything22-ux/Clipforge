@@ -70,9 +70,29 @@
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
     </symbol>
-    <symbol id="icon-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/>
-      <polygon points="10 15 15 12 10 9 10 15" fill="currentColor"/>
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"/>
+      <polyline points="12 19 5 12 12 5"/>
+    </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="23 4 23 10 17 10"/>
+      <polyline points="1 20 1 14 7 14"/>
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+    </symbol>
+    <symbol id="icon-more-vertical" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="1.5"/>
+      <circle cx="12" cy="5" r="1.5"/>
+      <circle cx="12" cy="19" r="1.5"/>
+    </symbol>
+    <symbol id="icon-align-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="10" x2="6" y2="10"/>
+      <line x1="21" y1="6" x2="3" y2="6"/>
+      <line x1="21" y1="14" x2="3" y2="14"/>
+      <line x1="18" y1="18" x2="6" y2="18"/>
     </symbol>
   </svg>
 
@@ -651,341 +671,616 @@
     <pre class="log-console" id="logConsole" hidden></pre>
   </div>
 
-  <!-- Visual Canvas & CapCut-Style Layout Studio Modal -->
-  <div class="modal-backdrop" id="visualCanvasModal" hidden>
-    <div class="modal modal-canvas-studio">
-      <div class="modal-head">
-        <div class="modal-title-wrap">
-          <div class="canvas-icon-gem">
-            <svg class="modal-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-          </div>
-          <div>
-            <h3>Visual Canvas & Style Studio — <span id="canvasClipTitle">Clip Layout</span></h3>
-            <p class="modal-sub">Drag text boxes to position hook & captions. Choose preset styles inspired by top creators.</p>
+  <!-- Visual Canvas & CapCut-Style Layout Studio Full-Workspace -->
+  <div class="modal-backdrop canvas-studio-backdrop" id="visualCanvasModal" hidden>
+    <div class="canvas-studio-workspace" id="canvasStudioWorkspace">
+      <!-- 1. Top Bar -->
+      <header class="canvas-studio-topbar">
+        <div class="topbar-left">
+          <button type="button" class="btn-topbar-back" id="canvasBackBtn" title="Back to Review">
+            <svg class="icon" aria-hidden="true"><use href="#icon-arrow-left"/></svg>
+          </button>
+          <div class="topbar-heading">
+            <h2 class="topbar-title">ClipForge · Visual Canvas & Style Studio</h2>
+            <span class="topbar-sub">Design once. Apply everywhere.</span>
           </div>
         </div>
-        <div class="canvas-head-actions">
-          <label class="toggle-pill" title="Dynamically auto-resize text so it always fits on a single line">
-            <input type="checkbox" id="canvasSingleLineToggle" checked>
-            <span>⚡ Single Line Auto-Fit</span>
-          </label>
-          <label class="toggle-pill" title="Toggle TikTok & Reels Safe Zone Overlay">
-            <input type="checkbox" id="canvasSafeToggle" checked>
-            <span>Safe Zones</span>
-          </label>
-          <button class="btn-icon-close" id="canvasClose" aria-label="Close modal">
+
+        <div class="topbar-right">
+          <button type="button" class="btn btn-tiny btn-ghost" id="canvasSavePresetBtn" title="Save current typography and colors as custom preset">
+            <svg class="btn-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
+            <span>Save as Preset</span>
+          </button>
+          <button type="button" class="btn btn-tiny btn-primary btn-glow" id="canvasDoneTopBtn" title="Apply to clip and close">
+            <svg class="btn-icon" aria-hidden="true"><use href="#icon-check"/></svg>
+            <span>Done</span>
+          </button>
+          <button type="button" class="btn-icon-close" id="canvasClose" aria-label="Close studio">
             <svg class="icon" aria-hidden="true"><use href="#icon-close"/></svg>
           </button>
         </div>
-      </div>
+      </header>
 
-      <div class="canvas-studio-body">
-        <!-- Center Canvas Viewport -->
-        <div class="canvas-viewport-wrap">
-          <div class="canvas-916-container" id="canvasContainer">
-            <!-- Video snapshot background -->
-            <img class="canvas-bg-img" id="canvasBgImg" alt="Video Frame Snapshot" src="">
-            <div class="canvas-bg-fallback" id="canvasBgFallback">
-              <svg class="canvas-film-icon" aria-hidden="true"><use href="#icon-film"/></svg>
-              <span>Loading video snapshot…</span>
+      <!-- 2. Main 3-Column Studio Body -->
+      <div class="canvas-studio-grid">
+        <!-- LEFT PANEL (260px): Clip Info, Canvas Ratio, Layers, Quick Actions, Tip -->
+        <aside class="canvas-panel-left">
+          <!-- Clip Info Card -->
+          <div class="studio-card">
+            <div class="studio-card-head">
+              <span class="section-label">CLIP INFO</span>
+              <button type="button" class="btn-text-action" id="canvasChangeClipBtn" title="Select different candidate clip">Change</button>
             </div>
-
-            <!-- Platform Safe Zone Guides -->
-            <div class="canvas-safe-guides" id="canvasSafeGuides">
-              <div class="safe-guide-top"><span>Top UI Header</span></div>
-              <div class="safe-guide-right"><span>Actions (Like/Share)</span></div>
-              <div class="safe-guide-bottom"><span>Bottom Captions Bar</span></div>
-            </div>
-
-            <!-- Draggable & Directly Resizable Hook Box -->
-            <div class="canvas-drag-box" id="canvasHookBox" data-type="hook" tabindex="0">
-              <div class="drag-handle" title="Drag to reposition hook">
-                <span class="drag-dot"></span>
-                <span class="drag-label">HOOK TITLE</span>
-                <div class="canvas-box-stepper">
-                  <button type="button" class="btn-stepper" id="hookStepMinus" title="Make hook smaller">−</button>
-                  <span class="stepper-val" id="hookStepperVal">76px</span>
-                  <button type="button" class="btn-stepper" id="hookStepPlus" title="Make hook larger">+</button>
+            <div class="clip-info-media">
+              <div class="clip-thumb-wrap">
+                <img id="canvasClipThumb" src="" alt="Clip Thumbnail" class="clip-thumb-img" style="display:none;">
+                <div class="clip-thumb-fallback" id="canvasClipThumbFallback">
+                  <svg class="icon"><use href="#icon-film"/></svg>
                 </div>
               </div>
-              <div class="canvas-text-content" id="canvasHookText">THE MOST IMPORTANT ADVICE</div>
-              <div class="pos-badge" id="canvasHookPosBadge">Top: 8%</div>
-              <!-- Corner Resize Handles (CapCut style) -->
-              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
-            </div>
-
-            <!-- Draggable & Directly Resizable Captions Box -->
-            <div class="canvas-drag-box" id="canvasCaptionBox" data-type="caption" tabindex="0">
-              <div class="drag-handle" title="Drag to reposition captions">
-                <span class="drag-dot"></span>
-                <span class="drag-label">SUBTITLES</span>
-                <div class="canvas-box-stepper">
-                  <button type="button" class="btn-stepper" id="capStepMinus" title="Make subtitles smaller">−</button>
-                  <span class="stepper-val" id="captionStepperVal">68px</span>
-                  <button type="button" class="btn-stepper" id="capStepPlus" title="Make subtitles larger">+</button>
+              <div class="clip-info-meta">
+                <h4 class="clip-meta-title" id="canvasClipTitle">Clip Layout</h4>
+                <p class="clip-meta-speaker" id="canvasClipSpeaker">Speaker / Source</p>
+                <div class="clip-meta-badge-row">
+                  <span class="meta-pill" id="canvasClipDuration">02:34 – 02:49 (15s)</span>
                 </div>
               </div>
-              <div class="canvas-text-content" id="canvasCaptionText">die <span class="hl-word">and I want</span> to live</div>
-              <div class="pos-badge" id="canvasCaptionPosBadge">Top: 72%</div>
-              <!-- Corner Resize Handles (CapCut style) -->
-              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
             </div>
+          </div>
 
-            <!-- Draggable & Directly Resizable Extra Text / CTA Box -->
-            <div class="canvas-drag-box" id="canvasCtaBox" data-type="cta" tabindex="0" hidden>
-              <div class="drag-handle" title="Drag to reposition watermark">
-                <span class="drag-dot"></span>
-                <span class="drag-label">EXTRA TEXT</span>
-                <div class="canvas-box-stepper">
-                  <button type="button" class="btn-stepper" id="ctaStepMinus" title="Make smaller">−</button>
-                  <span class="stepper-val" id="ctaStepperVal">38px</span>
-                  <button type="button" class="btn-stepper" id="ctaStepPlus" title="Make larger">+</button>
+          <!-- Canvas Aspect Ratio -->
+          <div class="studio-card">
+            <span class="section-label">Canvas</span>
+            <div class="aspect-ratio-grid">
+              <button type="button" class="ratio-card active" data-ratio="9:16">
+                <span class="ratio-box ratio-916"></span>
+                <div class="ratio-info">
+                  <span class="ratio-name">9:16</span>
+                  <span class="ratio-res">1080 × 1920</span>
                 </div>
+              </button>
+              <button type="button" class="ratio-card" data-ratio="1:1" title="1:1 Square Format">
+                <span class="ratio-box ratio-11"></span>
+                <div class="ratio-info">
+                  <span class="ratio-name">1:1</span>
+                  <span class="ratio-res">1080 × 1080</span>
+                </div>
+              </button>
+              <button type="button" class="ratio-card" data-ratio="16:9" title="16:9 Landscape Format">
+                <span class="ratio-box ratio-169"></span>
+                <div class="ratio-info">
+                  <span class="ratio-name">16:9</span>
+                  <span class="ratio-res">1920 × 1080</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Layers List -->
+          <div class="studio-card">
+            <div class="studio-card-head">
+              <span class="section-label">LAYERS</span>
+              <span class="layer-hint-count">2 layers</span>
+            </div>
+            <div class="layers-list">
+              <!-- Hook Layer Item -->
+              <div class="layer-item is-selected" id="layerItemHook" data-layer="hook" tabindex="0">
+                <span class="layer-type-badge">T</span>
+                <div class="layer-details">
+                  <span class="layer-name">Hook Headline</span>
+                  <span class="layer-preview-text" id="layerTextHook">I MADE 10X WAKING UP AT 1PM</span>
+                </div>
+                <button type="button" class="layer-vis-btn" id="layerVisHook" title="Toggle Hook Visibility">
+                  <svg class="icon"><use href="#icon-eye"/></svg>
+                </button>
               </div>
-              <div class="canvas-text-content" id="canvasCtaText">@mychannel · Part 1</div>
-              <div class="pos-badge" id="canvasCtaPosBadge">Top: 92%</div>
-              <!-- Corner Resize Handles (CapCut style) -->
-              <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to resize font"></div>
-              <div class="resize-handle handle-br" data-handle="br" title="Drag corner to resize font"></div>
+
+              <!-- Subtitles Layer Item -->
+              <div class="layer-item" id="layerItemCaption" data-layer="captions" tabindex="0">
+                <span class="layer-type-badge">T</span>
+                <div class="layer-details">
+                  <span class="layer-name">Subtitles</span>
+                  <span class="layer-preview-text" id="layerTextCaption">people are gonna sleep on you</span>
+                </div>
+                <button type="button" class="layer-vis-btn" id="layerVisCaption" title="Toggle Subtitles Visibility">
+                  <svg class="icon"><use href="#icon-eye"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Direct Canvas Quick Size Toolbar -->
-          <div class="canvas-quick-toolbar">
-            <div class="quick-btn-group">
-              <span class="btn-group-label">Hook:</span>
-              <button type="button" class="btn btn-tiny btn-ghost" id="quickHookMinus" title="Decrease hook size">A−</button>
-              <span id="quickHookVal" class="quick-val">76px</span>
-              <button type="button" class="btn btn-tiny btn-ghost" id="quickHookPlus" title="Increase hook size">A+</button>
-            </div>
-            <span class="toolbar-divider">|</span>
-            <div class="quick-btn-group">
-              <span class="btn-group-label">Subtitles:</span>
-              <button type="button" class="btn btn-tiny btn-ghost" id="quickCapMinus" title="Decrease subtitle size">A−</button>
-              <span id="quickCapVal" class="quick-val">68px</span>
-              <button type="button" class="btn btn-tiny btn-ghost" id="quickCapPlus" title="Increase subtitle size">A+</button>
+          <!-- Quick Actions Grid -->
+          <div class="studio-card">
+            <span class="section-label">QUICK ACTIONS</span>
+            <div class="quick-actions-grid">
+              <button type="button" class="btn-quick-act" id="canvasCopyStyleBtn" title="Copy fonts, colors and stroke without changing text words">
+                <svg class="icon"><use href="#icon-copy"/></svg>
+                <span>Duplicate Style</span>
+              </button>
+              <button type="button" class="btn-quick-act" id="canvasCopyAllBtn" title="Apply this design to all clips in campaign">
+                <svg class="icon"><use href="#icon-layers"/></svg>
+                <span>Copy to All Clips</span>
+              </button>
+              <button type="button" class="btn-quick-act" id="canvasResetCanvasBtn" title="Reset layout positions to default">
+                <svg class="icon"><use href="#icon-refresh"/></svg>
+                <span>Reset Canvas</span>
+              </button>
+              <button type="button" class="btn-quick-act" id="canvasRefreshFrame" title="Extract fresh video snapshot at current timestamp">
+                <svg class="icon"><use href="#icon-sparkles"/></svg>
+                <span>Refresh Frame</span>
+              </button>
             </div>
           </div>
 
-          <div class="canvas-playback-controls">
-            <span class="canvas-tip-text">💡 Tip: Drag box corners or use the [−] [+] buttons directly on the canvas to resize.</span>
-            <button class="btn btn-tiny btn-ghost" id="canvasRefreshFrame">
-              <svg class="btn-icon" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-              <span>Refresh Snapshot</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Right CapCut-Style Inspector Panel -->
-        <div class="canvas-inspector-sidebar">
-          <!-- 1. Preset Style Swatches (CapCut-inspired) -->
-          <div class="inspector-section">
-            <div class="section-title-wrap">
-              <h4 class="inspector-title">
-                <svg class="icon-inline" aria-hidden="true"><use href="#icon-sparkles"/></svg>
-                Style Presets
-              </h4>
-              <span class="badge-subtle">1-Click Apply</span>
+          <!-- Safe Zone Tip Card -->
+          <div class="tip-card">
+            <span class="tip-icon">💡</span>
+            <div class="tip-content">
+              <strong>TIP</strong>
+              <p>Keep important text within the safe zone (inner white rectangle) to avoid being covered by platform UI.</p>
             </div>
-            <div class="style-presets-grid" id="stylePresetsGrid"></div>
+          </div>
+        </aside>
+
+        <!-- CENTER CANVAS (Main Stage): Video, Floating Toolbar, Zoom, Timeline & Filmstrip -->
+        <main class="canvas-panel-center">
+          <!-- Top Canvas Bar -->
+          <div class="canvas-header-controls">
+            <label class="toggle-pill" title="Dynamically scale font so text stays on one line within safe margins">
+              <input type="checkbox" id="canvasSingleLineToggle" checked>
+              <span>⚡ Single Line Auto-Fit</span>
+            </label>
+            <label class="toggle-pill" title="Toggle TikTok and Instagram Reels platform UI safe zones">
+              <input type="checkbox" id="canvasSafeToggle" checked>
+              <span>Safe Zones</span>
+            </label>
           </div>
 
-          <!-- 2. Typography & Color Controls -->
-          <div class="inspector-section">
-            <h4 class="inspector-title">
-              <svg class="icon-inline" aria-hidden="true"><use href="#icon-file-text"/></svg>
-              Typography & Styling
-            </h4>
-            <div class="inspector-fields-grid">
-              <label class="field-block">
-                <span class="field-label">Hook Headline Text (Auto-fits Single Line)</span>
-                <input type="text" id="canvasHookTextInput" class="field-input-compact" placeholder="Being Emotional is a Superpower">
-              </label>
+          <!-- Center Stage Wrapper with Floating Zoom Dock -->
+          <div class="canvas-stage-wrapper">
+            <!-- Floating Zoom Controls -->
+            <div class="canvas-zoom-dock" id="canvasZoomDock">
+              <button type="button" class="zoom-btn" id="canvasZoomIn" title="Zoom In">+</button>
+              <button type="button" class="zoom-btn" id="canvasZoomOut" title="Zoom Out">−</button>
+              <button type="button" class="zoom-btn zoom-btn-text" id="canvasZoomFit" title="Fit to viewport">Fit</button>
+              <button type="button" class="zoom-btn zoom-btn-text" id="canvasZoomReset" title="Reset zoom to 100%">100%</button>
+            </div>
 
-              <label class="field-block">
-                <span class="field-label">Font Family</span>
-                <div class="select-wrap">
-                  <select id="canvasFontSelect">
-                    <option value="Bebas Neue">Bebas Neue (Viral Punch)</option>
-                    <option value="Poppins-Bold">Poppins (Modern Clean)</option>
-                    <option value="Anton">Anton (Heavy Impact)</option>
-                    <option value="Archivo Black">Archivo Black (Ultra Bold)</option>
-                    <option value="Kanit">Kanit (High Contrast)</option>
-                    <option value="Barlow Condensed">Barlow Condensed (Editorial)</option>
-                    <option value="Saira Condensed">Saira Condensed (Narrow)</option>
-                    <option value="Bangers">Bangers (Comic / Gaming)</option>
-                    <option value="Lato">Lato (Minimal)</option>
+            <!-- The Real 9:16 Video Container -->
+            <div class="canvas-916-container" id="canvasContainer">
+              <!-- Real Video Frame Snapshot -->
+              <img class="canvas-bg-img" id="canvasBgImg" alt="Video Frame Snapshot" src="">
+              <div class="canvas-bg-fallback" id="canvasBgFallback">
+                <svg class="canvas-film-icon" aria-hidden="true"><use href="#icon-film"/></svg>
+                <span>Loading video snapshot…</span>
+              </div>
+
+              <!-- Subtle Platform Safe Zone Guide Overlay -->
+              <div class="canvas-safe-guides" id="canvasSafeGuides">
+                <div class="safe-guide-inner-box">
+                  <span class="safe-tag-top">Safe Zone (1080×1920)</span>
+                </div>
+                <div class="safe-guide-top-chrome"><span>Header UI</span></div>
+                <div class="safe-guide-right-chrome"><span>Action Rail</span></div>
+                <div class="safe-guide-bottom-chrome"><span>Platform Captions</span></div>
+              </div>
+
+              <!-- Warning Pill if text is dragged outside safe margins -->
+              <div class="safe-warning-pill" id="canvasSafeWarning" hidden>
+                <span>⚠ Outside safe zone</span>
+              </div>
+
+              <!-- Floating Micro-Toolbar attached to the selected element -->
+              <div class="canvas-micro-toolbar" id="canvasMicroToolbar" hidden>
+                <button type="button" class="micro-btn" id="microAa" title="Toggle uppercase / lowercase">Aa</button>
+                <span class="micro-divider"></span>
+                <button type="button" class="micro-btn" id="microSizeMinus" title="Decrease font size">A−</button>
+                <span class="micro-size-display" id="microSizeVal">76</span>
+                <button type="button" class="micro-btn" id="microSizePlus" title="Increase font size">A+</button>
+                <span class="micro-divider"></span>
+                <button type="button" class="micro-btn" id="microAlign" title="Cycle alignment: Center / Left / Right">
+                  <svg class="icon"><use href="#icon-align-center"/></svg>
+                </button>
+                <button type="button" class="micro-btn" id="microMore" title="Open full styling in inspector">
+                  <svg class="icon"><use href="#icon-more-vertical"/></svg>
+                </button>
+              </div>
+
+              <!-- Draggable & Directly Resizable Hook Box -->
+              <div class="canvas-drag-box is-selected" id="canvasHookBox" data-type="hook" tabindex="0">
+                <div class="selection-tag">HOOK HEADLINE</div>
+                <div class="canvas-text-content" id="canvasHookText">I MADE 10X WAKING UP AT 1PM</div>
+                <div class="pos-badge" id="canvasHookPosBadge">X: 50% · Y: 12%</div>
+                <!-- 4 Corner Resize Handles (CapCut / Canva style) -->
+                <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-br" data-handle="br" title="Drag corner to scale font size"></div>
+                <div class="rotation-dot" title="Anchor indicator"></div>
+              </div>
+
+              <!-- Draggable & Directly Resizable Subtitles Box -->
+              <div class="canvas-drag-box" id="canvasCaptionBox" data-type="caption" tabindex="0">
+                <div class="selection-tag">SUBTITLES</div>
+                <div class="canvas-text-content" id="canvasCaptionText">people are gonna <span class="hl-word">sleep on you</span></div>
+                <div class="pos-badge" id="canvasCaptionPosBadge">X: 50% · Y: 78%</div>
+                <!-- 4 Corner Resize Handles -->
+                <div class="resize-handle handle-tl" data-handle="tl" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-tr" data-handle="tr" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-bl" data-handle="bl" title="Drag corner to scale font size"></div>
+                <div class="resize-handle handle-br" data-handle="br" title="Drag corner to scale font size"></div>
+                <div class="rotation-dot" title="Anchor indicator"></div>
+              </div>
+
+              <!-- Draggable & Directly Resizable Extra Watermark Box -->
+              <div class="canvas-drag-box" id="canvasCtaBox" data-type="cta" tabindex="0" hidden>
+                <div class="selection-tag">WATERMARK</div>
+                <div class="canvas-text-content" id="canvasCtaText">@mychannel · Part 1</div>
+                <div class="pos-badge" id="canvasCtaPosBadge">X: 50% · Y: 92%</div>
+                <div class="resize-handle handle-tl" data-handle="tl"></div>
+                <div class="resize-handle handle-tr" data-handle="tr"></div>
+                <div class="resize-handle handle-bl" data-handle="bl"></div>
+                <div class="resize-handle handle-br" data-handle="br"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Video Timeline & Filmstrip Controller -->
+          <div class="canvas-timeline-dock">
+            <!-- Timeline Scrubber Row -->
+            <div class="timeline-scrubber-row">
+              <button type="button" class="btn-timeline-play" id="canvasPlayBtn" title="Play / Preview frame">
+                <svg class="icon"><use href="#icon-play"/></svg>
+              </button>
+              <span class="timeline-time-display" id="canvasTimeDisplay">02:37 / 02:49</span>
+              <div class="timeline-slider-wrap">
+                <input type="range" class="timeline-slider" id="canvasTimelineSlider" min="0" max="100" value="50" step="0.5">
+              </div>
+              <span class="timeline-duration-badge" id="canvasDurationBadge">15s</span>
+            </div>
+
+            <!-- Filmstrip Thumbnails Row -->
+            <div class="timeline-filmstrip-wrap">
+              <button type="button" class="filmstrip-nav-btn" id="filmstripPrev" title="Previous frame">‹</button>
+              <div class="filmstrip-track" id="canvasFilmstripTrack">
+                <!-- Dynamically populated keyframe thumbnails -->
+              </div>
+              <button type="button" class="filmstrip-nav-btn" id="filmstripNext" title="Next frame">›</button>
+            </div>
+          </div>
+        </main>
+
+        <!-- RIGHT PANEL (340px): Contextual Inspector -->
+        <aside class="canvas-panel-right">
+          <!-- 1. Style Presets -->
+          <section class="inspector-card">
+            <div class="studio-card-head">
+              <span class="section-label">1. STYLE PRESETS</span>
+              <button type="button" class="btn-text-action" id="presetsViewAllBtn">View All</button>
+            </div>
+            <div class="style-presets-grid" id="stylePresetsGrid">
+              <!-- Dynamically populated preset badges -->
+            </div>
+          </section>
+
+          <!-- 2. Contextual Typography & Appearance Controls -->
+          <section class="inspector-card" id="inspectorContextSection">
+            <div class="studio-card-head">
+              <span class="section-label" id="inspectorSectionLabel">2. TYPOGRAPHY & COLORS</span>
+              <span class="active-target-badge" id="inspectorTargetBadge">HOOK</span>
+            </div>
+
+            <!-- Hook Controls (Active when Hook selected) -->
+            <div class="inspector-block" id="inspectorHookBlock">
+              <div class="field-wrap">
+                <div class="field-header">
+                  <span class="field-label">HOOK HEADLINE</span>
+                  <span class="char-count" id="hookCharCount">26/60</span>
+                </div>
+                <input type="text" id="canvasHookTextInput" class="field-input-clean" placeholder="I MADE 10X WAKING UP AT 1PM">
+              </div>
+
+              <div class="field-triad">
+                <div class="field-triad-item">
+                  <span class="field-label">Font</span>
+                  <select id="canvasFontSelect" class="field-select-clean">
+                    <option value="Anton">Anton</option>
+                    <option value="Bebas Neue">Bebas Neue</option>
+                    <option value="Poppins-Bold">Poppins</option>
+                    <option value="Archivo Black">Archivo Black</option>
+                    <option value="Kanit">Kanit</option>
+                    <option value="Bangers">Bangers</option>
+                    <option value="Lato">Lato</option>
                   </select>
                 </div>
-              </label>
-
-              <div class="color-picker-row">
-                <label class="color-field">
-                  <span class="field-label">Text Color</span>
-                  <input type="color" id="canvasTextColor" value="#FFFFFF">
-                </label>
-                <label class="color-field">
-                  <span class="field-label">Outline Color</span>
-                  <input type="color" id="canvasOutlineColor" value="#000000">
-                </label>
-                <label class="color-field">
-                  <span class="field-label">Accent Highlight</span>
-                  <input type="color" id="canvasHighlightColor" value="#FFF35C">
-                </label>
-              </div>
-
-              <div class="slider-row">
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Hook Size</span>
-                    <span id="canvasHookSizeVal">72px</span>
+                <div class="field-triad-item">
+                  <span class="field-label">Weight</span>
+                  <select id="canvasWeightSelect" class="field-select-clean">
+                    <option value="Extra Bold">Extra Bold</option>
+                    <option value="Bold">Bold</option>
+                    <option value="Regular">Regular</option>
+                  </select>
+                </div>
+                <div class="field-triad-item">
+                  <span class="field-label">Size</span>
+                  <div class="size-stepper-wrap">
+                    <input type="range" id="canvasHookSizeSlider" min="36" max="120" value="76" step="2" class="size-inline-slider">
+                    <span id="canvasHookSizeVal" class="size-badge-val">76px</span>
                   </div>
-                  <input type="range" id="canvasHookSizeSlider" min="40" max="120" value="72" step="2">
-                </label>
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Captions Size</span>
-                    <span id="canvasCaptionSizeVal">64px</span>
-                  </div>
-                  <input type="range" id="canvasCaptionSizeSlider" min="36" max="110" value="64" step="2">
-                </label>
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Outline Width</span>
-                    <span id="canvasOutlineWidthVal">5px</span>
-                  </div>
-                  <input type="range" id="canvasOutlineWidthSlider" min="0" max="12" value="5" step="1">
-                </label>
-              </div>
-
-              <div class="toggle-row-compact">
-                <label class="toggle-row">
-                  <input type="checkbox" id="canvasBoxBgToggle">
-                  <span>Background Box Badge</span>
-                </label>
-                <input type="color" id="canvasBoxBgColor" value="#000000" title="Box Background Color" class="color-box-picker">
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Full 2D Positioning Controls (X & Y Freedom) -->
-          <div class="inspector-section">
-            <h4 class="inspector-title">
-              <svg class="icon-inline" aria-hidden="true"><use href="#icon-layers"/></svg>
-              Position & Alignment (X & Y Freedom)
-            </h4>
-
-            <!-- Hook Position & Quick Snap Alignment -->
-            <div class="position-control-block">
-              <div class="control-block-header">
-                <span class="control-block-title">Hook Placement</span>
-                <div class="align-btn-group">
-                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignLeft" title="Snap Hook Left">Left</button>
-                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignCenter" title="Snap Hook Center">Center</button>
-                  <button type="button" class="btn btn-tiny btn-ghost" id="hookAlignRight" title="Snap Hook Right">Right</button>
                 </div>
               </div>
-              <div class="slider-row">
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Horizontal (X)</span>
+
+              <div class="color-swatch-row">
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Text</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasTextColor" value="#FFFFFF">
+                  </div>
+                </label>
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Outline</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasOutlineColor" value="#000000">
+                  </div>
+                </label>
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Accent</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasHighlightColor" value="#FFF35C">
+                  </div>
+                </label>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Outline Width</span>
+                    <span id="canvasOutlineWidthVal">8px</span>
+                  </div>
+                  <input type="range" id="canvasOutlineWidthSlider" min="0" max="14" value="8" step="1">
+                </div>
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Letter Spacing</span>
+                    <span id="canvasLetterSpacingVal">0%</span>
+                  </div>
+                  <input type="range" id="canvasLetterSpacingSlider" min="-5" max="20" value="0" step="1">
+                </div>
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Line Height</span>
+                    <span id="canvasLineHeightVal">100%</span>
+                  </div>
+                  <input type="range" id="canvasLineHeightSlider" min="80" max="150" value="100" step="5">
+                </div>
+              </div>
+
+              <label class="toggle-checkbox-clean">
+                <input type="checkbox" id="canvasHookSingleLineCheck" checked>
+                <span>Keep on one line (Single Line Auto-Fit)</span>
+              </label>
+
+              <!-- Advanced Typography Toggle & Drawer -->
+              <div class="advanced-section">
+                <button type="button" class="btn-accordion" id="hookAdvancedToggle">
+                  <span>Advanced typography</span>
+                  <span class="accordion-arrow">▾</span>
+                </button>
+                <div class="accordion-body" id="hookAdvancedDrawer" hidden>
+                  <div class="drawer-row">
+                    <label class="toggle-checkbox-clean">
+                      <input type="checkbox" id="canvasBoxBgToggle">
+                      <span>Background Box Badge</span>
+                    </label>
+                    <input type="color" id="canvasBoxBgColor" value="#000000" class="color-box-mini">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subtitle Controls (Active when Subtitles selected) -->
+            <div class="inspector-block" id="inspectorCaptionBlock" hidden>
+              <div class="field-wrap">
+                <div class="field-header">
+                  <span class="field-label">SUBTITLES PREVIEW</span>
+                  <span class="char-count" id="captionCharCount">27/60</span>
+                </div>
+                <input type="text" id="canvasCaptionTextInput" class="field-input-clean" placeholder="people are gonna sleep on you">
+              </div>
+
+              <div class="field-triad">
+                <div class="field-triad-item">
+                  <span class="field-label">Font</span>
+                  <select id="canvasCapFontSelect" class="field-select-clean">
+                    <option value="Anton">Anton</option>
+                    <option value="Bebas Neue">Bebas Neue</option>
+                    <option value="Poppins-Bold">Poppins</option>
+                    <option value="Archivo Black">Archivo Black</option>
+                    <option value="Kanit">Kanit</option>
+                    <option value="Bangers">Bangers</option>
+                    <option value="Lato">Lato</option>
+                  </select>
+                </div>
+                <div class="field-triad-item">
+                  <span class="field-label">Weight</span>
+                  <select id="canvasCapWeightSelect" class="field-select-clean">
+                    <option value="Extra Bold">Extra Bold</option>
+                    <option value="Bold" selected>Bold</option>
+                    <option value="Regular">Regular</option>
+                  </select>
+                </div>
+                <div class="field-triad-item">
+                  <span class="field-label">Size</span>
+                  <div class="size-stepper-wrap">
+                    <input type="range" id="canvasCaptionSizeSlider" min="36" max="110" value="65" step="2" class="size-inline-slider">
+                    <span id="canvasCaptionSizeVal" class="size-badge-val">65px</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="color-swatch-row">
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Text</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasCapTextColor" value="#FFFFFF">
+                  </div>
+                </label>
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Highlight</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasCapHighlightColor" value="#FFF35C">
+                  </div>
+                </label>
+                <label class="color-swatch-field">
+                  <span class="swatch-label">Outline</span>
+                  <div class="swatch-picker-wrap">
+                    <input type="color" id="canvasCapOutlineColor" value="#000000">
+                  </div>
+                </label>
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Outline Width</span>
+                    <span id="canvasCapOutlineWidthVal">6px</span>
+                  </div>
+                  <input type="range" id="canvasCapOutlineWidthSlider" min="0" max="14" value="6" step="1">
+                </div>
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Letter Spacing</span>
+                    <span id="canvasCapLetterSpacingVal">0%</span>
+                  </div>
+                  <input type="range" id="canvasCapLetterSpacingSlider" min="-5" max="20" value="0" step="1">
+                </div>
+                <div class="slider-item">
+                  <div class="slider-header">
+                    <span>Line Height</span>
+                    <span id="canvasCapLineHeightVal">100%</span>
+                  </div>
+                  <input type="range" id="canvasCapLineHeightSlider" min="80" max="150" value="100" step="5">
+                </div>
+              </div>
+
+              <label class="toggle-checkbox-clean">
+                <input type="checkbox" id="canvasCapSingleLineCheck" checked>
+                <span>Keep on one line (Single Line Auto-Fit)</span>
+              </label>
+
+              <!-- Advanced Drawer -->
+              <div class="advanced-section">
+                <button type="button" class="btn-accordion" id="capAdvancedToggle">
+                  <span>Advanced typography</span>
+                  <span class="accordion-arrow">▾</span>
+                </button>
+                <div class="accordion-body" id="capAdvancedDrawer" hidden>
+                  <div class="drawer-row">
+                    <label class="toggle-checkbox-clean">
+                      <input type="checkbox" id="canvasCapBoxBgToggle">
+                      <span>Background Box Badge</span>
+                    </label>
+                    <input type="color" id="canvasCapBoxBgColor" value="#000000" class="color-box-mini">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Position & Alignment Section -->
+          <section class="inspector-card">
+            <span class="section-label">3. POSITION & ALIGNMENT</span>
+            <div class="position-columns-grid">
+              <!-- Hook Position Column -->
+              <div class="pos-column" id="posColHook">
+                <span class="pos-col-title">HOOK HEADLINE</span>
+                <div class="align-btn-trio">
+                  <button type="button" class="btn-align-pill" id="hookAlignLeft" title="Align Left">Left</button>
+                  <button type="button" class="btn-align-pill active" id="hookAlignCenter" title="Align Center">Center</button>
+                  <button type="button" class="btn-align-pill" id="hookAlignRight" title="Align Right">Right</button>
+                </div>
+                <div class="slider-item slider-item-compact">
+                  <div class="slider-header">
+                    <span>X</span>
                     <span id="canvasHookXVal">50%</span>
                   </div>
                   <input type="range" id="canvasHookXSlider" min="5" max="95" value="50" step="1">
-                </label>
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Vertical (Y)</span>
-                    <span id="canvasHookYVal">8%</span>
+                </div>
+                <div class="slider-item slider-item-compact">
+                  <div class="slider-header">
+                    <span>Y</span>
+                    <span id="canvasHookYVal">12%</span>
                   </div>
-                  <input type="range" id="canvasHookYSlider" min="2" max="95" value="8" step="1">
-                </label>
-              </div>
-            </div>
-
-            <!-- Captions Position & Quick Snap Alignment -->
-            <div class="position-control-block" style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px;">
-              <div class="control-block-header">
-                <span class="control-block-title">Subtitles Placement</span>
-                <div class="align-btn-group">
-                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignLeft" title="Snap Subtitles Left">Left</button>
-                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignCenter" title="Snap Subtitles Center">Center</button>
-                  <button type="button" class="btn btn-tiny btn-ghost" id="capAlignRight" title="Snap Subtitles Right">Right</button>
+                  <input type="range" id="canvasHookYSlider" min="2" max="95" value="12" step="1">
                 </div>
               </div>
-              <div class="slider-row">
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Horizontal (X)</span>
+
+              <!-- Subtitles Position Column -->
+              <div class="pos-column" id="posColCaption">
+                <span class="pos-col-title">SUBTITLES</span>
+                <div class="align-btn-trio">
+                  <button type="button" class="btn-align-pill" id="capAlignLeft" title="Align Left">Left</button>
+                  <button type="button" class="btn-align-pill active" id="capAlignCenter" title="Align Center">Center</button>
+                  <button type="button" class="btn-align-pill" id="capAlignRight" title="Align Right">Right</button>
+                </div>
+                <div class="slider-item slider-item-compact">
+                  <div class="slider-header">
+                    <span>X</span>
                     <span id="canvasCaptionXVal">50%</span>
                   </div>
                   <input type="range" id="canvasCaptionXSlider" min="5" max="95" value="50" step="1">
-                </label>
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Vertical (Y)</span>
-                    <span id="canvasCaptionYVal">72%</span>
+                </div>
+                <div class="slider-item slider-item-compact">
+                  <div class="slider-header">
+                    <span>Y</span>
+                    <span id="canvasCaptionYVal">78%</span>
                   </div>
-                  <input type="range" id="canvasCaptionYSlider" min="5" max="95" value="72" step="1">
-                </label>
+                  <input type="range" id="canvasCaptionYSlider" min="5" max="95" value="78" step="1">
+                </div>
               </div>
             </div>
-          </div>
+          </section>
 
-          <!-- 4. Extra Text / CTA / Watermark -->
-          <div class="inspector-section">
-            <div class="toggle-row-compact">
-              <label class="toggle-row">
+          <!-- 4. Extra Watermark / Social Handle -->
+          <section class="inspector-card">
+            <span class="section-label">4. EXTRA</span>
+            <div class="extra-field-row">
+              <label class="toggle-checkbox-clean">
                 <input type="checkbox" id="canvasCtaToggle">
-                <span class="inspector-title" style="margin:0;">Extra Watermark / Handle</span>
+                <span>Add Social Handle / Watermark</span>
               </label>
             </div>
-            <div id="canvasCtaOptions" hidden style="margin-top:8px;">
-              <input type="text" id="canvasCtaTextInput" placeholder="@yourhandle · Follow for Part 2" class="field-input-compact">
-              <div class="slider-row" style="margin-top:6px;">
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Horizontal (X)</span>
-                    <span id="canvasCtaXVal">50%</span>
-                  </div>
-                  <input type="range" id="canvasCtaXSlider" min="5" max="95" value="50" step="1">
-                </label>
-                <label class="field-slider">
-                  <div class="slider-label-row">
-                    <span>Vertical (Y)</span>
-                    <span id="canvasCtaYVal">92%</span>
-                  </div>
-                  <input type="range" id="canvasCtaYSlider" min="5" max="98" value="92" step="1">
-                </label>
+            <div id="canvasCtaOptions" hidden class="extra-options-box">
+              <div class="extra-input-row">
+                <input type="text" id="canvasCtaTextInput" placeholder="@yourhandle" class="field-input-clean">
+                <input type="color" id="canvasCtaColor" value="#FFFFFF" class="color-box-mini" title="Text Color">
+                <select id="canvasCtaPosition" class="field-select-clean">
+                  <option value="bottom-right" selected>Bottom Right</option>
+                  <option value="bottom-left">Bottom Left</option>
+                  <option value="top-right">Top Right</option>
+                  <option value="top-left">Top Left</option>
+                </select>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
+        </aside>
       </div>
 
-      <!-- Modal Footer Action Bar -->
-      <div class="modal-actions canvas-modal-actions">
-        <button class="btn btn-ghost" id="canvasResetBtn">
+      <!-- 3. Bottom Action Bar -->
+      <footer class="canvas-studio-footer">
+        <button type="button" class="btn btn-ghost" id="canvasResetBtn">
           <span>Reset Layout</span>
         </button>
-        <span class="modal-spacer"></span>
-        <button class="btn btn-ghost" id="canvasApplyCampaignBtn">
+        <span class="footer-spacer"></span>
+        <button type="button" class="btn btn-ghost" id="canvasApplyCampaignBtn">
           <svg class="btn-icon" aria-hidden="true"><use href="#icon-layers"/></svg>
           <span>Apply to All Clips (Campaign Default)</span>
         </button>
-        <button class="btn btn-primary btn-glow" id="canvasApplyClipBtn">
+        <button type="button" class="btn btn-primary btn-glow" id="canvasApplyClipBtn">
           <svg class="btn-icon" aria-hidden="true"><use href="#icon-check"/></svg>
-          <span>Apply to this Clip</span>
+          <span>Apply to This Clip ✓</span>
         </button>
-      </div>
+      </footer>
     </div>
   </div>
 

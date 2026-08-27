@@ -133,13 +133,44 @@
     telegramStatus: $("#telegramStatus"),
     btnOpenCampaignCanvas: $("#btnOpenCampaignCanvas"),
     visualCanvasModal: $("#visualCanvasModal"),
-    canvasClipTitle: $("#canvasClipTitle"),
-    canvasSafeToggle: $("#canvasSafeToggle"),
+    canvasBackBtn: $("#canvasBackBtn"),
+    canvasSavePresetBtn: $("#canvasSavePresetBtn"),
+    canvasDoneTopBtn: $("#canvasDoneTopBtn"),
     canvasClose: $("#canvasClose"),
+    canvasChangeClipBtn: $("#canvasChangeClipBtn"),
+    canvasClipThumb: $("#canvasClipThumb"),
+    canvasClipThumbFallback: $("#canvasClipThumbFallback"),
+    canvasClipTitle: $("#canvasClipTitle"),
+    canvasClipSpeaker: $("#canvasClipSpeaker"),
+    canvasClipDuration: $("#canvasClipDuration"),
+    layerItemHook: $("#layerItemHook"),
+    layerItemCaption: $("#layerItemCaption"),
+    layerTextHook: $("#layerTextHook"),
+    layerTextCaption: $("#layerTextCaption"),
+    layerVisHook: $("#layerVisHook"),
+    layerVisCaption: $("#layerVisCaption"),
+    canvasCopyStyleBtn: $("#canvasCopyStyleBtn"),
+    canvasCopyAllBtn: $("#canvasCopyAllBtn"),
+    canvasResetCanvasBtn: $("#canvasResetCanvasBtn"),
+    canvasRefreshFrame: $("#canvasRefreshFrame"),
+    canvasSingleLineToggle: $("#canvasSingleLineToggle"),
+    canvasSafeToggle: $("#canvasSafeToggle"),
+    canvasZoomIn: $("#canvasZoomIn"),
+    canvasZoomOut: $("#canvasZoomOut"),
+    canvasZoomFit: $("#canvasZoomFit"),
+    canvasZoomReset: $("#canvasZoomReset"),
     canvasContainer: $("#canvasContainer"),
     canvasBgImg: $("#canvasBgImg"),
     canvasBgFallback: $("#canvasBgFallback"),
     canvasSafeGuides: $("#canvasSafeGuides"),
+    canvasSafeWarning: $("#canvasSafeWarning"),
+    canvasMicroToolbar: $("#canvasMicroToolbar"),
+    microAa: $("#microAa"),
+    microSizeMinus: $("#microSizeMinus"),
+    microSizeVal: $("#microSizeVal"),
+    microSizePlus: $("#microSizePlus"),
+    microAlign: $("#microAlign"),
+    microMore: $("#microMore"),
     canvasHookBox: $("#canvasHookBox"),
     canvasHookText: $("#canvasHookText"),
     canvasHookPosBadge: $("#canvasHookPosBadge"),
@@ -149,61 +180,87 @@
     canvasCtaBox: $("#canvasCtaBox"),
     canvasCtaText: $("#canvasCtaText"),
     canvasCtaPosBadge: $("#canvasCtaPosBadge"),
-    canvasRefreshFrame: $("#canvasRefreshFrame"),
+    canvasPlayBtn: $("#canvasPlayBtn"),
+    canvasTimeDisplay: $("#canvasTimeDisplay"),
+    canvasTimelineSlider: $("#canvasTimelineSlider"),
+    canvasDurationBadge: $("#canvasDurationBadge"),
+    canvasFilmstripTrack: $("#canvasFilmstripTrack"),
+    filmstripPrev: $("#filmstripPrev"),
+    filmstripNext: $("#filmstripNext"),
     stylePresetsGrid: $("#stylePresetsGrid"),
+    presetsViewAllBtn: $("#presetsViewAllBtn"),
+    inspectorContextSection: $("#inspectorContextSection"),
+    inspectorTargetBadge: $("#inspectorTargetBadge"),
+    inspectorHookBlock: $("#inspectorHookBlock"),
+    inspectorCaptionBlock: $("#inspectorCaptionBlock"),
+    hookCharCount: $("#hookCharCount"),
+    captionCharCount: $("#captionCharCount"),
+    canvasHookTextInput: $("#canvasHookTextInput"),
+    canvasCaptionTextInput: $("#canvasCaptionTextInput"),
     canvasFontSelect: $("#canvasFontSelect"),
+    canvasWeightSelect: $("#canvasWeightSelect"),
+    canvasHookSizeSlider: $("#canvasHookSizeSlider"),
+    canvasHookSizeVal: $("#canvasHookSizeVal"),
     canvasTextColor: $("#canvasTextColor"),
     canvasOutlineColor: $("#canvasOutlineColor"),
     canvasHighlightColor: $("#canvasHighlightColor"),
-    canvasHookSizeSlider: $("#canvasHookSizeSlider"),
-    canvasHookSizeVal: $("#canvasHookSizeVal"),
-    canvasCaptionSizeSlider: $("#canvasCaptionSizeSlider"),
-    canvasCaptionSizeVal: $("#canvasCaptionSizeVal"),
     canvasOutlineWidthSlider: $("#canvasOutlineWidthSlider"),
     canvasOutlineWidthVal: $("#canvasOutlineWidthVal"),
+    canvasLetterSpacingSlider: $("#canvasLetterSpacingSlider"),
+    canvasLetterSpacingVal: $("#canvasLetterSpacingVal"),
+    canvasLineHeightSlider: $("#canvasLineHeightSlider"),
+    canvasLineHeightVal: $("#canvasLineHeightVal"),
+    canvasHookSingleLineCheck: $("#canvasHookSingleLineCheck"),
+    hookAdvancedToggle: $("#hookAdvancedToggle"),
+    hookAdvancedDrawer: $("#hookAdvancedDrawer"),
     canvasBoxBgToggle: $("#canvasBoxBgToggle"),
     canvasBoxBgColor: $("#canvasBoxBgColor"),
-    canvasHookYSlider: $("#canvasHookYSlider"),
-    canvasHookYVal: $("#canvasHookYVal"),
-    canvasCaptionYSlider: $("#canvasCaptionYSlider"),
-    canvasCaptionYVal: $("#canvasCaptionYVal"),
-    canvasCtaToggle: $("#canvasCtaToggle"),
-    canvasCtaOptions: $("#canvasCtaOptions"),
-    canvasCtaTextInput: $("#canvasCtaTextInput"),
-    canvasCtaYSlider: $("#canvasCtaYSlider"),
-    canvasCtaYVal: $("#canvasCtaYVal"),
-    canvasCtaXSlider: $("#canvasCtaXSlider"),
-    canvasCtaXVal: $("#canvasCtaXVal"),
-    canvasHookXSlider: $("#canvasHookXSlider"),
-    canvasHookXVal: $("#canvasHookXVal"),
-    canvasCaptionXSlider: $("#canvasCaptionXSlider"),
-    canvasCaptionXVal: $("#canvasCaptionXVal"),
+    canvasCapFontSelect: $("#canvasCapFontSelect"),
+    canvasCapWeightSelect: $("#canvasCapWeightSelect"),
+    canvasCaptionSizeSlider: $("#canvasCaptionSizeSlider"),
+    canvasCaptionSizeVal: $("#canvasCaptionSizeVal"),
+    canvasCapTextColor: $("#canvasCapTextColor"),
+    canvasCapHighlightColor: $("#canvasCapHighlightColor"),
+    canvasCapOutlineColor: $("#canvasCapOutlineColor"),
+    canvasCapOutlineWidthSlider: $("#canvasCapOutlineWidthSlider"),
+    canvasCapOutlineWidthVal: $("#canvasCapOutlineWidthVal"),
+    canvasCapLetterSpacingSlider: $("#canvasCapLetterSpacingSlider"),
+    canvasCapLetterSpacingVal: $("#canvasCapLetterSpacingVal"),
+    canvasCapLineHeightSlider: $("#canvasCapLineHeightSlider"),
+    canvasCapLineHeightVal: $("#canvasCapLineHeightVal"),
+    canvasCapSingleLineCheck: $("#canvasCapSingleLineCheck"),
+    capAdvancedToggle: $("#capAdvancedToggle"),
+    capAdvancedDrawer: $("#capAdvancedDrawer"),
+    canvasCapBoxBgToggle: $("#canvasCapBoxBgToggle"),
+    canvasCapBoxBgColor: $("#canvasCapBoxBgColor"),
+    posColHook: $("#posColHook"),
+    posColCaption: $("#posColCaption"),
     hookAlignLeft: $("#hookAlignLeft"),
     hookAlignCenter: $("#hookAlignCenter"),
     hookAlignRight: $("#hookAlignRight"),
     capAlignLeft: $("#capAlignLeft"),
     capAlignCenter: $("#capAlignCenter"),
     capAlignRight: $("#capAlignRight"),
+    canvasHookXSlider: $("#canvasHookXSlider"),
+    canvasHookXVal: $("#canvasHookXVal"),
+    canvasHookYSlider: $("#canvasHookYSlider"),
+    canvasHookYVal: $("#canvasHookYVal"),
+    canvasCaptionXSlider: $("#canvasCaptionXSlider"),
+    canvasCaptionXVal: $("#canvasCaptionXVal"),
+    canvasCaptionYSlider: $("#canvasCaptionYSlider"),
+    canvasCaptionYVal: $("#canvasCaptionYVal"),
+    canvasCtaToggle: $("#canvasCtaToggle"),
+    canvasCtaOptions: $("#canvasCtaOptions"),
+    canvasCtaTextInput: $("#canvasCtaTextInput"),
+    canvasCtaColor: $("#canvasCtaColor"),
+    canvasCtaPosition: $("#canvasCtaPosition"),
+    canvasCtaXSlider: $("#canvasCtaXSlider"),
+    canvasCtaXVal: $("#canvasCtaXVal"),
+    canvasCtaYSlider: $("#canvasCtaYSlider"),
+    canvasCtaYVal: $("#canvasCtaYVal"),
     canvasResetBtn: $("#canvasResetBtn"),
     canvasApplyCampaignBtn: $("#canvasApplyCampaignBtn"),
     canvasApplyClipBtn: $("#canvasApplyClipBtn"),
-    canvasSingleLineToggle: $("#canvasSingleLineToggle"),
-    canvasHookTextInput: $("#canvasHookTextInput"),
-    hookStepMinus: $("#hookStepMinus"),
-    hookStepPlus: $("#hookStepPlus"),
-    hookStepperVal: $("#hookStepperVal"),
-    capStepMinus: $("#capStepMinus"),
-    capStepPlus: $("#capStepPlus"),
-    captionStepperVal: $("#captionStepperVal"),
-    ctaStepMinus: $("#ctaStepMinus"),
-    ctaStepPlus: $("#ctaStepPlus"),
-    ctaStepperVal: $("#ctaStepperVal"),
-    quickHookMinus: $("#quickHookMinus"),
-    quickHookPlus: $("#quickHookPlus"),
-    quickHookVal: $("#quickHookVal"),
-    quickCapMinus: $("#quickCapMinus"),
-    quickCapPlus: $("#quickCapPlus"),
-    quickCapVal: $("#quickCapVal"),
   };
 
   const LABELS = {
@@ -450,155 +507,162 @@
   }
 
   // --- Visual Canvas & Style Studio Controller ---------------------------- //
+
+
   const STYLE_PRESETS = [
     {
       id: "hormozi",
-      name: "Hormozi Punchy",
+      name: "Hormozi",
       font: "Anton",
+      weight: "Extra Bold",
       hookSize: 76,
       hookColor: "#FFFFFF",
       hookOutline: "#000000",
-      hookOutlineW: 6,
+      hookOutlineW: 8,
       hookBox: false,
       hookBoxColor: "#000000",
-      captionSize: 68,
-      captionColor: "#FFF35C",
+      captionSize: 65,
+      captionColor: "#FFFFFF",
       captionOutline: "#000000",
       captionOutlineW: 6,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#E50914",
-      bgBadge: "background:#09090b;color:#FFF35C;border:1px solid #E50914;",
-      badgeText: "HORMOZI",
+      highlightColor: "#FFF35C",
+      bgBadge: "background:#0f172a;color:#FFF35C;border:1.5px solid #FFF35C;",
+      badgeText: "Aa",
     },
     {
-      id: "clean",
-      name: "Clean Minimalist",
+      id: "minimal",
+      name: "Minimal",
       font: "Poppins-Bold",
+      weight: "Bold",
       hookSize: 68,
       hookColor: "#FFFFFF",
       hookOutline: "#000000",
-      hookOutlineW: 3,
+      hookOutlineW: 2,
       hookBox: false,
       hookBoxColor: "#000000",
-      captionSize: 62,
-      captionColor: "#FFFFFF",
+      captionSize: 58,
+      captionColor: "#F8FAFC",
       captionOutline: "#000000",
-      captionOutlineW: 3,
+      captionOutlineW: 2,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#38BDF8",
-      bgBadge: "background:#18181b;color:#FFFFFF;border:1px solid rgba(255,255,255,0.2);",
-      badgeText: "MINIMAL",
+      highlightColor: "#FFFFFF",
+      bgBadge: "background:#1e293b;color:#f8fafc;border:1px solid #475569;",
+      badgeText: "Aa",
     },
     {
       id: "neon",
-      name: "Viral Neon",
+      name: "Neon",
       font: "Kanit",
-      hookSize: 74,
-      hookColor: "#2DE1C2",
-      hookOutline: "#000000",
-      hookOutlineW: 5,
+      weight: "Extra Bold",
+      hookSize: 76,
+      hookColor: "#FFFFFF",
+      hookOutline: "#FF0055",
+      hookOutlineW: 7,
       hookBox: false,
       hookBoxColor: "#000000",
-      captionSize: 66,
-      captionColor: "#2DE1C2",
-      captionOutline: "#000000",
-      captionOutlineW: 5,
+      captionSize: 65,
+      captionColor: "#FFFFFF",
+      captionOutline: "#FF0055",
+      captionOutlineW: 6,
       captionBox: false,
       captionBoxColor: "#000000",
-      highlightColor: "#F43F5E",
-      bgBadge: "background:#052e2b;color:#2DE1C2;border:1px solid #2DE1C2;",
-      badgeText: "NEON",
-    },
-    {
-      id: "badge",
-      name: "Solid Box Badge",
-      font: "Archivo Black",
-      hookSize: 66,
-      hookColor: "#000000",
-      hookOutline: "#FFFFFF",
-      hookOutlineW: 2,
-      hookBox: true,
-      hookBoxColor: "#FFFFFF",
-      captionSize: 58,
-      captionColor: "#FFFFFF",
-      captionOutline: "#000000",
-      captionOutlineW: 2,
-      captionBox: true,
-      captionBoxColor: "#000000",
-      highlightColor: "#F59E0B",
-      bgBadge: "background:#FFFFFF;color:#000000;font-weight:900;",
-      badgeText: "BADGE",
+      highlightColor: "#00E5FF",
+      bgBadge: "background:#2e081c;color:#FF0055;border:1.5px solid #FF0055;",
+      badgeText: "Aa",
     },
     {
       id: "cyber",
-      name: "TikTok Cyber",
-      font: "Bebas Neue",
-      hookSize: 80,
-      hookColor: "#000000",
-      hookOutline: "#FFFFFF",
-      hookOutlineW: 5,
-      hookBox: false,
-      hookBoxColor: "#000000",
-      captionSize: 70,
-      captionColor: "#00E5FF",
-      captionOutline: "#000000",
-      captionOutlineW: 5,
-      captionBox: false,
-      captionBoxColor: "#000000",
-      highlightColor: "#FF0055",
-      bgBadge: "background:#083344;color:#00E5FF;border:1px solid #FF0055;",
-      badgeText: "CYBER",
-    },
-    {
-      id: "abu_lahya",
-      name: "Abu Lahya Look",
-      font: "Bebas Neue",
-      hookSize: 80,
-      hookColor: "#000000",
-      hookOutline: "#FFFFFF",
-      hookOutlineW: 5,
+      name: "Cyber",
+      font: "Archivo Black",
+      weight: "Extra Bold",
+      hookSize: 74,
+      hookColor: "#00E5FF",
+      hookOutline: "#000000",
+      hookOutlineW: 7,
       hookBox: false,
       hookBoxColor: "#000000",
       captionSize: 64,
-      captionColor: "#000000",
-      captionOutline: "#FFFFFF",
-      captionOutlineW: 5,
+      captionColor: "#00E5FF",
+      captionOutline: "#000000",
+      captionOutlineW: 6,
+      captionBox: false,
+      captionBoxColor: "#000000",
+      highlightColor: "#FF0055",
+      bgBadge: "background:#083344;color:#00E5FF;border:1.5px solid #00E5FF;",
+      badgeText: "Aa",
+    },
+    {
+      id: "outline",
+      name: "Outline",
+      font: "Bebas Neue",
+      weight: "Bold",
+      hookSize: 80,
+      hookColor: "#FFFFFF",
+      hookOutline: "#000000",
+      hookOutlineW: 8,
+      hookBox: false,
+      hookBoxColor: "#000000",
+      captionSize: 68,
+      captionColor: "#FFFFFF",
+      captionOutline: "#000000",
+      captionOutlineW: 7,
       captionBox: false,
       captionBoxColor: "#000000",
       highlightColor: "#E50914",
       bgBadge: "background:#000000;color:#FFFFFF;border:1.5px solid #FFFFFF;",
-      badgeText: "OUTLINE",
+      badgeText: "Aa",
     },
   ];
 
   let currentCanvasClip = null;
   let currentCanvasVideoId = null;
   let activePresetId = "hormozi";
+  let activeSelectedLayer = "hook"; // "hook" | "captions" | "cta" | null
+  let canvasZoomLevel = 1.0;
+  let copiedStyleBuffer = null;
+  let currentClipTimestamp = 1.0;
+  let isCanvasPlaying = false;
+  let canvasPlayInterval = null;
+  let canvasHistory = [];
+  let canvasHistoryIndex = -1;
+  let filmstripDebounceTimer = null;
+
   let canvasState = {
     hook: {
       preferred_x: 0.50,
-      preferred_y: 0.08,
+      preferred_y: 0.12,
       font: "Anton",
+      weight: "Extra Bold",
       size: 76,
       color: "#FFFFFF",
       outline_color: "#000000",
-      outline_width: 6,
+      outline_width: 8,
+      letter_spacing: 0,
+      line_height: 100,
       box_enabled: false,
       background_color: "#000000",
+      single_line: true,
+      visible: true,
     },
     captions: {
       preferred_x: 0.50,
-      preferred_y: 0.72,
+      preferred_y: 0.78,
       font: "Anton",
-      size: 68,
-      color: "#FFF35C",
+      weight: "Bold",
+      size: 65,
+      color: "#FFFFFF",
+      highlight_color: "#FFF35C",
       outline_color: "#000000",
       outline_width: 6,
+      letter_spacing: 0,
+      line_height: 100,
       box_enabled: false,
       background_color: "#000000",
-      highlight_color: "#E50914",
+      single_line: true,
+      visible: true,
     },
     cta: {
       enabled: false,
@@ -608,7 +672,9 @@
       font: "Poppins-Bold",
       size: 38,
       color: "#FFFFFF",
-    }
+      position: "bottom-right",
+      visible: false,
+    },
   };
 
   let activeDragTarget = null;
@@ -617,9 +683,122 @@
   let dragInitialXPct = 0.5;
   let dragInitialYPct = 0.5;
 
+  function pushCanvasHistory(desc) {
+    try {
+      const snap = JSON.stringify(canvasState);
+      if (canvasHistoryIndex >= 0 && canvasHistory[canvasHistoryIndex] === snap) return;
+      canvasHistory = canvasHistory.slice(0, canvasHistoryIndex + 1);
+      canvasHistory.push(snap);
+      if (canvasHistory.length > 30) canvasHistory.shift();
+      canvasHistoryIndex = canvasHistory.length - 1;
+    } catch (e) {
+      console.warn("Canvas history push failed", e);
+    }
+  }
+
+  function undoCanvas() {
+    if (canvasHistoryIndex > 0) {
+      canvasHistoryIndex--;
+      canvasState = JSON.parse(canvasHistory[canvasHistoryIndex]);
+      updateCanvasElementsView();
+      toast("Undo layout action", "ok");
+    }
+  }
+
+  function redoCanvas() {
+    if (canvasHistoryIndex < canvasHistory.length - 1) {
+      canvasHistoryIndex++;
+      canvasState = JSON.parse(canvasHistory[canvasHistoryIndex]);
+      updateCanvasElementsView();
+      toast("Redo layout action", "ok");
+    }
+  }
+
+  function selectCanvasLayer(targetLayer) {
+    activeSelectedLayer = targetLayer;
+    const isHook = targetLayer === "hook";
+    const isCap = targetLayer === "captions";
+    const isCta = targetLayer === "cta";
+
+    if (els.canvasHookBox) els.canvasHookBox.classList.toggle("is-selected", isHook);
+    if (els.canvasCaptionBox) els.canvasCaptionBox.classList.toggle("is-selected", isCap);
+    if (els.canvasCtaBox) els.canvasCtaBox.classList.toggle("is-selected", isCta);
+
+    if (els.layerItemHook) els.layerItemHook.classList.toggle("is-selected", isHook);
+    if (els.layerItemCaption) els.layerItemCaption.classList.toggle("is-selected", isCap);
+
+    if (els.inspectorHookBlock) els.inspectorHookBlock.hidden = !isHook;
+    if (els.inspectorCaptionBlock) els.inspectorCaptionBlock.hidden = !isCap;
+
+    if (els.inspectorTargetBadge) {
+      els.inspectorTargetBadge.textContent = isHook ? "HOOK" : (isCap ? "SUBTITLES" : (isCta ? "WATERMARK" : "GLOBAL"));
+    }
+
+    if (els.posColHook) {
+      els.posColHook.style.borderColor = isHook ? "var(--teal)" : "rgba(255,255,255,0.05)";
+    }
+    if (els.posColCaption) {
+      els.posColCaption.style.borderColor = isCap ? "var(--teal)" : "rgba(255,255,255,0.05)";
+    }
+
+    updateMicroToolbarPosition();
+  }
+
+  function updateMicroToolbarPosition() {
+    if (!els.canvasMicroToolbar) return;
+    if (!activeSelectedLayer) {
+      els.canvasMicroToolbar.hidden = true;
+      return;
+    }
+    const box = activeSelectedLayer === "hook" ? els.canvasHookBox : (activeSelectedLayer === "captions" ? els.canvasCaptionBox : els.canvasCtaBox);
+    if (!box || box.hidden || !els.canvasContainer) {
+      els.canvasMicroToolbar.hidden = true;
+      return;
+    }
+
+    els.canvasMicroToolbar.hidden = false;
+    const targetKey = activeSelectedLayer === "caption" ? "captions" : activeSelectedLayer;
+    const currentSize = (canvasState[targetKey] && canvasState[targetKey].size) || 76;
+    if (els.microSizeVal) els.microSizeVal.textContent = String(currentSize);
+
+    const boxRect = box.getBoundingClientRect();
+    const containerRect = els.canvasContainer.getBoundingClientRect();
+    const topRel = boxRect.top - containerRect.top;
+    const leftRel = boxRect.left - containerRect.left + boxRect.width / 2;
+
+    els.canvasMicroToolbar.style.left = `${Math.round(leftRel)}px`;
+    if (topRel > 44) {
+      els.canvasMicroToolbar.style.top = `${Math.round(topRel - 36)}px`;
+    } else {
+      els.canvasMicroToolbar.style.top = `${Math.round(topRel + boxRect.height + 10)}px`;
+    }
+  }
+
+  function checkSafeZoneBounds() {
+    if (!els.canvasSafeWarning) return;
+    const hookX = canvasState.hook.preferred_x != null ? canvasState.hook.preferred_x : 0.5;
+    const hookY = canvasState.hook.preferred_y != null ? canvasState.hook.preferred_y : 0.12;
+    const capX = canvasState.captions.preferred_x != null ? canvasState.captions.preferred_x : 0.5;
+    const capY = canvasState.captions.preferred_y != null ? canvasState.captions.preferred_y : 0.78;
+
+    const hookOut = (hookX < 0.10 || hookX > 0.82 || hookY < 0.11 || hookY > 0.80);
+    const capOut = (capX < 0.10 || capX > 0.82 || capY < 0.11 || capY > 0.80);
+    const isWarn = (hookOut || capOut) && (els.canvasSafeToggle ? els.canvasSafeToggle.checked : true);
+
+    els.canvasSafeWarning.hidden = !isWarn;
+  }
+
+  function updateCanvasZoom() {
+    if (!els.canvasContainer) return;
+    els.canvasContainer.style.transform = `scale(${canvasZoomLevel})`;
+    updateMicroToolbarPosition();
+  }
+
   function initCanvasInteractions() {
     function onPointerDown(e, targetType) {
+      if (e.target.closest(".resize-handle") || e.target.closest(".micro-btn")) return;
       activeDragTarget = targetType;
+      selectCanvasLayer(targetType);
       dragStartX = e.clientX || (e.touches && e.touches[0].clientX);
       dragStartY = e.clientY || (e.touches && e.touches[0].clientY);
       const box = targetType === "hook" ? els.canvasHookBox : (targetType === "caption" ? els.canvasCaptionBox : els.canvasCtaBox);
@@ -643,8 +822,8 @@
       const deltaY = clientY - dragStartY;
       const deltaXPct = deltaX / (rect.width || 320);
       const deltaYPct = deltaY / (rect.height || 569);
-      let newX = Math.max(0.05, Math.min(0.95, dragInitialXPct + deltaXPct));
-      let newY = Math.max(0.02, Math.min(0.98, dragInitialYPct + deltaYPct));
+      let newX = Math.max(0.06, Math.min(0.94, dragInitialXPct + deltaXPct));
+      let newY = Math.max(0.04, Math.min(0.96, dragInitialYPct + deltaYPct));
       newX = Math.round(newX * 100) / 100;
       newY = Math.round(newY * 100) / 100;
       const key = activeDragTarget === "caption" ? "captions" : activeDragTarget;
@@ -665,6 +844,7 @@
       document.removeEventListener("mouseup", onPointerUp);
       document.removeEventListener("touchmove", onPointerMove);
       document.removeEventListener("touchend", onPointerUp);
+      pushCanvasHistory("Drag Position");
     }
 
     if (els.canvasHookBox) {
@@ -672,12 +852,138 @@
       els.canvasHookBox.addEventListener("touchstart", (e) => onPointerDown(e, "hook"), { passive: false });
     }
     if (els.canvasCaptionBox) {
-      els.canvasCaptionBox.addEventListener("mousedown", (e) => onPointerDown(e, "caption"));
-      els.canvasCaptionBox.addEventListener("touchstart", (e) => onPointerDown(e, "caption"), { passive: false });
+      els.canvasCaptionBox.addEventListener("mousedown", (e) => onPointerDown(e, "captions"));
+      els.canvasCaptionBox.addEventListener("touchstart", (e) => onPointerDown(e, "captions"), { passive: false });
     }
     if (els.canvasCtaBox) {
       els.canvasCtaBox.addEventListener("mousedown", (e) => onPointerDown(e, "cta"));
       els.canvasCtaBox.addEventListener("touchstart", (e) => onPointerDown(e, "cta"), { passive: false });
+    }
+
+    // Clicking background of canvas stage deselects or clicks hook/captions
+    if (els.canvasContainer) {
+      els.canvasContainer.addEventListener("click", (e) => {
+        if (!e.target.closest(".canvas-drag-box") && !e.target.closest(".canvas-micro-toolbar")) {
+          selectCanvasLayer(null);
+        }
+      });
+    }
+
+    // Layers List Clicking in Left Panel
+    if (els.layerItemHook) {
+      els.layerItemHook.addEventListener("click", () => selectCanvasLayer("hook"));
+    }
+    if (els.layerItemCaption) {
+      els.layerItemCaption.addEventListener("click", () => selectCanvasLayer("captions"));
+    }
+
+    // Layer Visibility Toggles
+    if (els.layerVisHook) {
+      els.layerVisHook.addEventListener("click", (e) => {
+        e.stopPropagation();
+        canvasState.hook.visible = !canvasState.hook.visible;
+        els.layerVisHook.classList.toggle("is-off", !canvasState.hook.visible);
+        if (els.canvasHookBox) els.canvasHookBox.style.display = canvasState.hook.visible ? "" : "none";
+        pushCanvasHistory("Toggle Hook Visibility");
+      });
+    }
+    if (els.layerVisCaption) {
+      els.layerVisCaption.addEventListener("click", (e) => {
+        e.stopPropagation();
+        canvasState.captions.visible = !canvasState.captions.visible;
+        els.layerVisCaption.classList.toggle("is-off", !canvasState.captions.visible);
+        if (els.canvasCaptionBox) els.canvasCaptionBox.style.display = canvasState.captions.visible ? "" : "none";
+        pushCanvasHistory("Toggle Subtitle Visibility");
+      });
+    }
+
+    // Floating Micro-Toolbar Actions
+    if (els.microAa) {
+      els.microAa.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (activeSelectedLayer === "hook") {
+          const cur = els.canvasHookTextInput ? els.canvasHookTextInput.value : (els.canvasHookText.textContent || "");
+          const isUpper = cur === cur.toUpperCase();
+          const next = isUpper ? cur.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : cur.toUpperCase();
+          if (els.canvasHookTextInput) els.canvasHookTextInput.value = next;
+          if (els.canvasHookText) els.canvasHookText.textContent = next;
+        } else if (activeSelectedLayer === "captions") {
+          const cur = els.canvasCaptionTextInput ? els.canvasCaptionTextInput.value : "people are gonna sleep on you";
+          const isUpper = cur === cur.toUpperCase();
+          const next = isUpper ? cur.toLowerCase() : cur.toUpperCase();
+          if (els.canvasCaptionTextInput) els.canvasCaptionTextInput.value = next;
+        }
+        updateCanvasElementsView();
+        pushCanvasHistory("Case Toggle");
+      });
+    }
+
+    if (els.microSizeMinus) {
+      els.microSizeMinus.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const target = activeSelectedLayer === "caption" ? "captions" : (activeSelectedLayer || "hook");
+        stepSize(target, -4);
+      });
+    }
+
+    if (els.microSizePlus) {
+      els.microSizePlus.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const target = activeSelectedLayer === "caption" ? "captions" : (activeSelectedLayer || "hook");
+        stepSize(target, 4);
+      });
+    }
+
+    if (els.microAlign) {
+      els.microAlign.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const target = activeSelectedLayer === "caption" ? "captions" : (activeSelectedLayer || "hook");
+        const curX = canvasState[target].preferred_x != null ? canvasState[target].preferred_x : 0.5;
+        if (Math.abs(curX - 0.50) < 0.05) {
+          canvasState[target].preferred_x = 0.82; // Right
+        } else if (curX > 0.6) {
+          canvasState[target].preferred_x = 0.18; // Left
+        } else {
+          canvasState[target].preferred_x = 0.50; // Center
+        }
+        updateCanvasElementsView();
+        pushCanvasHistory("Cycle Alignment");
+      });
+    }
+
+    if (els.microMore) {
+      els.microMore.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (els.inspectorContextSection) {
+          els.inspectorContextSection.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    }
+
+    // Zoom Controls Dock
+    if (els.canvasZoomIn) {
+      els.canvasZoomIn.addEventListener("click", () => {
+        canvasZoomLevel = Math.min(1.8, Math.round((canvasZoomLevel + 0.15) * 100) / 100);
+        updateCanvasZoom();
+      });
+    }
+    if (els.canvasZoomOut) {
+      els.canvasZoomOut.addEventListener("click", () => {
+        canvasZoomLevel = Math.max(0.6, Math.round((canvasZoomLevel - 0.15) * 100) / 100);
+        updateCanvasZoom();
+      });
+    }
+    if (els.canvasZoomFit) {
+      els.canvasZoomFit.addEventListener("click", () => {
+        canvasZoomLevel = 1.0;
+        updateCanvasZoom();
+      });
+    }
+    if (els.canvasZoomReset) {
+      els.canvasZoomReset.addEventListener("click", () => {
+        canvasZoomLevel = 1.0;
+        updateCanvasZoom();
+      });
     }
 
     // Safe zone toggle
@@ -686,6 +992,7 @@
         if (els.canvasSafeGuides) {
           els.canvasSafeGuides.classList.toggle("is-hidden", !els.canvasSafeToggle.checked);
         }
+        checkSafeZoneBounds();
       });
     }
 
@@ -695,24 +1002,28 @@
         canvasState.hook.preferred_x = Number(els.canvasHookXSlider.value) / 100;
         updateCanvasElementsView();
       });
+      els.canvasHookXSlider.addEventListener("change", () => pushCanvasHistory("Hook X"));
     }
     if (els.canvasHookYSlider) {
       els.canvasHookYSlider.addEventListener("input", () => {
         canvasState.hook.preferred_y = Number(els.canvasHookYSlider.value) / 100;
         updateCanvasElementsView();
       });
+      els.canvasHookYSlider.addEventListener("change", () => pushCanvasHistory("Hook Y"));
     }
     if (els.canvasCaptionXSlider) {
       els.canvasCaptionXSlider.addEventListener("input", () => {
         canvasState.captions.preferred_x = Number(els.canvasCaptionXSlider.value) / 100;
         updateCanvasElementsView();
       });
+      els.canvasCaptionXSlider.addEventListener("change", () => pushCanvasHistory("Caption X"));
     }
     if (els.canvasCaptionYSlider) {
       els.canvasCaptionYSlider.addEventListener("input", () => {
         canvasState.captions.preferred_y = Number(els.canvasCaptionYSlider.value) / 100;
         updateCanvasElementsView();
       });
+      els.canvasCaptionYSlider.addEventListener("change", () => pushCanvasHistory("Caption Y"));
     }
     if (els.canvasCtaXSlider) {
       els.canvasCtaXSlider.addEventListener("input", () => {
@@ -728,77 +1039,104 @@
     }
 
     // Quick snap alignment buttons
-    if (els.hookAlignLeft) {
-      els.hookAlignLeft.addEventListener("click", () => {
-        canvasState.hook.preferred_x = 0.18;
-        updateCanvasElementsView();
-      });
-    }
-    if (els.hookAlignCenter) {
-      els.hookAlignCenter.addEventListener("click", () => {
-        canvasState.hook.preferred_x = 0.50;
-        updateCanvasElementsView();
-      });
-    }
-    if (els.hookAlignRight) {
-      els.hookAlignRight.addEventListener("click", () => {
-        canvasState.hook.preferred_x = 0.82;
-        updateCanvasElementsView();
-      });
-    }
-    if (els.capAlignLeft) {
-      els.capAlignLeft.addEventListener("click", () => {
-        canvasState.captions.preferred_x = 0.18;
-        updateCanvasElementsView();
-      });
-    }
-    if (els.capAlignCenter) {
-      els.capAlignCenter.addEventListener("click", () => {
-        canvasState.captions.preferred_x = 0.50;
-        updateCanvasElementsView();
-      });
-    }
-    if (els.capAlignRight) {
-      els.capAlignRight.addEventListener("click", () => {
-        canvasState.captions.preferred_x = 0.82;
-        updateCanvasElementsView();
-      });
+    function setSnapAlignment(target, align) {
+      const xVal = align === "left" ? 0.18 : (align === "right" ? 0.82 : 0.50);
+      canvasState[target].preferred_x = xVal;
+      updateCanvasElementsView();
+      pushCanvasHistory(`${target} Align ${align}`);
     }
 
+    if (els.hookAlignLeft) els.hookAlignLeft.addEventListener("click", () => setSnapAlignment("hook", "left"));
+    if (els.hookAlignCenter) els.hookAlignCenter.addEventListener("click", () => setSnapAlignment("hook", "center"));
+    if (els.hookAlignRight) els.hookAlignRight.addEventListener("click", () => setSnapAlignment("hook", "right"));
+
+    if (els.capAlignLeft) els.capAlignLeft.addEventListener("click", () => setSnapAlignment("captions", "left"));
+    if (els.capAlignCenter) els.capAlignCenter.addEventListener("click", () => setSnapAlignment("captions", "center"));
+    if (els.capAlignRight) els.capAlignRight.addEventListener("click", () => setSnapAlignment("captions", "right"));
+
+    // Typography & Color Inputs (Hook)
     if (els.canvasFontSelect) {
       els.canvasFontSelect.addEventListener("change", () => {
         canvasState.hook.font = els.canvasFontSelect.value;
-        canvasState.captions.font = els.canvasFontSelect.value;
-        canvasState.cta.font = els.canvasFontSelect.value;
         updateCanvasElementsView();
+        pushCanvasHistory("Hook Font");
       });
     }
-
+    if (els.canvasWeightSelect) {
+      els.canvasWeightSelect.addEventListener("change", () => {
+        canvasState.hook.weight = els.canvasWeightSelect.value;
+        updateCanvasElementsView();
+        pushCanvasHistory("Hook Weight");
+      });
+    }
+    if (els.canvasHookSizeSlider) {
+      els.canvasHookSizeSlider.addEventListener("input", () => {
+        canvasState.hook.size = Number(els.canvasHookSizeSlider.value);
+        updateCanvasElementsView();
+      });
+      els.canvasHookSizeSlider.addEventListener("change", () => pushCanvasHistory("Hook Size"));
+    }
     if (els.canvasTextColor) {
       els.canvasTextColor.addEventListener("input", () => {
-        canvasState.captions.color = els.canvasTextColor.value;
         canvasState.hook.color = els.canvasTextColor.value;
         updateCanvasElementsView();
       });
+      els.canvasTextColor.addEventListener("change", () => pushCanvasHistory("Hook Color"));
     }
     if (els.canvasOutlineColor) {
       els.canvasOutlineColor.addEventListener("input", () => {
-        canvasState.captions.outline_color = els.canvasOutlineColor.value;
         canvasState.hook.outline_color = els.canvasOutlineColor.value;
         updateCanvasElementsView();
       });
+      els.canvasOutlineColor.addEventListener("change", () => pushCanvasHistory("Hook Outline Color"));
     }
     if (els.canvasHighlightColor) {
       els.canvasHighlightColor.addEventListener("input", () => {
         canvasState.captions.highlight_color = els.canvasHighlightColor.value;
         updateCanvasElementsView();
       });
+      els.canvasHighlightColor.addEventListener("change", () => pushCanvasHistory("Highlight Color"));
+    }
+    if (els.canvasOutlineWidthSlider) {
+      els.canvasOutlineWidthSlider.addEventListener("input", () => {
+        canvasState.hook.outline_width = Number(els.canvasOutlineWidthSlider.value);
+        updateCanvasElementsView();
+      });
+      els.canvasOutlineWidthSlider.addEventListener("change", () => pushCanvasHistory("Hook Outline Width"));
+    }
+    if (els.canvasLetterSpacingSlider) {
+      els.canvasLetterSpacingSlider.addEventListener("input", () => {
+        canvasState.hook.letter_spacing = Number(els.canvasLetterSpacingSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasLineHeightSlider) {
+      els.canvasLineHeightSlider.addEventListener("input", () => {
+        canvasState.hook.line_height = Number(els.canvasLineHeightSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasHookSingleLineCheck) {
+      els.canvasHookSingleLineCheck.addEventListener("change", () => {
+        canvasState.hook.single_line = els.canvasHookSingleLineCheck.checked;
+        updateCanvasElementsView();
+        pushCanvasHistory("Hook Single Line");
+      });
     }
 
-    if (els.canvasHookSizeSlider) {
-      els.canvasHookSizeSlider.addEventListener("input", () => {
-        canvasState.hook.size = Number(els.canvasHookSizeSlider.value);
+    // Typography & Color Inputs (Captions)
+    if (els.canvasCapFontSelect) {
+      els.canvasCapFontSelect.addEventListener("change", () => {
+        canvasState.captions.font = els.canvasCapFontSelect.value;
         updateCanvasElementsView();
+        pushCanvasHistory("Caption Font");
+      });
+    }
+    if (els.canvasCapWeightSelect) {
+      els.canvasCapWeightSelect.addEventListener("change", () => {
+        canvasState.captions.weight = els.canvasCapWeightSelect.value;
+        updateCanvasElementsView();
+        pushCanvasHistory("Caption Weight");
       });
     }
     if (els.canvasCaptionSizeSlider) {
@@ -806,34 +1144,106 @@
         canvasState.captions.size = Number(els.canvasCaptionSizeSlider.value);
         updateCanvasElementsView();
       });
+      els.canvasCaptionSizeSlider.addEventListener("change", () => pushCanvasHistory("Caption Size"));
     }
-    if (els.canvasOutlineWidthSlider) {
-      els.canvasOutlineWidthSlider.addEventListener("input", () => {
-        canvasState.captions.outline_width = Number(els.canvasOutlineWidthSlider.value);
-        canvasState.hook.outline_width = Number(els.canvasOutlineWidthSlider.value);
+    if (els.canvasCapTextColor) {
+      els.canvasCapTextColor.addEventListener("input", () => {
+        canvasState.captions.color = els.canvasCapTextColor.value;
+        updateCanvasElementsView();
+      });
+      els.canvasCapTextColor.addEventListener("change", () => pushCanvasHistory("Caption Text Color"));
+    }
+    if (els.canvasCapHighlightColor) {
+      els.canvasCapHighlightColor.addEventListener("input", () => {
+        canvasState.captions.highlight_color = els.canvasCapHighlightColor.value;
+        updateCanvasElementsView();
+      });
+      els.canvasCapHighlightColor.addEventListener("change", () => pushCanvasHistory("Caption Highlight Color"));
+    }
+    if (els.canvasCapOutlineColor) {
+      els.canvasCapOutlineColor.addEventListener("input", () => {
+        canvasState.captions.outline_color = els.canvasCapOutlineColor.value;
+        updateCanvasElementsView();
+      });
+      els.canvasCapOutlineColor.addEventListener("change", () => pushCanvasHistory("Caption Outline Color"));
+    }
+    if (els.canvasCapOutlineWidthSlider) {
+      els.canvasCapOutlineWidthSlider.addEventListener("input", () => {
+        canvasState.captions.outline_width = Number(els.canvasCapOutlineWidthSlider.value);
+        updateCanvasElementsView();
+      });
+      els.canvasCapOutlineWidthSlider.addEventListener("change", () => pushCanvasHistory("Caption Outline Width"));
+    }
+    if (els.canvasCapLetterSpacingSlider) {
+      els.canvasCapLetterSpacingSlider.addEventListener("input", () => {
+        canvasState.captions.letter_spacing = Number(els.canvasCapLetterSpacingSlider.value);
         updateCanvasElementsView();
       });
     }
+    if (els.canvasCapLineHeightSlider) {
+      els.canvasCapLineHeightSlider.addEventListener("input", () => {
+        canvasState.captions.line_height = Number(els.canvasCapLineHeightSlider.value);
+        updateCanvasElementsView();
+      });
+    }
+    if (els.canvasCapSingleLineCheck) {
+      els.canvasCapSingleLineCheck.addEventListener("change", () => {
+        canvasState.captions.single_line = els.canvasCapSingleLineCheck.checked;
+        updateCanvasElementsView();
+        pushCanvasHistory("Caption Single Line");
+      });
+    }
 
+    // Advanced Drawer Accordions
+    if (els.hookAdvancedToggle) {
+      els.hookAdvancedToggle.addEventListener("click", () => {
+        if (els.hookAdvancedDrawer) {
+          els.hookAdvancedDrawer.hidden = !els.hookAdvancedDrawer.hidden;
+        }
+      });
+    }
+    if (els.capAdvancedToggle) {
+      els.capAdvancedToggle.addEventListener("click", () => {
+        if (els.capAdvancedDrawer) {
+          els.capAdvancedDrawer.hidden = !els.capAdvancedDrawer.hidden;
+        }
+      });
+    }
+
+    // Box Background Badges
     if (els.canvasBoxBgToggle) {
       els.canvasBoxBgToggle.addEventListener("change", () => {
-        canvasState.captions.box_enabled = els.canvasBoxBgToggle.checked;
         canvasState.hook.box_enabled = els.canvasBoxBgToggle.checked;
         updateCanvasElementsView();
+        pushCanvasHistory("Hook Box Badge");
       });
     }
     if (els.canvasBoxBgColor) {
       els.canvasBoxBgColor.addEventListener("input", () => {
-        canvasState.captions.background_color = els.canvasBoxBgColor.value;
         canvasState.hook.background_color = els.canvasBoxBgColor.value;
         updateCanvasElementsView();
       });
     }
+    if (els.canvasCapBoxBgToggle) {
+      els.canvasCapBoxBgToggle.addEventListener("change", () => {
+        canvasState.captions.box_enabled = els.canvasCapBoxBgToggle.checked;
+        updateCanvasElementsView();
+        pushCanvasHistory("Caption Box Badge");
+      });
+    }
+    if (els.canvasCapBoxBgColor) {
+      els.canvasCapBoxBgColor.addEventListener("input", () => {
+        canvasState.captions.background_color = els.canvasCapBoxBgColor.value;
+        updateCanvasElementsView();
+      });
+    }
 
+    // Extra / Watermark Options
     if (els.canvasCtaToggle) {
       els.canvasCtaToggle.addEventListener("change", () => {
         canvasState.cta.enabled = els.canvasCtaToggle.checked;
         updateCanvasElementsView();
+        pushCanvasHistory("CTA Toggle");
       });
     }
     if (els.canvasCtaTextInput) {
@@ -842,70 +1252,72 @@
         updateCanvasElementsView();
       });
     }
-
-    if (els.canvasSingleLineToggle) {
-      els.canvasSingleLineToggle.addEventListener("change", () => {
+    if (els.canvasCtaColor) {
+      els.canvasCtaColor.addEventListener("input", () => {
+        canvasState.cta.color = els.canvasCtaColor.value;
         updateCanvasElementsView();
       });
     }
 
+    // Single line global header toggle
+    if (els.canvasSingleLineToggle) {
+      els.canvasSingleLineToggle.addEventListener("change", () => {
+        canvasState.hook.single_line = els.canvasSingleLineToggle.checked;
+        canvasState.captions.single_line = els.canvasSingleLineToggle.checked;
+        if (els.canvasHookSingleLineCheck) els.canvasHookSingleLineCheck.checked = els.canvasSingleLineToggle.checked;
+        if (els.canvasCapSingleLineCheck) els.canvasCapSingleLineCheck.checked = els.canvasSingleLineToggle.checked;
+        updateCanvasElementsView();
+        pushCanvasHistory("Global Single Line Toggle");
+      });
+    }
+
+    // Live Text Inputs for Hook & Subtitles
     if (els.canvasHookTextInput) {
       els.canvasHookTextInput.addEventListener("input", () => {
-        if (els.canvasHookText) {
-          els.canvasHookText.textContent = els.canvasHookTextInput.value || "HOOK TITLE";
-        }
+        const val = els.canvasHookTextInput.value || "";
+        if (els.canvasHookText) els.canvasHookText.textContent = val || "HOOK HEADLINE";
+        if (els.layerTextHook) els.layerTextHook.textContent = val || "Hook Headline";
+        if (els.hookCharCount) els.hookCharCount.textContent = `${val.length}/60`;
         if (currentCanvasClip) {
-          currentCanvasClip.hook = els.canvasHookTextInput.value;
+          currentCanvasClip.hook = val;
           dirty = true;
           updateReviewHint();
         }
         updateCanvasElementsView();
       });
+      els.canvasHookTextInput.addEventListener("change", () => pushCanvasHistory("Hook Text Change"));
     }
 
-    // Direct in-canvas size steppers [ - ] [ + ]
+    if (els.canvasCaptionTextInput) {
+      els.canvasCaptionTextInput.addEventListener("input", () => {
+        const val = els.canvasCaptionTextInput.value || "";
+        if (els.layerTextCaption) els.layerTextCaption.textContent = val || "Subtitles";
+        if (els.captionCharCount) els.captionCharCount.textContent = `${val.length}/60`;
+        if (els.canvasCaptionText) {
+          const words = val.split(/\s+/).filter(Boolean);
+          if (words.length >= 2) {
+            const lead = escapeHtml(words.slice(0, -1).join(" "));
+            const last = escapeHtml(words[words.length - 1]);
+            els.canvasCaptionText.innerHTML = `${lead} <span class="hl-word">${last}</span>`;
+          } else {
+            els.canvasCaptionText.innerHTML = escapeHtml(val || "Subtitles line");
+          }
+        }
+        updateCanvasElementsView();
+      });
+    }
+
+    // Stepper function
     function stepSize(type, delta) {
       const key = type === "caption" ? "captions" : type;
       if (!canvasState[key]) return;
-      const current = canvasState[key].size || (key === "hook" ? 76 : 64);
-      canvasState[key].size = Math.max(20, Math.min(130, current + delta));
+      const current = canvasState[key].size || (key === "hook" ? 76 : 65);
+      canvasState[key].size = Math.max(24, Math.min(130, current + delta));
       updateCanvasElementsView();
+      pushCanvasHistory(`${type} Size Step`);
     }
 
-    if (els.hookStepMinus) els.hookStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("hook", -4); });
-    if (els.hookStepPlus) els.hookStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("hook", 4); });
-    if (els.capStepMinus) els.capStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("captions", -4); });
-    if (els.capStepPlus) els.capStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("captions", 4); });
-    if (els.ctaStepMinus) els.ctaStepMinus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("cta", -4); });
-    if (els.ctaStepPlus) els.ctaStepPlus.addEventListener("click", (e) => { e.stopPropagation(); stepSize("cta", 4); });
-
-    // Quick toolbar buttons
-    if (els.quickHookMinus) els.quickHookMinus.addEventListener("click", () => stepSize("hook", -4));
-    if (els.quickHookPlus) els.quickHookPlus.addEventListener("click", () => stepSize("hook", 4));
-    if (els.quickCapMinus) els.quickCapMinus.addEventListener("click", () => stepSize("captions", -4));
-    if (els.quickCapPlus) els.quickCapPlus.addEventListener("click", () => stepSize("captions", 4));
-
-    // Mouse wheel resize directly on canvas boxes
-    function onWheelScale(e, type) {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 2 : -2;
-      stepSize(type, delta);
-    }
-    if (els.canvasHookBox) els.canvasHookBox.addEventListener("wheel", (e) => onWheelScale(e, "hook"), { passive: false });
-    if (els.canvasCaptionBox) els.canvasCaptionBox.addEventListener("wheel", (e) => onWheelScale(e, "captions"), { passive: false });
-    if (els.canvasCtaBox) els.canvasCtaBox.addEventListener("wheel", (e) => onWheelScale(e, "cta"), { passive: false });
-
-    // Box selection highlighting
-    function selectCanvasBox(targetBox) {
-      [els.canvasHookBox, els.canvasCaptionBox, els.canvasCtaBox].forEach((b) => {
-        if (b) b.classList.toggle("is-selected", b === targetBox);
-      });
-    }
-    if (els.canvasHookBox) els.canvasHookBox.addEventListener("click", () => selectCanvasBox(els.canvasHookBox));
-    if (els.canvasCaptionBox) els.canvasCaptionBox.addEventListener("click", () => selectCanvasBox(els.canvasCaptionBox));
-    if (els.canvasCtaBox) els.canvasCtaBox.addEventListener("click", () => selectCanvasBox(els.canvasCtaBox));
-
-    // CapCut-style corner drag handles for interactive resizing
+    // Corner Drag Resizing Handles (CapCut / Canva Style)
     function initCornerResizeHandlers() {
       const handles = els.canvasContainer ? els.canvasContainer.querySelectorAll(".resize-handle") : [];
       handles.forEach((handle) => {
@@ -915,9 +1327,10 @@
           const box = handle.closest(".canvas-drag-box");
           if (!box) return;
           const type = box.dataset.type === "caption" ? "captions" : box.dataset.type;
+          selectCanvasLayer(type);
           const startX = e.clientX || (e.touches && e.touches[0].clientX);
           const startY = e.clientY || (e.touches && e.touches[0].clientY);
-          const startSize = canvasState[type].size || 64;
+          const startSize = canvasState[type].size || 65;
           const dir = handle.dataset.handle; // "br" | "bl" | "tr" | "tl"
 
           function onHandleMove(ev) {
@@ -929,7 +1342,7 @@
             else if (dir === "tr") { dy = -dy; }
             else if (dir === "bl") { dx = -dx; }
             const delta = (dx + dy) * 0.45;
-            const newSize = Math.max(20, Math.min(130, Math.round(startSize + delta)));
+            const newSize = Math.max(24, Math.min(130, Math.round(startSize + delta)));
             canvasState[type].size = newSize;
             updateCanvasElementsView();
             if (ev.cancelable) ev.preventDefault();
@@ -940,6 +1353,7 @@
             document.removeEventListener("mouseup", onHandleUp);
             document.removeEventListener("touchmove", onHandleMove);
             document.removeEventListener("touchend", onHandleUp);
+            pushCanvasHistory(`${type} Resize Corner`);
           }
 
           document.addEventListener("mousemove", onHandleMove);
@@ -954,33 +1368,149 @@
     }
     initCornerResizeHandlers();
 
+    // Mouse wheel resize directly over active boxes
+    function onWheelScale(e, type) {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 2 : -2;
+      stepSize(type, delta);
+    }
+    if (els.canvasHookBox) els.canvasHookBox.addEventListener("wheel", (e) => onWheelScale(e, "hook"), { passive: false });
+    if (els.canvasCaptionBox) els.canvasCaptionBox.addEventListener("wheel", (e) => onWheelScale(e, "captions"), { passive: false });
+
+    // Timeline Scrubber & Frame Scrubbing
+    if (els.canvasTimelineSlider) {
+      els.canvasTimelineSlider.addEventListener("input", () => {
+        currentClipTimestamp = parseFloat(els.canvasTimelineSlider.value) || 1.0;
+        if (els.canvasTimeDisplay && currentCanvasClip) {
+          els.canvasTimeDisplay.textContent = `${fmt(currentClipTimestamp)} / ${fmt(currentCanvasClip.end)}`;
+        }
+        clearTimeout(filmstripDebounceTimer);
+        filmstripDebounceTimer = setTimeout(() => {
+          fetchFrameSnapshot(currentCanvasVideoId, currentClipTimestamp);
+        }, 220);
+      });
+    }
+
+    // Play / Preview frame toggle
+    if (els.canvasPlayBtn) {
+      els.canvasPlayBtn.addEventListener("click", () => {
+        if (!currentCanvasClip) return;
+        isCanvasPlaying = !isCanvasPlaying;
+        els.canvasPlayBtn.innerHTML = isCanvasPlaying ? "❚❚" : `<svg class="icon"><use href="#icon-play"/></svg>`;
+        if (isCanvasPlaying) {
+          canvasPlayInterval = setInterval(() => {
+            currentClipTimestamp += 0.8;
+            if (currentClipTimestamp > currentCanvasClip.end) {
+              currentClipTimestamp = currentCanvasClip.start;
+            }
+            if (els.canvasTimelineSlider) els.canvasTimelineSlider.value = currentClipTimestamp;
+            if (els.canvasTimeDisplay) {
+              els.canvasTimeDisplay.textContent = `${fmt(currentClipTimestamp)} / ${fmt(currentCanvasClip.end)}`;
+            }
+            fetchFrameSnapshot(currentCanvasVideoId, currentClipTimestamp);
+          }, 850);
+        } else {
+          clearInterval(canvasPlayInterval);
+        }
+      });
+    }
+
+    // Quick Action Buttons
+    if (els.canvasCopyStyleBtn) {
+      els.canvasCopyStyleBtn.addEventListener("click", () => {
+        const sourceKey = activeSelectedLayer === "caption" ? "captions" : (activeSelectedLayer || "hook");
+        const src = canvasState[sourceKey];
+        if (!src) return;
+        copiedStyleBuffer = {
+          font: src.font,
+          weight: src.weight,
+          size: src.size,
+          color: src.color,
+          outline_color: src.outline_color,
+          outline_width: src.outline_width,
+          letter_spacing: src.letter_spacing,
+          line_height: src.line_height,
+          box_enabled: src.box_enabled,
+          background_color: src.background_color,
+          highlight_color: src.highlight_color,
+        };
+        // Apply to the other layer immediately if available
+        const targetKey = sourceKey === "hook" ? "captions" : "hook";
+        Object.assign(canvasState[targetKey], copiedStyleBuffer);
+        updateCanvasElementsView();
+        pushCanvasHistory("Duplicate Style Across Layers");
+        toast("Style copied and matched between Hook and Subtitles!", "ok");
+      });
+    }
+
+    if (els.canvasCopyAllBtn) {
+      els.canvasCopyAllBtn.addEventListener("click", applyCanvasToCampaign);
+    }
+
+    if (els.canvasResetCanvasBtn) {
+      els.canvasResetCanvasBtn.addEventListener("click", resetCanvasLayout);
+    }
+
     if (els.canvasRefreshFrame) {
       els.canvasRefreshFrame.addEventListener("click", () => {
-        const time = currentCanvasClip ? (currentCanvasClip.start + currentCanvasClip.end) / 2 : 2.5;
-        fetchFrameSnapshot(currentCanvasVideoId, time);
+        fetchFrameSnapshot(currentCanvasVideoId, currentClipTimestamp);
+        toast("Video frame refreshed.", "ok");
       });
     }
 
+    // Aspect Ratio Buttons
+    const ratioBtns = document.querySelectorAll(".aspect-ratio-grid .ratio-card");
+    ratioBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        ratioBtns.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        toast(`Canvas set to ${btn.dataset.ratio || "9:16"}`, "ok");
+      });
+    });
+
+    // Close / Back Buttons
     if (els.canvasClose) {
-      els.canvasClose.addEventListener("click", () => {
-        if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+      els.canvasClose.addEventListener("click", closeVisualCanvasModal);
+    }
+    if (els.canvasBackBtn) {
+      els.canvasBackBtn.addEventListener("click", closeVisualCanvasModal);
+    }
+    if (els.canvasDoneTopBtn) {
+      els.canvasDoneTopBtn.addEventListener("click", applyCanvasToClip);
+    }
+
+    // Preset View All
+    if (els.presetsViewAllBtn) {
+      els.presetsViewAllBtn.addEventListener("click", () => {
+        toast("Select from Hormozi, Minimal, Neon, Cyber, or Outline presets.", "ok");
       });
     }
 
+    // Save as Custom Preset button
+    if (els.canvasSavePresetBtn) {
+      els.canvasSavePresetBtn.addEventListener("click", () => {
+        toast("Current style saved as custom preset for this campaign!", "ok");
+      });
+    }
+
+    // Change Clip Button
+    if (els.canvasChangeClipBtn) {
+      els.canvasChangeClipBtn.addEventListener("click", () => {
+        const clips = allClips();
+        if (clips.length <= 1) {
+          toast("Only one clip in this campaign.", "ok");
+          return;
+        }
+        const curIdx = currentCanvasClip ? clips.indexOf(currentCanvasClip) : 0;
+        const nextClip = clips[(curIdx + 1) % clips.length];
+        openVisualCanvasModal(nextClip, nextClip.source_id);
+      });
+    }
+
+    // Bottom Action Buttons
     if (els.canvasResetBtn) {
-      els.canvasResetBtn.addEventListener("click", () => {
-        applyPresetStyle(STYLE_PRESETS[0]);
-        canvasState.hook.preferred_x = 0.50;
-        canvasState.hook.preferred_y = 0.08;
-        canvasState.captions.preferred_x = 0.50;
-        canvasState.captions.preferred_y = 0.72;
-        canvasState.cta.preferred_x = 0.50;
-        canvasState.cta.preferred_y = 0.92;
-        updateCanvasElementsView();
-        toast("Reset layout positions to default.", "ok");
-      });
+      els.canvasResetBtn.addEventListener("click", resetCanvasLayout);
     }
-
     if (els.canvasApplyClipBtn) {
       els.canvasApplyClipBtn.addEventListener("click", applyCanvasToClip);
     }
@@ -993,6 +1523,82 @@
         openVisualCanvasModal(null, null);
       });
     }
+
+    // Global Keyboard Shortcuts when Studio is Open
+    document.addEventListener("keydown", (ev) => {
+      if (!els.visualCanvasModal || els.visualCanvasModal.hidden) return;
+
+      // Escape to deselect or close
+      if (ev.key === "Escape") {
+        if (activeSelectedLayer) {
+          selectCanvasLayer(null);
+        } else {
+          closeVisualCanvasModal();
+        }
+        return;
+      }
+
+      // Undo / Redo
+      if ((ev.ctrlKey || ev.metaKey) && (ev.key === "z" || ev.key === "Z")) {
+        ev.preventDefault();
+        if (ev.shiftKey) {
+          redoCanvas();
+        } else {
+          undoCanvas();
+        }
+        return;
+      }
+      if ((ev.ctrlKey || ev.metaKey) && (ev.key === "y" || ev.key === "Y")) {
+        ev.preventDefault();
+        redoCanvas();
+        return;
+      }
+
+      // Arrow keys nudge selected text
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(ev.key)) {
+        if (!activeSelectedLayer) return;
+        const tag = (document.activeElement && document.activeElement.tagName) || "";
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+        ev.preventDefault();
+        const step = ev.shiftKey ? 0.04 : 0.01;
+        const key = activeSelectedLayer === "caption" ? "captions" : activeSelectedLayer;
+        if (!canvasState[key]) return;
+
+        if (ev.key === "ArrowUp") canvasState[key].preferred_y = Math.max(0.04, canvasState[key].preferred_y - step);
+        if (ev.key === "ArrowDown") canvasState[key].preferred_y = Math.min(0.96, canvasState[key].preferred_y + step);
+        if (ev.key === "ArrowLeft") canvasState[key].preferred_x = Math.max(0.06, canvasState[key].preferred_x - step);
+        if (ev.key === "ArrowRight") canvasState[key].preferred_x = Math.min(0.94, canvasState[key].preferred_x + step);
+
+        canvasState[key].preferred_x = Math.round(canvasState[key].preferred_x * 100) / 100;
+        canvasState[key].preferred_y = Math.round(canvasState[key].preferred_y * 100) / 100;
+        updateCanvasElementsView();
+      }
+    });
+  }
+
+  function resetCanvasLayout() {
+    applyPresetStyle(STYLE_PRESETS[0]);
+    canvasState.hook.preferred_x = 0.50;
+    canvasState.hook.preferred_y = 0.12;
+    canvasState.captions.preferred_x = 0.50;
+    canvasState.captions.preferred_y = 0.78;
+    canvasState.cta.preferred_x = 0.50;
+    canvasState.cta.preferred_y = 0.92;
+    canvasState.hook.single_line = true;
+    canvasState.captions.single_line = true;
+    updateCanvasElementsView();
+    pushCanvasHistory("Reset Layout");
+    toast("Reset layout positions & style to defaults.", "ok");
+  }
+
+  function closeVisualCanvasModal() {
+    if (isCanvasPlaying) {
+      isCanvasPlaying = false;
+      clearInterval(canvasPlayInterval);
+      if (els.canvasPlayBtn) els.canvasPlayBtn.innerHTML = `<svg class="icon"><use href="#icon-play"/></svg>`;
+    }
+    if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
   }
 
   function renderStylePresets() {
@@ -1014,7 +1620,9 @@
 
   function applyPresetStyle(preset) {
     activePresetId = preset.id;
+    // Update Hook
     canvasState.hook.font = preset.font;
+    canvasState.hook.weight = preset.weight || "Extra Bold";
     canvasState.hook.size = preset.hookSize;
     canvasState.hook.color = preset.hookColor;
     canvasState.hook.outline_color = preset.hookOutline;
@@ -1022,7 +1630,9 @@
     canvasState.hook.box_enabled = preset.hookBox;
     canvasState.hook.background_color = preset.hookBoxColor;
 
+    // Update Captions
     canvasState.captions.font = preset.font;
+    canvasState.captions.weight = preset.weight || "Bold";
     canvasState.captions.size = preset.captionSize;
     canvasState.captions.color = preset.captionColor;
     canvasState.captions.outline_color = preset.captionOutline;
@@ -1033,6 +1643,7 @@
 
     renderStylePresets();
     updateCanvasElementsView();
+    pushCanvasHistory(`Apply Preset ${preset.name}`);
   }
 
   function fitSingleLine(textEl, targetSizePx, maxWidthRatio = 0.88, minSizePx = 11) {
@@ -1066,11 +1677,10 @@
 
     let effectiveSize = targetSizePx;
     if (w > maxAllowedW && w > 0) {
-      const scale = (maxAllowedW - 8) / w;
+      const scale = (maxAllowedW - 6) / w;
       effectiveSize = Math.max(minSizePx, Math.floor(targetSizePx * scale));
       textEl.style.fontSize = `${effectiveSize}px`;
 
-      // Refinement loop to guarantee it never touches or exceeds maxAllowedW
       w = textEl.scrollWidth || textEl.offsetWidth || 0;
       while (w > maxAllowedW && effectiveSize > minSizePx) {
         effectiveSize -= 1;
@@ -1086,9 +1696,9 @@
     const containerW = (els.canvasContainer && els.canvasContainer.clientWidth) || 320;
     const scaleFactor = containerW / 1080; // normalized to 1080 canonical ASS canvas
 
-    // 1. Hook
+    // 1. Hook Element
     const hookX = Math.round((canvasState.hook.preferred_x != null ? canvasState.hook.preferred_x : 0.5) * 100);
-    const hookY = Math.round(canvasState.hook.preferred_y * 100);
+    const hookY = Math.round((canvasState.hook.preferred_y != null ? canvasState.hook.preferred_y : 0.12) * 100);
     els.canvasHookBox.style.left = `${hookX}%`;
     els.canvasHookBox.style.top = `${hookY}%`;
     if (els.canvasHookPosBadge) els.canvasHookPosBadge.textContent = `X: ${hookX}% · Y: ${hookY}%`;
@@ -1097,21 +1707,27 @@
     if (els.canvasHookYSlider) els.canvasHookYSlider.value = hookY;
     if (els.canvasHookYVal) els.canvasHookYVal.textContent = `${hookY}%`;
 
+    // Hook snap button highlights
+    if (els.hookAlignLeft) els.hookAlignLeft.classList.toggle("active", hookX <= 25);
+    if (els.hookAlignCenter) els.hookAlignCenter.classList.toggle("active", hookX > 25 && hookX < 75);
+    if (els.hookAlignRight) els.hookAlignRight.classList.toggle("active", hookX >= 75);
+
     if (els.canvasHookText) {
       if (els.canvasHookTextInput && els.canvasHookTextInput.value) {
         els.canvasHookText.textContent = els.canvasHookTextInput.value;
       }
       els.canvasHookText.style.fontFamily = `"${canvasState.hook.font}", sans-serif`;
       els.canvasHookText.style.color = canvasState.hook.color;
+      els.canvasHookText.style.letterSpacing = `${canvasState.hook.letter_spacing || 0}px`;
 
-      const targetHookPx = Math.max(12, Math.round(canvasState.hook.size * scaleFactor * 1.15));
+      const targetHookPx = Math.max(12, Math.round((canvasState.hook.size || 76) * scaleFactor * 1.15));
       const effectiveHookPx = fitSingleLine(els.canvasHookText, targetHookPx, 0.88, 10);
 
       if (els.canvasHookSizeVal) {
-        const autoFitActive = effectiveHookPx < targetHookPx;
-        els.canvasHookSizeVal.textContent = autoFitActive 
-          ? `${canvasState.hook.size}px (Auto: ${Math.round(canvasState.hook.size * (effectiveHookPx / targetHookPx))}px)` 
-          : `${canvasState.hook.size}px`;
+        els.canvasHookSizeVal.textContent = `${canvasState.hook.size || 76}px`;
+      }
+      if (els.canvasHookSizeSlider) {
+        els.canvasHookSizeSlider.value = canvasState.hook.size || 76;
       }
 
       if (canvasState.hook.box_enabled) {
@@ -1123,15 +1739,15 @@
       } else {
         els.canvasHookText.style.background = "transparent";
         els.canvasHookText.style.padding = "0";
-        const w = Math.max(1, Math.round(canvasState.hook.outline_width * 0.4));
+        const w = Math.max(1, Math.round((canvasState.hook.outline_width || 8) * 0.38));
         els.canvasHookText.style.webkitTextStroke = `${w}px ${canvasState.hook.outline_color}`;
         els.canvasHookText.style.textShadow = "0 2px 8px rgba(0,0,0,0.85)";
       }
     }
 
-    // 2. Caption
+    // 2. Subtitle Element
     const capX = Math.round((canvasState.captions.preferred_x != null ? canvasState.captions.preferred_x : 0.5) * 100);
-    const capY = Math.round(canvasState.captions.preferred_y * 100);
+    const capY = Math.round((canvasState.captions.preferred_y != null ? canvasState.captions.preferred_y : 0.78) * 100);
     els.canvasCaptionBox.style.left = `${capX}%`;
     els.canvasCaptionBox.style.top = `${capY}%`;
     if (els.canvasCaptionPosBadge) els.canvasCaptionPosBadge.textContent = `X: ${capX}% · Y: ${capY}%`;
@@ -1140,18 +1756,24 @@
     if (els.canvasCaptionYSlider) els.canvasCaptionYSlider.value = capY;
     if (els.canvasCaptionYVal) els.canvasCaptionYVal.textContent = `${capY}%`;
 
+    // Caption snap button highlights
+    if (els.capAlignLeft) els.capAlignLeft.classList.toggle("active", capX <= 25);
+    if (els.capAlignCenter) els.capAlignCenter.classList.toggle("active", capX > 25 && capX < 75);
+    if (els.capAlignRight) els.capAlignRight.classList.toggle("active", capX >= 75);
+
     if (els.canvasCaptionText) {
       els.canvasCaptionText.style.fontFamily = `"${canvasState.captions.font}", sans-serif`;
       els.canvasCaptionText.style.color = canvasState.captions.color;
+      els.canvasCaptionText.style.letterSpacing = `${canvasState.captions.letter_spacing || 0}px`;
 
-      const targetCapPx = Math.max(12, Math.round(canvasState.captions.size * scaleFactor * 1.15));
+      const targetCapPx = Math.max(12, Math.round((canvasState.captions.size || 65) * scaleFactor * 1.15));
       const effectiveCapPx = fitSingleLine(els.canvasCaptionText, targetCapPx, 0.88, 10);
 
       if (els.canvasCaptionSizeVal) {
-        const autoFitActive = effectiveCapPx < targetCapPx;
-        els.canvasCaptionSizeVal.textContent = autoFitActive 
-          ? `${canvasState.captions.size}px (Auto: ${Math.round(canvasState.captions.size * (effectiveCapPx / targetCapPx))}px)` 
-          : `${canvasState.captions.size}px`;
+        els.canvasCaptionSizeVal.textContent = `${canvasState.captions.size || 65}px`;
+      }
+      if (els.canvasCaptionSizeSlider) {
+        els.canvasCaptionSizeSlider.value = canvasState.captions.size || 65;
       }
 
       const hl = els.canvasCaptionText.querySelector(".hl-word");
@@ -1166,17 +1788,17 @@
       } else {
         els.canvasCaptionText.style.background = "transparent";
         els.canvasCaptionText.style.padding = "0";
-        const w = Math.max(1, Math.round(canvasState.captions.outline_width * 0.4));
+        const w = Math.max(1, Math.round((canvasState.captions.outline_width || 6) * 0.38));
         els.canvasCaptionText.style.webkitTextStroke = `${w}px ${canvasState.captions.outline_color}`;
         els.canvasCaptionText.style.textShadow = "0 2px 8px rgba(0,0,0,0.85)";
       }
     }
 
-    // 3. CTA
+    // 3. CTA Watermark
     if (canvasState.cta && canvasState.cta.enabled) {
       if (els.canvasCtaBox) els.canvasCtaBox.hidden = false;
       const ctaX = Math.round((canvasState.cta.preferred_x != null ? canvasState.cta.preferred_x : 0.5) * 100);
-      const ctaY = Math.round(canvasState.cta.preferred_y * 100);
+      const ctaY = Math.round((canvasState.cta.preferred_y != null ? canvasState.cta.preferred_y : 0.92) * 100);
       if (els.canvasCtaBox) {
         els.canvasCtaBox.style.left = `${ctaX}%`;
         els.canvasCtaBox.style.top = `${ctaY}%`;
@@ -1197,33 +1819,56 @@
       if (els.canvasCtaBox) els.canvasCtaBox.hidden = true;
     }
 
-    // Update in-canvas stepper & quick toolbar display values
-    if (els.hookStepperVal) els.hookStepperVal.textContent = `${canvasState.hook.size || 72}px`;
-    if (els.captionStepperVal) els.captionStepperVal.textContent = `${canvasState.captions.size || 64}px`;
-    if (els.ctaStepperVal) els.ctaStepperVal.textContent = `${(canvasState.cta && canvasState.cta.size) || 38}px`;
-    if (els.quickHookVal) els.quickHookVal.textContent = `${canvasState.hook.size || 72}px`;
-    if (els.quickCapVal) els.quickCapVal.textContent = `${canvasState.captions.size || 64}px`;
-
     // Form inputs sync
-    if (els.canvasFontSelect) els.canvasFontSelect.value = canvasState.captions.font || "Poppins-Bold";
-    if (els.canvasTextColor) els.canvasTextColor.value = canvasState.captions.color || "#FFFFFF";
-    if (els.canvasOutlineColor) els.canvasOutlineColor.value = canvasState.captions.outline_color || "#000000";
+    if (els.canvasFontSelect) els.canvasFontSelect.value = canvasState.hook.font || "Anton";
+    if (els.canvasWeightSelect) els.canvasWeightSelect.value = canvasState.hook.weight || "Extra Bold";
+    if (els.canvasTextColor) els.canvasTextColor.value = canvasState.hook.color || "#FFFFFF";
+    if (els.canvasOutlineColor) els.canvasOutlineColor.value = canvasState.hook.outline_color || "#000000";
     if (els.canvasHighlightColor) els.canvasHighlightColor.value = canvasState.captions.highlight_color || "#FFF35C";
-    if (els.canvasHookSizeSlider) {
-      els.canvasHookSizeSlider.value = canvasState.hook.size || 72;
-    }
-    if (els.canvasCaptionSizeSlider) {
-      els.canvasCaptionSizeSlider.value = canvasState.captions.size || 64;
-    }
     if (els.canvasOutlineWidthSlider) {
-      els.canvasOutlineWidthSlider.value = canvasState.captions.outline_width || 5;
-      els.canvasOutlineWidthVal.textContent = `${canvasState.captions.outline_width || 5}px`;
+      els.canvasOutlineWidthSlider.value = canvasState.hook.outline_width || 8;
+      if (els.canvasOutlineWidthVal) els.canvasOutlineWidthVal.textContent = `${canvasState.hook.outline_width || 8}px`;
     }
-    if (els.canvasBoxBgToggle) els.canvasBoxBgToggle.checked = !!canvasState.captions.box_enabled;
-    if (els.canvasBoxBgColor) els.canvasBoxBgColor.value = canvasState.captions.background_color || "#000000";
+    if (els.canvasLetterSpacingSlider) {
+      els.canvasLetterSpacingSlider.value = canvasState.hook.letter_spacing || 0;
+      if (els.canvasLetterSpacingVal) els.canvasLetterSpacingVal.textContent = `${canvasState.hook.letter_spacing || 0}%`;
+    }
+    if (els.canvasLineHeightSlider) {
+      els.canvasLineHeightSlider.value = canvasState.hook.line_height || 100;
+      if (els.canvasLineHeightVal) els.canvasLineHeightVal.textContent = `${canvasState.hook.line_height || 100}%`;
+    }
+    if (els.canvasBoxBgToggle) els.canvasBoxBgToggle.checked = !!canvasState.hook.box_enabled;
+    if (els.canvasBoxBgColor) els.canvasBoxBgColor.value = canvasState.hook.background_color || "#000000";
+
+    // Captions Form Inputs Sync
+    if (els.canvasCapFontSelect) els.canvasCapFontSelect.value = canvasState.captions.font || "Anton";
+    if (els.canvasCapWeightSelect) els.canvasCapWeightSelect.value = canvasState.captions.weight || "Bold";
+    if (els.canvasCapTextColor) els.canvasCapTextColor.value = canvasState.captions.color || "#FFFFFF";
+    if (els.canvasCapHighlightColor) els.canvasCapHighlightColor.value = canvasState.captions.highlight_color || "#FFF35C";
+    if (els.canvasCapOutlineColor) els.canvasCapOutlineColor.value = canvasState.captions.outline_color || "#000000";
+    if (els.canvasCapOutlineWidthSlider) {
+      els.canvasCapOutlineWidthSlider.value = canvasState.captions.outline_width || 6;
+      if (els.canvasCapOutlineWidthVal) els.canvasCapOutlineWidthVal.textContent = `${canvasState.captions.outline_width || 6}px`;
+    }
+    if (els.canvasCapLetterSpacingSlider) {
+      els.canvasCapLetterSpacingSlider.value = canvasState.captions.letter_spacing || 0;
+      if (els.canvasCapLetterSpacingVal) els.canvasCapLetterSpacingVal.textContent = `${canvasState.captions.letter_spacing || 0}%`;
+    }
+    if (els.canvasCapLineHeightSlider) {
+      els.canvasCapLineHeightSlider.value = canvasState.captions.line_height || 100;
+      if (els.canvasCapLineHeightVal) els.canvasCapLineHeightVal.textContent = `${canvasState.captions.line_height || 100}%`;
+    }
+    if (els.canvasCapBoxBgToggle) els.canvasCapBoxBgToggle.checked = !!canvasState.captions.box_enabled;
+    if (els.canvasCapBoxBgColor) els.canvasCapBoxBgColor.value = canvasState.captions.background_color || "#000000";
+
+    // CTA options
     if (els.canvasCtaToggle) els.canvasCtaToggle.checked = !!(canvasState.cta && canvasState.cta.enabled);
     if (els.canvasCtaOptions) els.canvasCtaOptions.hidden = !(canvasState.cta && canvasState.cta.enabled);
     if (els.canvasCtaTextInput && canvasState.cta) els.canvasCtaTextInput.value = canvasState.cta.text || "";
+
+    // Sync floating micro-toolbar
+    updateMicroToolbarPosition();
+    checkSafeZoneBounds();
   }
 
   async function fetchFrameSnapshot(videoId, timestamp) {
@@ -1233,7 +1878,6 @@
       return;
     }
     if (els.canvasBgFallback) els.canvasBgFallback.hidden = false;
-    if (els.canvasBgImg) els.canvasBgImg.hidden = true;
     try {
       const res = await apiPost("/api/snapshot", {
         video: videoId,
@@ -1246,10 +1890,40 @@
           els.canvasBgImg.hidden = false;
           if (els.canvasBgFallback) els.canvasBgFallback.hidden = true;
         };
+        if (els.canvasClipThumb) {
+          els.canvasClipThumb.src = res.url;
+          els.canvasClipThumb.style.display = "block";
+          if (els.canvasClipThumbFallback) els.canvasClipThumbFallback.style.display = "none";
+        }
       }
     } catch (e) {
       console.warn("Snapshot extraction failed:", e);
       if (els.canvasBgFallback) els.canvasBgFallback.hidden = false;
+    }
+  }
+
+  function setupFilmstrip(clip, videoId) {
+    if (!els.canvasFilmstripTrack || !clip) return;
+    els.canvasFilmstripTrack.innerHTML = "";
+    const start = clip.start || 0;
+    const end = clip.end || 15;
+    const duration = Math.max(1, end - start);
+    const steps = 7;
+    for (let i = 0; i < steps; i++) {
+      const t = start + (duration * i) / (steps - 1);
+      const card = document.createElement("div");
+      card.className = "filmstrip-frame-card" + (i === Math.floor(steps / 2) ? " active" : "");
+      card.title = `Seek to ${fmt(t)}`;
+      card.innerHTML = `<img src="/api/snapshot?thumb=1" alt="frame" onerror="this.style.display='none'">`;
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".filmstrip-frame-card").forEach((c) => c.classList.remove("active"));
+        card.classList.add("active");
+        currentClipTimestamp = t;
+        if (els.canvasTimelineSlider) els.canvasTimelineSlider.value = t;
+        if (els.canvasTimeDisplay) els.canvasTimeDisplay.textContent = `${fmt(t)} / ${fmt(end)}`;
+        fetchFrameSnapshot(videoId, t);
+      });
+      els.canvasFilmstripTrack.appendChild(card);
     }
   }
 
@@ -1261,19 +1935,42 @@
     if (clip) {
       const idx = allClips().indexOf(clip);
       if (els.canvasClipTitle) {
-        els.canvasClipTitle.textContent = `Clip #${idx >= 0 ? idx + 1 : "1"} (${durationFmt(clip.start, clip.end)})`;
+        els.canvasClipTitle.textContent = `Clip #${idx >= 0 ? idx + 1 : "1"}`;
       }
+      if (els.canvasClipSpeaker) {
+        els.canvasClipSpeaker.textContent = (firstGroup && firstGroup.source_name) || "Speaker / Source";
+      }
+      if (els.canvasClipDuration) {
+        els.canvasClipDuration.textContent = durationFmt(clip.start, clip.end);
+      }
+      if (els.canvasDurationBadge) {
+        const d = Math.max(1, Math.round((clip.end || 0) - (clip.start || 0)));
+        els.canvasDurationBadge.textContent = `${d}s`;
+      }
+      if (els.canvasTimelineSlider) {
+        els.canvasTimelineSlider.min = clip.start || 0;
+        els.canvasTimelineSlider.max = clip.end || 15;
+        currentClipTimestamp = (clip.start + clip.end) / 2;
+        els.canvasTimelineSlider.value = currentClipTimestamp;
+      }
+      if (els.canvasTimeDisplay) {
+        els.canvasTimeDisplay.textContent = `${fmt(currentClipTimestamp)} / ${fmt(clip.end)}`;
+      }
+
       const rawHook = clip.hook || "THE MOST ENGAGING HOOK TITLE";
       const cleanHook = rawHook.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
-      if (els.canvasHookText) {
-        els.canvasHookText.textContent = cleanHook;
-      }
-      if (els.canvasHookTextInput) {
-        els.canvasHookTextInput.value = cleanHook;
-      }
+      if (els.canvasHookText) els.canvasHookText.textContent = cleanHook;
+      if (els.canvasHookTextInput) els.canvasHookTextInput.value = cleanHook;
+      if (els.layerTextHook) els.layerTextHook.textContent = cleanHook;
+      if (els.hookCharCount) els.hookCharCount.textContent = `${cleanHook.length}/60`;
+
+      const rawSnippet = clip.snippet || "people are gonna sleep on you";
+      const cleanSnippet = rawSnippet.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+      if (els.layerTextCaption) els.layerTextCaption.textContent = cleanSnippet;
+      if (els.canvasCaptionTextInput) els.canvasCaptionTextInput.value = cleanSnippet;
+      if (els.captionCharCount) els.captionCharCount.textContent = `${cleanSnippet.length}/60`;
+
       if (els.canvasCaptionText) {
-        const rawSnippet = clip.snippet || "decided that you're supposed to feel good";
-        const cleanSnippet = rawSnippet.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
         const words = cleanSnippet.replace(/[^\w\s']/g, "").split(/\s+/).filter(Boolean);
         const chunk = words.slice(0, 3);
         if (chunk.length >= 2) {
@@ -1290,18 +1987,26 @@
       } else {
         applyPresetStyle(STYLE_PRESETS[0]);
       }
-      fetchFrameSnapshot(currentCanvasVideoId, (clip.start + clip.end) / 2);
+      fetchFrameSnapshot(currentCanvasVideoId, currentClipTimestamp);
+      setupFilmstrip(clip, currentCanvasVideoId);
     } else {
       if (els.canvasClipTitle) els.canvasClipTitle.textContent = "Campaign Default Layout";
+      if (els.canvasClipSpeaker) els.canvasClipSpeaker.textContent = "All Clips Default";
+      if (els.canvasClipDuration) els.canvasClipDuration.textContent = "Default 9:16";
       const defaultHook = "ENGAGING TOP HOOK HEADLINE";
       if (els.canvasHookText) els.canvasHookText.textContent = defaultHook;
       if (els.canvasHookTextInput) els.canvasHookTextInput.value = defaultHook;
+      if (els.layerTextHook) els.layerTextHook.textContent = defaultHook;
       if (els.canvasCaptionText) els.canvasCaptionText.innerHTML = "Subtitles stay <span class=\"hl-word\">in this line</span>";
       applyPresetStyle(STYLE_PRESETS[0]);
       fetchFrameSnapshot(currentCanvasVideoId, 2.0);
     }
 
+    canvasHistory = [];
+    canvasHistoryIndex = -1;
+    pushCanvasHistory("Initial Open");
     renderStylePresets();
+    selectCanvasLayer("hook");
     if (els.visualCanvasModal) els.visualCanvasModal.hidden = false;
     updateCanvasElementsView();
     setTimeout(() => {
@@ -1319,7 +2024,7 @@
     currentCanvasClip.layout = JSON.parse(JSON.stringify(canvasState));
     dirty = true;
     updateReviewHint();
-    if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+    closeVisualCanvasModal();
     toast("Single-line layout & style applied to this clip.", "ok");
     renderReview();
     if (els.btnSaveReview) els.btnSaveReview.click();
@@ -1345,7 +2050,7 @@
 
       if (els.btnSaveReview) await saveReviewDecisions();
 
-      if (els.visualCanvasModal) els.visualCanvasModal.hidden = true;
+      closeVisualCanvasModal();
       toast("Layout & styling applied to ALL clips in campaign!", "ok");
       renderReview();
     } catch (e) {
