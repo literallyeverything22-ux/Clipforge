@@ -437,6 +437,11 @@ async def index(request):
     return FileResponse(WEB_DIR / "index.html", headers={"Cache-Control": "no-store"})
 
 
+async def favicon(request):
+    return FileResponse(WEB_DIR / "favicon.ico", media_type="image/x-icon")
+
+
+
 async def api_state(request):
     campaign_id = _cid(request)
     camp = _camp(campaign_id)
@@ -1652,6 +1657,7 @@ async def api_open_folder(request):
 
 routes = [
     Route("/", index),
+    Route("/favicon.ico", favicon),
     Route("/api/state", api_state, methods=["GET"]),
     Route("/api/video/{video_id}", api_video, methods=["GET"]),
     Route("/api/video/{video_id}", api_video_delete, methods=["POST"]),
